@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import './App.css'
+import AdminDashboard from './AdminDashboard'
 
 type Screen = 'welcome' | 'login' | 'register' | 'home'
-type Role = 'passenger' | 'driver'
+type Role = 'passenger' | 'driver' | 'superadmin'
 type User = { id: string; name: string; email: string; phone: string; role: Role }
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8788'
 
 function Logo() {
   return <div className="logo" aria-label="Ride"><span>R</span></div>
@@ -52,6 +53,8 @@ function App() {
   const logout = () => {
     localStorage.removeItem('ride_token'); setUser(null); setScreen('welcome'); setMessage('')
   }
+
+  if (screen === 'home' && user?.role === 'superadmin') return <AdminDashboard user={user} token={localStorage.getItem('ride_token') || ''} onLogout={logout} />
 
   if (loading && screen === 'welcome') return <div className="loading-screen"><Logo /><span>Preparando Ride…</span></div>
 

@@ -8,7 +8,7 @@ const root = dirname(fileURLToPath(import.meta.url))
 const dataDir = join(root, 'data')
 const usersFile = join(dataDir, 'users.json')
 const secret = process.env.RIDE_SESSION_SECRET || 'ride-local-development-secret-change-before-production'
-const port = Number(process.env.PORT || 8787)
+const port = Number(process.env.PORT || 8788)
 
 await mkdir(dataDir, { recursive: true })
 try { await readFile(usersFile) } catch { await writeFile(usersFile, '[]') }
@@ -42,6 +42,13 @@ createServer(async (req,res) => {
       const token=(req.headers.authorization||'').replace('Bearer ',''); const session=verifyToken(token)
       if(!session) return send(res,401,{message:'Sesión inválida.'}); const users=await readUsers(); const user=users.find((u)=>u.id===session.sub)
       return user?send(res,200,{user:publicUser(user)}):send(res,404,{message:'Usuario no encontrado.'})
+    }
+    if(req.url==='/api/admin/users' && req.method==='GET') {
+      const token=(req.headers.authorization||'').replace('Bearer ',''); const session=verifyToken(token)
+      if(!session) return send(res,401,{message:'Debes iniciar sesión.'})
+      const users=await readUsers(); const admin=users.find((u)=>u.id===session.sub)
+      if(!admin || admin.role!=='superadmin') return send(res,403,{message:'No tienes permiso para ver este contenido.'})
+      return send(res,200,{users:users.map(publicUser)})
     }
     send(res,404,{message:'Ruta no encontrada.'})
   } catch { send(res,500,{message:'No se pudo procesar la solicitud.'}) }
