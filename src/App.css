@@ -4,7 +4,7 @@
 @media(max-width:850px){.auth-page{grid-template-columns:1fr}.brand-panel{display:none}.form-panel{min-height:100vh;padding:32px 24px}.mobile-brand{display:flex;position:absolute;left:24px;top:24px;font-size:22px}.mobile-brand .logo{width:31px;height:35px;font-size:18px}.auth-box{margin-top:58px}.welcome-box h2{font-size:39px}.user-home>section{margin:8vh 18px;padding:30px 20px}.account-card{grid-template-columns:1fr}.two-fields{grid-template-columns:1fr}}
 
 /* Identidad visual refinada */
-:root{--ink:#091b2a;--sky:#8adcf0;--blue:#4bbbe6;--mint:#76d7c3;--paper:#fcfdfd;--muted:#6f8190;--line:#dce7ec}
+:root{--ink:#0a1930;--sky:#69d2f0;--blue:#269df3;--mint:#55cdb8;--lavender:#a99af5;--paper:#fcfdff;--muted:#6c7c8d;--line:#dce8ef}
 .brand-panel{isolation:isolate;background:linear-gradient(145deg,#061823,#0a293b 52%,#10384d)}
 .brand-panel:before{content:'';position:absolute;z-index:-1;width:430px;height:430px;left:-170px;top:-160px;border-radius:50%;background:radial-gradient(circle,rgba(125,219,238,.16),transparent 68%);filter:blur(8px);animation:aurora 11s ease-in-out infinite alternate}
 .brand-panel:after{border-color:rgba(151,226,241,.05);animation:drift 16s ease-in-out infinite alternate;z-index:-1}
@@ -16,3 +16,6 @@
 .auth-box input:focus{border-color:#62bfdc;box-shadow:0 0 0 4px rgba(98,191,220,.12);transform:translateY(-1px)}.back:hover{transform:translateX(-3px);color:#157fa8}.user-home header{background:linear-gradient(110deg,#061823,#0d3449)}.user-home>section{animation:enter-refined .45s cubic-bezier(.22,1,.36,1)}.account-card div{transition:transform .22s,box-shadow .22s}.account-card div:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(21,60,78,.08)}
 @keyframes enter-refined{from{opacity:0;transform:translateY(12px) scale(.99)}to{opacity:1;transform:none}}@keyframes aurora{to{transform:translate(80px,45px) scale(1.15)}}@keyframes drift{to{transform:translate(-48px,64px) rotate(12deg)}}@keyframes moon-glow{to{transform:scale(1.09);box-shadow:0 0 60px rgba(120,215,235,.09)}}@keyframes city-rise{from{transform:translateY(55px);opacity:.2}to{transform:none;opacity:1}}@keyframes route-pulse{50%{box-shadow:0 0 0 8px rgba(121,218,239,0)}}@keyframes car-float{50%{transform:translate(10px,-5px) rotate(-4deg)}}@keyframes logo-breathe{50%{filter:drop-shadow(0 10px 24px rgba(74,190,231,.35));transform:translateY(-1px)}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+/* Paleta oficial tomada del concepto visual */
+.logo{background:linear-gradient(145deg,#7ddbf2,#37b8ef);filter:drop-shadow(0 8px 20px rgba(38,157,243,.2))}.primary-action{color:#fff;background:linear-gradient(135deg,#39b7f2,#238ff0);box-shadow:0 10px 28px rgba(38,157,243,.2)}.primary-action:hover:not(:disabled){box-shadow:0 15px 34px rgba(38,157,243,.3)}.role-picker button.selected{border-color:#269df3;background:#eef8ff;box-shadow:inset 0 0 0 1px #269df3,0 8px 22px rgba(38,157,243,.08)}.success-mark{background:#e1f8f3;color:#18a68c}
