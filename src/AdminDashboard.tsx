@@ -1,22 +1,165 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import './AdminDashboard.css'
 
-type AdminUser = { id:string; name:string; email:string; phone:string; role:string; createdAt:string }
-type Props = { user:{name:string;email:string;role:string}; token:string; onLogout:()=>void }
+type AdminUser = {
+  id: string
+  name: string
+  email: string
+  phone: string
+  role: string
+  createdAt: string
+}
+
+type Props = {
+  user: { name: string; email: string; role: string }
+  token: string
+  onLogout: () => void
+}
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8788'
 
-export default function AdminDashboard({ user, token, onLogout }:Props) {
-  const [users,setUsers]=useState<AdminUser[]>([])
-  const [section,setSection]=useState('Resumen')
-  const [error,setError]=useState('')
-  useEffect(()=>{fetch(`${API_URL}/api/admin/users`,{headers:{Authorization:`Bearer ${token}`}}).then(async response=>{const data=await response.json();if(!response.ok)throw new Error(data.message);setUsers(data.users)}).catch(error=>setError(error.message))},[token])
-  const passengers=users.filter(item=>item.role==='passenger').length
-  const drivers=users.filter(item=>item.role==='driver').length
-  const menu=['Resumen','Usuarios','Conductores','Viajes','Tarifas','Soporte']
-  return <div className="admin-shell">
-    <aside className="admin-sidebar"><div className="admin-brand"><div>R</div><strong>Ride</strong><small>CONTROL</small></div><nav>{menu.map(item=><button key={item} className={section===item?'active':''} onClick={()=>setSection(item)}><span>{item==='Resumen'?'⌘':item==='Usuarios'?'◎':item==='Conductores'?'◉':item==='Viajes'?'◆':item==='Tarifas'?'$':'?'}</span>{item}</button>)}</nav><div className="system-ok"><i/>Sistema operativo<small>Backend conectado</small></div><button className="admin-logout" onClick={onLogout}>Cerrar sesión</button></aside>
-    <main className="admin-main"><header><div><small>CENTRO DE OPERACIONES</small><h1>{section}</h1></div><div className="admin-profile"><span>{user.name.split(' ').map(part=>part[0]).slice(0,2).join('')}</span><div><strong>{user.name}</strong><small>{user.role==='superadmin'?'Superadministración':'Administración'}</small></div></div></header>
-      {section==='Resumen'?<div className="admin-content"><section className="admin-welcome"><div><small>ACCESO SUPERADMIN</small><h2>Hola, {user.name.split(' ')[0]}</h2><p>Estos datos provienen de las cuentas registradas en Ride.</p></div><span className="secure-badge">✓ Sesión protegida</span></section><section className="admin-metrics"><article><span className="metric-symbol blue">◎</span><div><small>Usuarios registrados</small><strong>{users.length}</strong></div></article><article><span className="metric-symbol mint">◉</span><div><small>Conductores</small><strong>{drivers}</strong></div></article><article><span className="metric-symbol violet">◆</span><div><small>Pasajeros</small><strong>{passengers}</strong></div></article><article><span className="metric-symbol coral">!</span><div><small>Viajes activos</small><strong>0</strong></div></article></section><section className="admin-grid"><article className="admin-card user-table"><div className="admin-card-head"><div><h3>Cuentas recientes</h3><p>Usuarios reales guardados en el backend local</p></div><button onClick={()=>setSection('Usuarios')}>Ver todos</button></div>{error&&<p className="admin-error">{error}</p>}{users.slice().reverse().slice(0,6).map(item=><div className="user-row" key={item.id}><span>{item.name.split(' ').map(part=>part[0]).slice(0,2).join('')}</span><div><strong>{item.name}</strong><small>{item.email}</small></div><em className={item.role}>{item.role==='superadmin'?'Superadmin':item.role==='driver'?'Conductor':'Pasajero'}</em><time>{new Date(item.createdAt).toLocaleDateString('es-EC')}</time></div>)}</article><article className="admin-card next-steps"><div className="admin-card-head"><div><h3>Estado del proyecto</h3><p>Módulos habilitados</p></div></div><ul><li className="done"><span>✓</span><div><b>Autenticación</b><small>Registro, login y sesiones</small></div></li><li className="done"><span>✓</span><div><b>Roles de usuario</b><small>Pasajero, conductor y superadmin</small></div></li><li><span>1</span><div><b>Solicitud de viajes</b><small>Próxima etapa</small></div></li><li><span>2</span><div><b>Mapa en tiempo real</b><small>Después de solicitudes</small></div></li></ul></article></section></div>:<section className="admin-placeholder"><span>{menu.indexOf(section)+1}</span><h2>{section}</h2><p>El acceso está protegido correctamente. Este módulo se construirá en una siguiente etapa.</p><button onClick={()=>setSection('Resumen')}>Volver al resumen</button></section>}
+const sections = [
+  ['Resumen', '⌂'],
+  ['Usuarios', '♙'],
+  ['Conductores', '◉'],
+  ['Viajes', '↗'],
+  ['Tarifas', '$'],
+  ['Soporte', '?'],
+] as const
+
+function roleLabel(role: string) {
+  if (role === 'superadmin') return 'Superadmin'
+  if (role === 'admin') return 'Admin'
+  if (role === 'driver') return 'Conductor'
+  return 'Pasajero'
+}
+
+function roleClass(role: string) {
+  if (role === 'admin') return 'superadmin'
+  return role
+}
+
+function initials(name: string) {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase()
+}
+
+function formatDate(value: string) {
+  if (!value) return 'Sin fecha'
+  return new Intl.DateTimeFormat('es-EC', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(value))
+}
+
+export default function AdminDashboard({ user, token, onLogout }: Props) {
+  const [activeSection, setActiveSection] = useState('Resumen')
+  const [users, setUsers] = useState<AdminUser[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  const isSuperadmin = user.role === 'superadmin'
+  const accessName = isSuperadmin ? 'SUPERADMINISTRACIÓN' : 'ADMINISTRACIÓN'
+  const profileName = isSuperadmin ? 'Superadministrador' : 'Administrador'
+
+  useEffect(() => {
+    const controller = new AbortController()
+    fetch(`${API_URL}/api/admin/users`, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        const data = await response.json()
+        if (!response.ok) throw new Error(data.message || 'No se pudieron cargar los usuarios.')
+        setUsers(data.users || [])
+      })
+      .catch((requestError) => {
+        if (requestError instanceof DOMException && requestError.name === 'AbortError') return
+        setError(requestError instanceof Error ? requestError.message : 'No se pudieron cargar los usuarios.')
+      })
+      .finally(() => setLoading(false))
+    return () => controller.abort()
+  }, [token])
+
+  const metrics = useMemo(() => ({
+    users: users.filter((item) => item.role === 'passenger').length,
+    drivers: users.filter((item) => item.role === 'driver').length,
+    administrators: users.filter((item) => item.role === 'admin' || item.role === 'superadmin').length,
+  }), [users])
+
+  return (
+    <main className="admin-shell">
+      <aside className="admin-sidebar">
+        <div className="admin-brand"><div>R</div><span>Ride</span><small>{accessName}</small></div>
+        <nav aria-label="Panel administrativo">
+          {sections.map(([label, icon]) => (
+            <button key={label} className={activeSection === label ? 'active' : ''} onClick={() => setActiveSection(label)}>
+              <span>{icon}</span>{label}
+            </button>
+          ))}
+        </nav>
+        <div className="system-ok"><i />Sistema operativo<small>Acceso protegido</small></div>
+        <button className="admin-logout" onClick={onLogout}>↪ Cerrar sesión</button>
+      </aside>
+
+      <section className="admin-main">
+        <header>
+          <div><small>{accessName}</small><h1>{activeSection}</h1></div>
+          <div className="admin-profile"><span>{initials(user.name)}</span><div><strong>{user.name}</strong><small>{profileName}</small></div></div>
+        </header>
+
+        {activeSection === 'Resumen' ? (
+          <div className="admin-content">
+            <section className="admin-welcome">
+              <div><small>PANEL DE CONTROL</small><h2>Hola, {user.name.split(' ')[0]}</h2><p>Revisa el estado real de las cuentas registradas en Ride.</p></div>
+              <span className="secure-badge">◇ Sesión administrativa segura</span>
+            </section>
+
+            <section className="admin-metrics">
+              <article><span className="metric-symbol blue">P</span><div><small>Pasajeros</small><strong>{metrics.users}</strong></div></article>
+              <article><span className="metric-symbol mint">C</span><div><small>Conductores</small><strong>{metrics.drivers}</strong></div></article>
+              <article><span className="metric-symbol violet">A</span><div><small>Equipo administrativo</small><strong>{metrics.administrators}</strong></div></article>
+              <article><span className="metric-symbol coral">V</span><div><small>Viajes registrados</small><strong>0</strong></div></article>
+            </section>
+
+            <div className="admin-grid">
+              <section className="admin-card user-table">
+                <div className="admin-card-head"><div><h3>Usuarios registrados</h3><p>Información obtenida desde el servicio local actual.</p></div><button onClick={() => setActiveSection('Usuarios')}>Ver todos</button></div>
+                {error && <p className="admin-error">{error}</p>}
+                {loading && <p className="admin-error">Cargando usuarios…</p>}
+                {!loading && !error && users.length === 0 && <p className="admin-error">Todavía no hay cuentas registradas.</p>}
+                {!loading && users.slice(0, 6).map((account) => (
+                  <div className="user-row" key={account.id}>
+                    <span>{initials(account.name)}</span>
+                    <div><strong>{account.name}</strong><small>{account.email}</small></div>
+                    <em className={roleClass(account.role)}>{roleLabel(account.role)}</em>
+                    <time>{formatDate(account.createdAt)}</time>
+                  </div>
+                ))}
+              </section>
+
+              <section className="admin-card next-steps">
+                <div className="admin-card-head"><div><h3>Estado de implementación</h3><p>Avance funcional del proyecto.</p></div></div>
+                <ul>
+                  <li className="done"><span>✓</span><div><b>Acceso por roles</b><small>Admin y superadmin diferenciados</small></div></li>
+                  <li className="done"><span>✓</span><div><b>Primer acceso seguro</b><small>Cambio de contraseña administrativa</small></div></li>
+                  <li><span>3</span><div><b>Conexión con Supabase</b><small>Preparada para el integrador</small></div></li>
+                  <li><span>4</span><div><b>Gestión de viajes</b><small>Siguiente módulo funcional</small></div></li>
+                </ul>
+              </section>
+            </div>
+          </div>
+        ) : (
+          <section className="admin-placeholder">
+            <span>{sections.find(([label]) => label === activeSection)?.[1]}</span>
+            <h2>{activeSection}</h2>
+            <p>Este módulo se construirá en una siguiente etapa.</p>
+            <button onClick={() => setActiveSection('Resumen')}>Volver al resumen</button>
+          </section>
+        )}
+      </section>
     </main>
-  </div>
+  )
 }
