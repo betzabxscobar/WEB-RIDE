@@ -9,6 +9,8 @@ lerna-debug.log*
 
 node_modules
 data/users.json
+data/credenciales-administrativas.txt
+data/credenciales-supabase.txt
 .env
 dist
 dist-ssr

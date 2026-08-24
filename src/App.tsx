@@ -4,8 +4,8 @@ import './App.css'
 import AdminDashboard from './AdminDashboard'
 
 type Screen = 'welcome' | 'login' | 'register' | 'home'
-type Role = 'passenger' | 'driver' | 'superadmin'
-type User = { id: string; name: string; email: string; phone: string; role: Role }
+type Role = 'passenger' | 'driver' | 'admin' | 'superadmin'
+type User = { id: string; name: string; email: string; phone: string; role: Role; mustChangePassword?: boolean }
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8788'
 
@@ -54,7 +54,24 @@ function App() {
     localStorage.removeItem('ride_token'); setUser(null); setScreen('welcome'); setMessage('')
   }
 
-  if (screen === 'home' && user?.role === 'superadmin') return <AdminDashboard user={user} token={localStorage.getItem('ride_token') || ''} onLogout={logout} />
+  const finishFirstAccess = async (form: HTMLFormElement) => {
+    setLoading(true); setMessage('')
+    const values = Object.fromEntries(new FormData(form))
+    if (values.password !== values.confirmPassword) { setMessage('Las contraseñas no coinciden.'); setLoading(false); return }
+    try {
+      const token = localStorage.getItem('ride_token') || ''
+      const response = await fetch(`${API_URL}/api/change-password`, { method:'POST', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`}, body:JSON.stringify({password:values.password}) })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.message || 'No pudimos cambiar la contraseña.')
+      localStorage.setItem('ride_token', data.token)
+      setUser(data.user)
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'Ocurrió un error inesperado.') }
+    finally { setLoading(false) }
+  }
+
+  const isAdministrative = user?.role === 'admin' || user?.role === 'superadmin'
+  if (screen === 'home' && user && isAdministrative && user.mustChangePassword) return <FirstAccessForm user={user} loading={loading} message={message} onSubmit={(event)=>{event.preventDefault();finishFirstAccess(event.currentTarget)}} onLogout={logout} />
+  if (screen === 'home' && user && isAdministrative) return <AdminDashboard user={user} token={localStorage.getItem('ride_token') || ''} onLogout={logout} />
 
   if (loading && screen === 'welcome') return <div className="loading-screen"><Logo /><span>Preparando Ride…</span></div>
 
@@ -87,6 +104,10 @@ function AuthForm(props: AuthProps) {
 function RegisterForm(props: Omit<AuthProps,'title'|'subtitle'|'submit'|'footer'> & { onLogin:()=>void }) {
   const [role, setRole] = useState<Role>('passenger')
   return <div className="auth-box register-box"><button className="back" onClick={props.onBack}>← Volver</button><span className="eyebrow">CREA TU CUENTA</span><h2>Comienza con Ride</h2><p>Cuéntanos cómo vas a utilizar la plataforma.</p><form onSubmit={props.onSubmit}><div className="role-picker"><button type="button" className={role==='passenger'?'selected':''} onClick={()=>setRole('passenger')}><b>Viajo</b><small>Quiero solicitar viajes</small></button><button type="button" className={role==='driver'?'selected':''} onClick={()=>setRole('driver')}><b>Conduzco</b><small>Quiero ofrecer viajes</small></button><input type="hidden" name="role" value={role}/></div><div className="two-fields"><label>Nombre completo<input required name="name" minLength={3} autoComplete="name" placeholder="Tu nombre" /></label><label>Teléfono<input required name="phone" minLength={8} inputMode="tel" autoComplete="tel" placeholder="099 999 9999" /></label></div><label>Correo electrónico<input required name="email" type="email" autoComplete="email" placeholder="nombre@correo.com" /></label><label>Contraseña<div className="password-field"><input required name="password" minLength={8} type={props.showPassword?'text':'password'} autoComplete="new-password" placeholder="Mínimo 8 caracteres"/><button type="button" onClick={()=>props.setShowPassword(!props.showPassword)}>{props.showPassword?'Ocultar':'Ver'}</button></div></label>{props.message&&<div className="error">{props.message}</div>}<button className="primary-action" disabled={props.loading}>{props.loading?'Creando cuenta…':'Crear mi cuenta'}<span>→</span></button></form><div className="form-footer">¿Ya tienes cuenta? <button onClick={props.onLogin}>Inicia sesión</button></div></div>
+}
+
+function FirstAccessForm({user,loading,message,onSubmit,onLogout}:{user:User;loading:boolean;message:string;onSubmit:(event:FormEvent<HTMLFormElement>)=>void;onLogout:()=>void}) {
+  return <main className="first-access"><section><div className="mini-brand"><Logo/><b>Ride</b></div><span className="security-icon">◇</span><span className="eyebrow">PRIMER ACCESO ADMINISTRATIVO</span><h1>Crea tu contraseña personal</h1><p>Hola, {user.name}. Por seguridad debes reemplazar la contraseña temporal antes de entrar al panel.</p><form onSubmit={onSubmit}><label>Nueva contraseña<input required name="password" type="password" minLength={10} autoComplete="new-password" placeholder="Mínimo 10 caracteres"/></label><label>Confirmar contraseña<input required name="confirmPassword" type="password" minLength={10} autoComplete="new-password" placeholder="Repite tu contraseña"/></label>{message&&<div className="error">{message}</div>}<button className="primary-action" disabled={loading}>{loading?'Guardando…':'Guardar y entrar'}<span>→</span></button></form><button className="cancel-access" onClick={onLogout}>Cerrar sesión</button></section></main>
 }
 
 export default App

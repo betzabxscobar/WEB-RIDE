@@ -6,12 +6,14 @@
   "scripts": {
     "dev": "vite",
     "dev:api": "node server.mjs",
-    "create:superadmin": "node scripts/create-superadmin.mjs",
+    "crear:cuentas-admin": "node scripts/crear-cuentas-administrativas.mjs",
+    "provisionar:supabase": "node scripts/provisionar-usuarios-supabase.mjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "2.112.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },

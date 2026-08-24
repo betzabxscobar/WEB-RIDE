@@ -30,7 +30,7 @@ createServer(async (req,res) => {
       const cleanEmail=String(email).trim().toLowerCase()
       if(String(name).trim().length<3 || !cleanEmail.includes('@') || String(phone).trim().length<8 || String(password).length<8 || !['passenger','driver'].includes(role)) return send(res,400,{message:'Revisa los datos. La contraseña debe tener mínimo 8 caracteres.'})
       const users=await readUsers(); if(users.some((u)=>u.email===cleanEmail)) return send(res,409,{message:'Este correo ya tiene una cuenta.'})
-      const user={id:randomUUID(),name:String(name).trim(),email:cleanEmail,phone:String(phone).trim(),role,passwordHash:hashPassword(String(password)),createdAt:new Date().toISOString()}
+      const user={id:randomUUID(),name:String(name).trim(),email:cleanEmail,phone:String(phone).trim(),role,mustChangePassword:false,passwordHash:hashPassword(String(password)),createdAt:new Date().toISOString()}
       users.push(user); await saveUsers(users); return send(res,201,{user:publicUser(user),token:sign(user)})
     }
     if(req.url==='/api/login' && req.method==='POST') {
@@ -43,12 +43,23 @@ createServer(async (req,res) => {
       if(!session) return send(res,401,{message:'Sesión inválida.'}); const users=await readUsers(); const user=users.find((u)=>u.id===session.sub)
       return user?send(res,200,{user:publicUser(user)}):send(res,404,{message:'Usuario no encontrado.'})
     }
+    if(req.url==='/api/change-password' && req.method==='POST') {
+      const token=(req.headers.authorization||'').replace('Bearer ',''); const session=verifyToken(token)
+      if(!session) return send(res,401,{message:'Debes iniciar sesión.'})
+      const {password=''}=await body(req); if(String(password).length<10) return send(res,400,{message:'La nueva contraseña debe tener mínimo 10 caracteres.'})
+      const users=await readUsers(); const user=users.find((u)=>u.id===session.sub)
+      if(!user) return send(res,404,{message:'Usuario no encontrado.'})
+      if(!['admin','superadmin'].includes(user.role)) return send(res,403,{message:'Este flujo es exclusivo para cuentas administrativas.'})
+      user.passwordHash=hashPassword(String(password)); user.mustChangePassword=false; user.passwordChangedAt=new Date().toISOString(); await saveUsers(users)
+      return send(res,200,{user:publicUser(user),token:sign(user)})
+    }
     if(req.url==='/api/admin/users' && req.method==='GET') {
       const token=(req.headers.authorization||'').replace('Bearer ',''); const session=verifyToken(token)
       if(!session) return send(res,401,{message:'Debes iniciar sesión.'})
       const users=await readUsers(); const admin=users.find((u)=>u.id===session.sub)
-      if(!admin || admin.role!=='superadmin') return send(res,403,{message:'No tienes permiso para ver este contenido.'})
-      return send(res,200,{users:users.map(publicUser)})
+      if(!admin || !['admin','superadmin'].includes(admin.role) || admin.mustChangePassword) return send(res,403,{message:'No tienes permiso para ver este contenido.'})
+      const visibleUsers=admin.role==='superadmin'?users:users.filter((u)=>u.role!=='superadmin')
+      return send(res,200,{users:visibleUsers.map(publicUser)})
     }
     send(res,404,{message:'Ruta no encontrada.'})
   } catch { send(res,500,{message:'No se pudo procesar la solicitud.'}) }
