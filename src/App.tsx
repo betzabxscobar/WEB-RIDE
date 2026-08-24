@@ -1,73 +1,89 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
+import type { FormEvent, ReactNode } from 'react'
 import './App.css'
 
-type View = 'Resumen' | 'Viajes' | 'Conductores' | 'Pasajeros' | 'Tarifas' | 'Soporte'
+type Screen = 'welcome' | 'login' | 'register' | 'home'
+type Role = 'passenger' | 'driver'
+type User = { id: string; name: string; email: string; phone: string; role: Role }
 
-const menu: { label: View; icon: string }[] = [
-  { label: 'Resumen', icon: '⌘' }, { label: 'Viajes', icon: '◆' },
-  { label: 'Conductores', icon: '◉' }, { label: 'Pasajeros', icon: '◎' },
-  { label: 'Tarifas', icon: '$' }, { label: 'Soporte', icon: '?' },
-]
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787'
 
-const initialDrivers = [
-  { name: 'Daniela Paredes', vehicle: 'Kia Soluto · PBC-4821', date: 'Hoy, 09:42', status: 'Documentos completos' },
-  { name: 'Mateo Salazar', vehicle: 'Chevrolet Onix · PDX-1904', date: 'Hoy, 08:15', status: 'Revisar licencia' },
-  { name: 'Valentina Ruiz', vehicle: 'Hyundai Accent · PBA-7732', date: 'Ayer, 18:30', status: 'Documentos completos' },
-]
-
-const trips = [
-  { passenger: 'Andrea M.', driver: 'Carlos A.', route: 'La Carolina → Cumbayá', price: '$8.40', state: 'En camino', tone: 'blue' },
-  { passenger: 'Luis P.', driver: 'María S.', route: 'El Condado → Centro', price: '$6.20', state: 'En viaje', tone: 'green' },
-  { passenger: 'Sofía R.', driver: 'Jorge V.', route: 'La Floresta → Tumbaco', price: '$11.80', state: 'En viaje', tone: 'green' },
-  { passenger: 'Daniel C.', driver: 'Elena T.', route: 'Iñaquito → Aeropuerto', price: '$14.50', state: 'Recogiendo', tone: 'violet' },
-]
+function Logo() {
+  return <div className="logo" aria-label="Ride"><span>R</span></div>
+}
 
 function App() {
-  const [view, setView] = useState<View>('Resumen')
-  const [drivers, setDrivers] = useState(initialDrivers)
-  const [notice, setNotice] = useState('')
-  const [search, setSearch] = useState('')
-  const filteredTrips = useMemo(() => {
-    const term = search.toLowerCase().trim()
-    return term ? trips.filter((trip) => Object.values(trip).some((value) => value.toLowerCase().includes(term))) : trips
-  }, [search])
+  const [screen, setScreen] = useState<Screen>('welcome')
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(() => Boolean(localStorage.getItem('ride_token')))
+  const [message, setMessage] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
-  const resolveDriver = (name: string, approved: boolean) => {
-    setDrivers((current) => current.filter((driver) => driver.name !== name))
-    setNotice(`${name}: solicitud ${approved ? 'aprobada' : 'rechazada'}.`)
-    window.setTimeout(() => setNotice(''), 2800)
+  useEffect(() => {
+    const token = localStorage.getItem('ride_token')
+    if (!token) return
+    fetch(`${API_URL}/api/me`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(async (response) => {
+        if (!response.ok) throw new Error()
+        const data = await response.json()
+        setUser(data.user)
+        setScreen('home')
+      })
+      .catch(() => localStorage.removeItem('ride_token'))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const authenticate = async (endpoint: 'login' | 'register', form: HTMLFormElement) => {
+    setLoading(true); setMessage('')
+    const values = Object.fromEntries(new FormData(form))
+    try {
+      const response = await fetch(`${API_URL}/api/${endpoint}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(values),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.message || 'No pudimos completar la solicitud.')
+      localStorage.setItem('ride_token', data.token)
+      setUser(data.user); setScreen('home')
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Ocurrió un error inesperado.')
+    } finally { setLoading(false) }
   }
 
-  return <div className="app-shell">
-    <aside className="sidebar">
-      <div className="brand"><div className="brand-mark">R</div><span>Ride</span><small>Control</small></div>
-      <nav aria-label="Navegación principal">{menu.map((item) => <button className={view === item.label ? 'active' : ''} onClick={() => setView(item.label)} key={item.label}><span className="nav-icon">{item.icon}</span>{item.label}{item.label === 'Soporte' && <b>3</b>}</button>)}</nav>
-      <div className="service-status"><i /> Sistema operativo<small>Todos los servicios activos</small></div>
-      <div className="admin-card"><span>BA</span><div><strong>Betzabe</strong><small>Administradora</small></div><button aria-label="Abrir perfil">•••</button></div>
-    </aside>
+  const logout = () => {
+    localStorage.removeItem('ride_token'); setUser(null); setScreen('welcome'); setMessage('')
+  }
 
-    <main>
-      <header className="topbar"><div><p>Centro de operaciones</p><h1>{view}</h1></div><label className="search"><span>⌕</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar viaje, conductor o pasajero" /></label><button className="icon-button" aria-label="Notificaciones">♧<b>4</b></button><div className="live"><i /> En vivo</div></header>
-      {view === 'Resumen' ? <div className="dashboard">
-        <section className="welcome"><div><span>Lunes, 24 de agosto</span><h2>Buenos días, Betzabe</h2><p>La operación se mantiene estable. Hay 3 conductores esperando aprobación.</p></div><button onClick={() => setView('Conductores')}>Revisar solicitudes <span>→</span></button></section>
-        <section className="metrics">
-          <article><div className="metric-icon blue">◆</div><p>Viajes activos</p><strong>24</strong><small className="up">↑ 12% <em>vs. ayer</em></small></article>
-          <article><div className="metric-icon mint">◉</div><p>Conductores en línea</p><strong>86</strong><small className="up">↑ 8% <em>vs. ayer</em></small></article>
-          <article><div className="metric-icon violet">$</div><p>Ingresos de hoy</p><strong>$1,842.60</strong><small className="up">↑ 15% <em>vs. ayer</em></small></article>
-          <article><div className="metric-icon coral">!</div><p>Alertas abiertas</p><strong>3</strong><small className="warning">2 requieren atención</small></article>
-        </section>
-        <section className="operations-grid">
-          <article className="map-card card"><div className="card-head"><div><h3>Operación en tiempo real</h3><p>Quito y valles</p></div><button>Ver mapa completo</button></div><div className="map"><div className="road road-a"/><div className="road road-b"/><div className="road road-c"/><div className="route-line"/><span className="zone z1">La Carolina</span><span className="zone z2">Iñaquito</span><span className="zone z3">La Floresta</span><span className="zone z4">Cumbayá</span>{['p1','p2','p3','p4','p5','p6'].map((cls) => <i className={`car ${cls}`} key={cls}>🚙</i>)}<div className="map-legend"><span><i className="dot blue-dot"/> 24 activos</span><span><i className="dot mint-dot"/> 86 disponibles</span></div></div></article>
-          <article className="active-trips card"><div className="card-head"><div><h3>Viajes activos</h3><p>Actualización automática</p></div><button onClick={() => setView('Viajes')}>Ver todos</button></div><div className="trip-list">{filteredTrips.map((trip) => <div className="trip" key={trip.passenger}><span className={`status-line ${trip.tone}`}/><div className="avatar">{trip.passenger[0]}</div><div><strong>{trip.passenger}</strong><small>{trip.route}</small><em>Con {trip.driver}</em></div><aside><b>{trip.price}</b><span className={trip.tone}>{trip.state}</span></aside></div>)}</div></article>
-        </section>
-        <section className="bottom-grid">
-          <article className="driver-review card"><div className="card-head"><div><h3>Conductores por verificar</h3><p>Revisa los documentos antes de activar la cuenta</p></div><span className="count">{drivers.length} pendientes</span></div>{drivers.length ? drivers.map((driver) => <div className="driver-row" key={driver.name}><div className="avatar driver-avatar">{driver.name.split(' ').map((n) => n[0]).join('')}</div><div><strong>{driver.name}</strong><small>{driver.vehicle}</small></div><div className="date"><span>{driver.date}</span><small>{driver.status}</small></div><button className="ghost" onClick={() => resolveDriver(driver.name, false)}>Rechazar</button><button className="primary" onClick={() => resolveDriver(driver.name, true)}>Aprobar</button></div>) : <div className="empty">No quedan solicitudes pendientes.</div>}</article>
-          <article className="activity card"><div className="card-head"><div><h3>Actividad de hoy</h3><p>Viajes completados por hora</p></div><strong>184 viajes</strong></div><div className="chart"><div className="chart-line"/><i className="chart-point"/><span className="chart-label">14:00<br/><b>31 viajes</b></span></div><div className="chart-hours"><span>06:00</span><span>10:00</span><span>14:00</span><span>18:00</span><span>22:00</span></div></article>
-        </section>
-      </div> : <section className="placeholder card"><div className="placeholder-icon">{menu.find((item) => item.label === view)?.icon}</div><h2>{view}</h2><p>Este módulo ya está preparado en la navegación. Se conectará al backend en la siguiente etapa.</p><button onClick={() => setView('Resumen')}>Volver al resumen</button></section>}
-      {notice && <div className="toast">✓ {notice}</div>}
-    </main>
-  </div>
+  if (loading && screen === 'welcome') return <div className="loading-screen"><Logo /><span>Preparando Ride…</span></div>
+
+  if (screen === 'home' && user) return <main className="user-home">
+    <header><div className="mini-brand"><Logo /><b>Ride</b></div><button onClick={logout}>Cerrar sesión</button></header>
+    <section><span className="success-mark">✓</span><p>Sesión iniciada correctamente</p><h1>Hola, {user.name.split(' ')[0]}</h1><p className="home-copy">Tu cuenta de {user.role === 'driver' ? 'conductor' : 'pasajero'} está lista.</p><div className="account-card"><div><small>Correo</small><strong>{user.email}</strong></div><div><small>Teléfono</small><strong>{user.phone}</strong></div><div><small>Modo</small><strong>{user.role === 'driver' ? 'Conduzco' : 'Viajo'}</strong></div></div><p className="next-note">La solicitud de viajes será el siguiente módulo.</p></section>
+  </main>
+
+  return <main className="auth-page">
+    <section className="brand-panel">
+      <div className="brand-copy"><div className="wordmark"><Logo /><span>Ride</span></div><h1>Muévete con<br/><em>libertad.</em></h1><p>Una forma más segura, transparente y humana de llegar a donde quieres.</p></div>
+      <div className="city-art"><div className="moon"/><div className="route"><i/><i/><i/></div><div className="car">▰</div><div className="buildings"><i/><i/><i/><i/><i/><i/></div></div>
+      <div className="trust"><span>◈ Viajes protegidos</span><span>◉ Precio transparente</span></div>
+    </section>
+
+    <section className="form-panel">
+      <div className="mobile-brand"><Logo /><b>Ride</b></div>
+      {screen === 'welcome' && <div className="auth-box welcome-box"><span className="eyebrow">BIENVENIDO A RIDE</span><h2>Tu próximo viaje<br/>empieza aquí.</h2><p>Crea una cuenta o inicia sesión para continuar.</p><button className="primary-action" onClick={() => setScreen('register')}>Crear cuenta <span>→</span></button><button className="secondary-action" onClick={() => setScreen('login')}>Ya tengo una cuenta</button><small>Al continuar aceptas nuestros <a>Términos</a> y la <a>Política de privacidad</a>.</small></div>}
+      {screen === 'login' && <AuthForm title="Qué bueno verte" subtitle="Ingresa tus datos para continuar." submit="Iniciar sesión" loading={loading} message={message} showPassword={showPassword} setShowPassword={setShowPassword} onSubmit={(event) => { event.preventDefault(); authenticate('login', event.currentTarget) }} onBack={() => { setScreen('welcome'); setMessage('') }} footer={<>¿Aún no tienes cuenta? <button onClick={() => { setScreen('register'); setMessage('') }}>Regístrate</button></>} />}
+      {screen === 'register' && <RegisterForm loading={loading} message={message} showPassword={showPassword} setShowPassword={setShowPassword} onSubmit={(event) => { event.preventDefault(); authenticate('register', event.currentTarget) }} onBack={() => { setScreen('welcome'); setMessage('') }} onLogin={() => { setScreen('login'); setMessage('') }} />}
+    </section>
+  </main>
+}
+
+type AuthProps = { title:string; subtitle:string; submit:string; loading:boolean; message:string; showPassword:boolean; setShowPassword:(value:boolean)=>void; onSubmit:(event:FormEvent<HTMLFormElement>)=>void; onBack:()=>void; footer:ReactNode }
+function AuthForm(props: AuthProps) {
+  return <div className="auth-box"><button className="back" onClick={props.onBack}>← Volver</button><span className="eyebrow">ACCESO SEGURO</span><h2>{props.title}</h2><p>{props.subtitle}</p><form onSubmit={props.onSubmit}><label>Correo electrónico<input required name="email" type="email" autoComplete="email" placeholder="nombre@correo.com" /></label><label>Contraseña<div className="password-field"><input required name="password" type={props.showPassword ? 'text' : 'password'} autoComplete="current-password" placeholder="Tu contraseña" /><button type="button" onClick={() => props.setShowPassword(!props.showPassword)}>{props.showPassword ? 'Ocultar' : 'Ver'}</button></div></label>{props.message && <div className="error">{props.message}</div>}<button className="primary-action" disabled={props.loading}>{props.loading ? 'Ingresando…' : props.submit}<span>→</span></button></form><div className="form-footer">{props.footer}</div></div>
+}
+
+function RegisterForm(props: Omit<AuthProps,'title'|'subtitle'|'submit'|'footer'> & { onLogin:()=>void }) {
+  const [role, setRole] = useState<Role>('passenger')
+  return <div className="auth-box register-box"><button className="back" onClick={props.onBack}>← Volver</button><span className="eyebrow">CREA TU CUENTA</span><h2>Comienza con Ride</h2><p>Cuéntanos cómo vas a utilizar la plataforma.</p><form onSubmit={props.onSubmit}><div className="role-picker"><button type="button" className={role==='passenger'?'selected':''} onClick={()=>setRole('passenger')}><b>Viajo</b><small>Quiero solicitar viajes</small></button><button type="button" className={role==='driver'?'selected':''} onClick={()=>setRole('driver')}><b>Conduzco</b><small>Quiero ofrecer viajes</small></button><input type="hidden" name="role" value={role}/></div><div className="two-fields"><label>Nombre completo<input required name="name" minLength={3} autoComplete="name" placeholder="Tu nombre" /></label><label>Teléfono<input required name="phone" minLength={8} inputMode="tel" autoComplete="tel" placeholder="099 999 9999" /></label></div><label>Correo electrónico<input required name="email" type="email" autoComplete="email" placeholder="nombre@correo.com" /></label><label>Contraseña<div className="password-field"><input required name="password" minLength={8} type={props.showPassword?'text':'password'} autoComplete="new-password" placeholder="Mínimo 8 caracteres"/><button type="button" onClick={()=>props.setShowPassword(!props.showPassword)}>{props.showPassword?'Ocultar':'Ver'}</button></div></label>{props.message&&<div className="error">{props.message}</div>}<button className="primary-action" disabled={props.loading}>{props.loading?'Creando cuenta…':'Crear mi cuenta'}<span>→</span></button></form><div className="form-footer">¿Ya tienes cuenta? <button onClick={props.onLogin}>Inicia sesión</button></div></div>
 }
 
 export default App
