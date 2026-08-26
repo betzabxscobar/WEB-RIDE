@@ -42,7 +42,7 @@
 .admin-main .viewing-as{padding:9px 20px}
 
 /* Remover elementos decorativos celestes del fondo del panel de marca */
-.brand-panel{background:none !important;background-color:#071827 !important}
+.brand-panel{background: url('./assets/FondoObscuroRide.png') center left/cover no-repeat !important; background-color:#071827 !important}
 .brand-panel:before,.brand-panel:after,.city-art,.moon,.route,.car,.buildings{display:none !important}
 
 
