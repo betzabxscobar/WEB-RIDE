@@ -1,26 +1,41 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.112.4'
+// FUNCION RETIRADA - 2026-08-26
+//
+// La version anterior (v8) tenia una puerta trasera: autenticaba con los
+// headers x-test-email / x-test-secret en vez de la sesion de quien llamaba,
+// asi que cualquiera que conociera TEST_SECRET podia cambiar la contrasena de
+// cualquier cuenta administrativa con must_change_password = true.
+//
+// Se reemplaza por esta version inerte, que no toca la base ni Auth y rechaza
+// toda peticion. Es un paso intermedio: la funcion deberia borrarse del
+// proyecto desde el panel (Edge Functions -> cambiar-contrasena-inicial ->
+// Delete). El MCP de Supabase no expone borrado.
+//
+// Ya no hace falta: el cambio de contrasena del primer acceso se resuelve con
+// la sesion del propio usuario.
+//   - React   -> changeInitialPassword() en src/lib/auth.ts
+//   - Flutter -> AuthService.changeInitialPassword()
+// Ambos usan auth.updateUser({ password }) y luego bajan must_change_password
+// en public.profiles, amparados por la politica profiles_update_own.
+//
+// Ver ELIMINADA.md en esta misma carpeta.
 
-const headers={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization, content-type','Content-Type':'application/json'}
-Deno.serve(async(req)=>{
-  if(req.method==='OPTIONS')return new Response('ok',{headers})
-  try{
-    const authorization=req.headers.get('Authorization')||''
-    const jwt=authorization.replace('Bearer ','')
-    const url=Deno.env.get('SUPABASE_URL')!
-    const publishable=Deno.env.get('SUPABASE_ANON_KEY')!
-    const serviceRole=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const userClient=createClient(url,publishable,{global:{headers:{Authorization:authorization}},auth:{persistSession:false}})
-    const {data:{user},error:userError}=await userClient.auth.getUser(jwt)
-    if(userError||!user)return new Response(JSON.stringify({message:'Sesión inválida.'}),{status:401,headers})
-    const role=user.app_metadata?.role
-    if(!['admin','superadmin'].includes(role)||user.app_metadata?.must_change_password!==true)return new Response(JSON.stringify({message:'Este cambio inicial no corresponde a la cuenta.'}),{status:403,headers})
-    const {password}=await req.json()
-    if(typeof password!=='string'||password.length<10)return new Response(JSON.stringify({message:'La contraseña debe tener mínimo 10 caracteres.'}),{status:400,headers})
-    const admin=createClient(url,serviceRole,{auth:{autoRefreshToken:false,persistSession:false}})
-    const {error:updateError}=await admin.auth.admin.updateUserById(user.id,{password,app_metadata:{...user.app_metadata,must_change_password:false}})
-    if(updateError)throw updateError
-    const {error:profileError}=await admin.from('profiles').update({must_change_password:false,password_changed_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('user_id',user.id)
-    if(profileError)throw profileError
-    return new Response(JSON.stringify({ok:true}),{status:200,headers})
-  }catch(error){return new Response(JSON.stringify({message:error instanceof Error?error.message:'Error inesperado.'}),{status:500,headers})}
+const headers = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Content-Type': 'application/json; charset=utf-8',
+}
+
+Deno.serve((req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers })
+
+  return new Response(
+    JSON.stringify({
+      error: 'Esta funcion fue retirada.',
+      detalle:
+        'El cambio de contrasena del primer acceso se hace desde la app con la ' +
+        'sesion del propio usuario (auth.updateUser). Esta funcion ya no se usa.',
+    }),
+    { status: 410, headers },
+  )
 })
