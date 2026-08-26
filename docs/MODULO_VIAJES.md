@@ -83,6 +83,55 @@ en la lista blanca de administradores.
 Corregido en las migraciones 19, 20 y 21. **Al escribir un `revoke` sobre una
 función, incluir siempre `public`, no solo `anon`.**
 
+## Los avisos del linter de Supabase
+
+El panel muestra 9 avisos
+`authenticated_security_definer_function_executable`, uno por cada RPC del
+módulo más los tres helpers de rol. **Son falsos positivos y no hay que
+tocarlos.**
+
+El linter ve el patrón «función `SECURITY DEFINER` invocable con sesión» pero no
+puede leer lo que hace por dentro: ve la puerta abierta, no al guardia detrás.
+
+El diseño es deliberado:
+
+- **Deben ser invocables.** Si se les quita el permiso a `authenticated`, la app
+  deja de funcionar: son las operaciones del módulo.
+- **Deben ser `SECURITY DEFINER`.** `aceptar_viaje` necesita el `UPDATE`
+  condicional atómico que evita la carrera entre dos choferes, y
+  `solicitar_viaje` escribe en tres tablas en una transacción. Con
+  `SECURITY INVOKER` RLS lo bloquearía a medias.
+- **Cada una valida `auth.uid()` antes de tocar nada.**
+
+### Verificado, no supuesto
+
+Con dos usuarios autenticados, uno intentando manipular el viaje del otro:
+
+| Intento del atacante | Resultado |
+|---|---|
+| `cancelar_viaje` de un viaje ajeno | Rechazado |
+| `avanzar_viaje` de un viaje ajeno | Rechazado |
+| `finalizar_viaje` de un viaje ajeno | Rechazado |
+| `reportar_posicion` en un viaje ajeno | Rechazado |
+| `aceptar_viaje` sin ser chofer aprobado | Rechazado |
+| `participa_en_viaje` de un viaje ajeno | `false` |
+
+El viaje de la víctima quedó intacto en `BUSCANDO_CONDUCTOR`.
+
+`current_user_role`, `current_user_must_change_password` y `participa_en_viaje`
+no cortan con excepción porque solo responden sobre quien pregunta: sin sesión
+devuelven vacío. Además se evalúan dentro de políticas RLS, así que
+**revocarles `EXECUTE` rompería el acceso** — ya pasó una vez y el síntoma fue
+`permission denied for function current_user_role` en consultas anónimas.
+
+### El aviso que sí hay que atender
+
+`auth_leaked_password_protection`. Es un interruptor en **Authentication →
+Providers → Email** que hace que Supabase rechace contraseñas que aparecen en
+filtraciones conocidas (comprueba contra HaveIBeenPwned sin enviar la
+contraseña completa). Conviene activarlo antes de rotar las credenciales del
+equipo.
+
 ## Pendientes
 
 1. **Expiración de solicitudes.** Ningún proceso pasa un viaje a

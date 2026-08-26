@@ -32,6 +32,12 @@ Se pueden ver con `list_migrations` o en el dashboard.
 | 19 | `19_corregir_permisos_cotizacion.sql` | — | Cierra un permiso público que dejó la 15 |
 | 20 | `20_cerrar_permisos_publicos_heredados.sql` | — | Mismo defecto en funciones anteriores |
 | 21 | `21_politicas_profiles_solo_autenticados.sql` | — | Acota las políticas de `profiles` a `authenticated` |
+| 22 | `22_postgis_y_posicion_conductores.sql` | 1.1 | PostGIS y última posición del chofer |
+| 23 | `23_busqueda_por_cercania.sql` | 1.5 | Choferes por radio y difusión filtrada |
+| 24 | `24_alta_conductores_y_vehiculos.sql` | 1.4 | Alta de flota, documentos y aprobación |
+| 25 | `25_notificaciones_automaticas.sql` | 1.4 | Avisos escritos por triggers |
+| 26 | `26_metodos_pago_y_tarifa_por_horario.sql` | 1.4 | Métodos de pago y tarifa por franja |
+| 27 | `27_storage_documentos_y_avatares.sql` | 1.1 | Buckets de Storage con RLS |
 
 Son idempotentes: se pueden volver a ejecutar en orden sin romper nada.
 
@@ -130,13 +136,16 @@ Camino feliz confirmado:
 
 ## Pendientes
 
-1. **Storage**: faltan los buckets para `foto_url` y `documentos_conductor.url_archivo`.
-2. **Protección de contraseñas filtradas** desactivada en Auth (aviso del linter).
-3. **Expiración de solicitudes**: ningún proceso pasa un viaje a `SIN_CONDUCTOR`
+1. **Protección de contraseñas filtradas** desactivada en Auth (aviso del linter).
+2. **Expiración de solicitudes**: ningún proceso pasa un viaje a `SIN_CONDUCTOR`
    si nadie lo toma. El estado existe y la máquina lo permite, pero hace falta
-   una tarea programada que lo aplique.
+   una tarea programada que lo aplique. `pg_cron` está disponible.
+3. **Interfaz de la flota**: las funciones para registrar vehículo, subir
+   documentos y aprobar choferes ya existen (24), pero todavía no hay pantallas
+   que las llamen.
 
-Ya resueltos: Realtime está habilitado en `viajes` y `ubicaciones` (migración 18).
+Ya resueltos: Realtime en `viajes`, `ubicaciones` y `notificaciones`; buckets de
+Storage (27); búsqueda por cercanía con PostGIS (22-23).
 
 Ya resueltos: los roles administrativos quedaron corregidos y las dos apps están
 conectadas a Supabase. Ver [`../../docs/CONEXION_SUPABASE.md`](../../docs/CONEXION_SUPABASE.md).
