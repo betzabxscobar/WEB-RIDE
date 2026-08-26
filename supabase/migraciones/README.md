@@ -24,6 +24,14 @@ Se pueden ver con `list_migrations` o en el dashboard.
 | 11 | `11_endurecer_funciones.sql` | — | Cierra avisos del linter de seguridad |
 | 12 | `12_corregir_validar_transicion_viaje.sql` | — | Corrección de un cast en 09 |
 | 13 | `13_handle_new_user_guarda_telefono.sql` | 2.2 | Guarda el teléfono al registrarse y crea la extensión 1:1 del rol |
+| 14 | `14_lugares.sql` | — | Catálogo de destinos con coordenadas |
+| 15 | `15_distancia_y_cotizacion.sql` | 1.5 | Distancia Haversine y cálculo de tarifa |
+| 16 | `16_solicitar_y_aceptar_viaje.sql` | 1.5 | `solicitar_viaje()` y `aceptar_viaje()` |
+| 17 | `17_avanzar_cancelar_finalizar.sql` | 1.5, 2.4 | Avance de estados, cierre, cancelación y GPS |
+| 18 | `18_realtime_y_vista_viajes.sql` | 1.1 | Realtime y vista `viajes_detalle` |
+| 19 | `19_corregir_permisos_cotizacion.sql` | — | Cierra un permiso público que dejó la 15 |
+| 20 | `20_cerrar_permisos_publicos_heredados.sql` | — | Mismo defecto en funciones anteriores |
+| 21 | `21_politicas_profiles_solo_autenticados.sql` | — | Acota las políticas de `profiles` a `authenticated` |
 
 Son idempotentes: se pueden volver a ejecutar en orden sin romper nada.
 
@@ -66,6 +74,29 @@ Extras no pedidos explícitamente pero implícitos en el informe:
 - **Aprobación coherente**: un conductor no puede estar `disponible` sin estar
   `aprobado`; al perder la aprobación se le baja la disponibilidad.
 
+## Módulo de viajes
+
+Todo lo que decide algo vive en funciones de Postgres, no en las apps. El
+cliente se puede manipular, así que no puede fijar el precio ni resolver quién
+se queda con una solicitud.
+
+| Función | Qué garantiza |
+|---|---|
+| `cotizar_viaje()` | El precio sale del tarifario y la distancia, en el servidor |
+| `solicitar_viaje()` | Crea viaje y ubicaciones en una transacción; un viaje abierto por pasajero |
+| `aceptar_viaje()` | `UPDATE` condicional: dos choferes no pueden tomar el mismo viaje |
+| `avanzar_viaje()` | Solo el chofer asignado mueve el estado |
+| `finalizar_viaje()` | Liquida la tarifa y deja el pago registrado |
+| `cancelar_viaje()` | Pasajero o chofer, solo antes de arrancar |
+| `reportar_posicion()` | Solo durante un viaje activo propio |
+
+**Sin mapa ni geocodificación.** Convertir una dirección en coordenadas exigiría
+un proveedor externo, descartado por decisión del proyecto. En su lugar el
+destino se elige del catálogo `lugares` y el origen puede venir del GPS del
+dispositivo. `distancia_km()` calcula la línea recta con Haversine y
+`factor_trayecto_urbano()` (1.35) la ajusta a una trama de calles; ese factor es
+el único punto a tocar si más adelante hay rutas reales.
+
 ## Verificación ejecutada
 
 Ambas pruebas corrieron en una transacción revertida, sin dejar datos:
@@ -78,6 +109,19 @@ Bloqueos confirmados:
 - Calificar un viaje no finalizado → rechazado
 - Segunda calificación del mismo evaluador → rechazada
 
+Ciclo de viaje confirmado (transacción revertida, sin dejar datos):
+- Cotización: 4.00 km → 10 min → $4.50
+- Solicitud, con segunda solicitud simultánea rechazada
+- **Dos choferes compitiendo por el mismo viaje: solo uno lo obtuvo**
+- Avance por los tres estados y registro de posición GPS
+- Un tercero no pudo avanzar un viaje ajeno
+- Cierre con cobro registrado y vista `viajes_detalle` completa
+
+Seguridad del módulo, con la clave publishable y sin sesión:
+- No se leen `lugares` ni `viajes_detalle`
+- No se ejecutan `solicitar_viaje`, `aceptar_viaje` ni `cotizar_viaje`
+- Realtime conecta correctamente en `viajes`
+
 Camino feliz confirmado:
 - Ciclo completo de los 7 estados de la ruta feliz
 - Origen + destino + pago + 2 calificaciones bidireccionales
@@ -87,9 +131,12 @@ Camino feliz confirmado:
 ## Pendientes
 
 1. **Storage**: faltan los buckets para `foto_url` y `documentos_conductor.url_archivo`.
-2. **Realtime**: falta habilitar la publicación en `viajes` y `ubicaciones` para
-   el seguimiento GPS en vivo.
-3. **Protección de contraseñas filtradas** desactivada en Auth (aviso del linter).
+2. **Protección de contraseñas filtradas** desactivada en Auth (aviso del linter).
+3. **Expiración de solicitudes**: ningún proceso pasa un viaje a `SIN_CONDUCTOR`
+   si nadie lo toma. El estado existe y la máquina lo permite, pero hace falta
+   una tarea programada que lo aplique.
+
+Ya resueltos: Realtime está habilitado en `viajes` y `ubicaciones` (migración 18).
 
 Ya resueltos: los roles administrativos quedaron corregidos y las dos apps están
 conectadas a Supabase. Ver [`../../docs/CONEXION_SUPABASE.md`](../../docs/CONEXION_SUPABASE.md).
