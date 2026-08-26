@@ -31,3 +31,17 @@
 .form-extra{text-align:center;margin-top:4px}
 .link-button{border:0;background:none;color:#168db9;font-weight:700;font-size:11px;padding:6px;cursor:pointer}
 .link-button:hover{text-decoration:underline}
+
+/* --- Cambio de panel -------------------------------------------------------
+   Un administrador puede mirar la interfaz de usuario o de chofer con su
+   propia cuenta. Cambia lo que se ve, no sus permisos: eso lo decide RLS con
+   el rol real. */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.home-actions{display:flex;align-items:center;gap:10px}
+.panel-switcher select{border:1px solid #345064;background:transparent;color:#d6e5ed;border-radius:9px;padding:9px 11px;font-size:12px;font-weight:700;cursor:pointer}
+.panel-switcher select option{color:#0a1930;background:#fff}
+.panel-switcher.sidebar select{width:100%;border-color:var(--line);color:#24394a;background:#fff;margin-bottom:10px}
+.viewing-as{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#efedfe;color:#0a1930;border-bottom:1px solid #d8d3fb;padding:9px 6vw;font-size:11.5px;font-weight:700}
+.viewing-as button{border:0;background:none;color:#5a49d8;font-weight:800;font-size:11.5px;cursor:pointer;padding:4px}
+.viewing-as button:hover{text-decoration:underline}
+.admin-main .viewing-as{padding:9px 20px}

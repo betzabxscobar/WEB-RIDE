@@ -7,10 +7,12 @@ import {
   changeInitialPassword,
   completePasswordReset,
   loadCurrentUser,
+  panelLabel,
   requestPasswordReset,
   signIn,
   signOut,
   signUp,
+  viewsAllowed,
   type Role,
   type User,
 } from './lib/auth'
@@ -33,6 +35,10 @@ function App() {
   // de cualquier otra cosa. Gana sobre el resto del árbol de pantallas.
   const [recovering, setRecovering] = useState(false)
 
+  // Pantalla que se está mostrando. El rol real del usuario no cambia nunca:
+  // esto solo decide qué interfaz se ve. `null` = la que toca por su rol.
+  const [view, setView] = useState<Role | null>(null)
+
   // Restaura la sesión guardada y se mantiene al día si el token se refresca
   // o si la sesión se cierra en otra pestaña.
   useEffect(() => {
@@ -53,6 +59,7 @@ function App() {
       if (event === 'SIGNED_OUT') {
         setUser(null)
         setRecovering(false)
+        setView(null)
         setScreen('welcome')
       }
     })
@@ -146,7 +153,20 @@ function App() {
 
   const logout = async () => {
     await signOut()
-    setUser(null); setScreen('welcome'); setMessage(''); setNotice('')
+    setUser(null); setScreen('welcome'); setMessage(''); setNotice(''); setView(null)
+  }
+
+  // Vista efectiva y opciones disponibles para la sesión actual.
+  const activeView: Role | null = user ? (view ?? user.role) : null
+  const availableViews = user ? viewsAllowed(user.role) : []
+  const viewingOtherPanel = user != null && view != null && view !== user.role
+
+  const switchView = (next: Role) => {
+    if (!user) return
+    // La comprobación es genérica para no dejar huecos: lo que más importa es
+    // que un admin no pueda abrir la vista de superadmin.
+    if (!viewsAllowed(user.role).includes(next)) return
+    setView(next === user.role ? null : next)
   }
 
   const finishFirstAccess = async (form: HTMLFormElement) => {
@@ -167,13 +187,18 @@ function App() {
 
   const isAdministrative = user?.role === 'admin' || user?.role === 'superadmin'
   if (screen === 'home' && user && isAdministrative && user.mustChangePassword) return <FirstAccessForm user={user} loading={loading} message={message} onSubmit={(event)=>{event.preventDefault();finishFirstAccess(event.currentTarget)}} onLogout={logout} />
-  if (screen === 'home' && user && isAdministrative) return <AdminDashboard user={user} onLogout={logout} />
+
+  // La pantalla la decide la vista activa, no el rol: un administrador puede
+  // estar mirando la interfaz de usuario o de chofer con su propia cuenta.
+  const viewIsAdministrative = activeView === 'admin' || activeView === 'superadmin'
+  if (screen === 'home' && user && viewIsAdministrative) return <AdminDashboard user={user} viewAs={activeView as Role} views={availableViews} onSwitchView={switchView} onLogout={logout} />
 
   if (loading && screen === 'welcome') return <div className="loading-screen"><Logo /><span>Preparando Ride…</span></div>
 
   if (screen === 'home' && user) return <main className="user-home">
-    <header><div className="mini-brand"><Logo /><b>Ride</b></div><button onClick={logout}>Cerrar sesión</button></header>
-    <section><span className="success-mark">✓</span><p>Sesión iniciada correctamente</p><h1>Hola, {user.name.split(' ')[0]}</h1><p className="home-copy">Tu cuenta de {user.role === 'driver' ? 'conductor' : 'pasajero'} está lista.</p><div className="account-card"><div><small>Correo</small><strong>{user.email}</strong></div><div><small>Teléfono</small><strong>{user.phone || 'Sin teléfono'}</strong></div><div><small>Modo</small><strong>{user.role === 'driver' ? 'Conduzco' : 'Viajo'}</strong></div></div><p className="next-note">La solicitud de viajes será el siguiente módulo.</p></section>
+    {viewingOtherPanel && <ViewingAsBar role={user.role} onBack={() => setView(null)} />}
+    <header><div className="mini-brand"><Logo /><b>Ride</b></div><div className="home-actions"><PanelSwitcher views={availableViews} active={activeView} onSwitch={switchView} /><button onClick={logout}>Cerrar sesión</button></div></header>
+    <section><span className="success-mark">✓</span><p>Sesión iniciada correctamente</p><h1>Hola, {user.name.split(' ')[0]}</h1><p className="home-copy">{viewingOtherPanel ? `Así ve la app una cuenta de ${activeView === 'driver' ? 'conductor' : 'pasajero'}.` : `Tu cuenta de ${activeView === 'driver' ? 'conductor' : 'pasajero'} está lista.`}</p><div className="account-card"><div><small>Correo</small><strong>{user.email}</strong></div><div><small>Teléfono</small><strong>{user.phone || 'Sin teléfono'}</strong></div><div><small>Modo</small><strong>{activeView === 'driver' ? 'Conduzco' : 'Viajo'}</strong></div></div><p className="next-note">La solicitud de viajes será el siguiente módulo.</p></section>
   </main>
 
   return <main className="auth-page">
@@ -191,6 +216,18 @@ function App() {
       {screen === 'register' && <RegisterForm loading={loading} message={message} notice={notice} showPassword={showPassword} setShowPassword={setShowPassword} onSubmit={(event) => { event.preventDefault(); handleRegister(event.currentTarget) }} onBack={() => { setScreen('welcome'); setMessage(''); setNotice('') }} onLogin={() => { setScreen('login'); setMessage(''); setNotice('') }} />}
     </section>
   </main>
+}
+
+/// Selector de panel. Solo aparece si la cuenta puede ver más de una vista.
+function PanelSwitcher({views,active,onSwitch}:{views:Role[];active:Role|null;onSwitch:(view:Role)=>void}) {
+  if (views.length < 2 || !active) return null
+  return <label className="panel-switcher"><span className="sr-only">Cambiar de panel</span><select value={active} onChange={(event)=>onSwitch(event.target.value as Role)}>{views.map((view)=><option key={view} value={view}>{panelLabel(view)}</option>)}</select></label>
+}
+
+/// Aviso de que se está mirando una pantalla distinta a la del rol propio.
+function ViewingAsBar({role,onBack}:{role:Role;onBack:()=>void}) {
+  const nombre = role === 'superadmin' ? 'superadministrador' : 'administrador'
+  return <div className="viewing-as"><span>◉ Viendo como {nombre}</span><button onClick={onBack}>Volver a mi panel</button></div>
 }
 
 type AuthProps = { title:string; subtitle:string; submit:string; loading:boolean; message:string; notice:string; showPassword:boolean; setShowPassword:(value:boolean)=>void; onSubmit:(event:FormEvent<HTMLFormElement>)=>void; onBack:()=>void; footer:ReactNode; extra?:ReactNode }

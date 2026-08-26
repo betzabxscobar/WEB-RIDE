@@ -1,9 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import './AdminDashboard.css'
-import { listUsers, type User } from './lib/auth'
+import { listUsers, panelLabel, type Role, type User } from './lib/auth'
 
 type Props = {
   user: { name: string; email: string; role: string }
+  /** Panel que se muestra: `admin` o `superadmin`. */
+  viewAs: Role
+  views: Role[]
+  onSwitchView: (view: Role) => void
   onLogout: () => void
 }
 
@@ -43,13 +47,16 @@ function formatDate(value: string) {
   return new Intl.DateTimeFormat('es-EC', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(value))
 }
 
-export default function AdminDashboard({ user, onLogout }: Props) {
+export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLogout }: Props) {
   const [activeSection, setActiveSection] = useState('Resumen')
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const isSuperadmin = user.role === 'superadmin'
+  // Manda la vista, no el rol: si un superadmin abrió el panel como admin, la
+  // pantalla se comporta como la de un admin.
+  const isSuperadmin = viewAs === 'superadmin'
+  const viewingOtherPanel = viewAs !== user.role
   const accessName = isSuperadmin ? 'SUPERADMINISTRACIÓN' : 'ADMINISTRACIÓN'
   const profileName = isSuperadmin ? 'Superadministrador' : 'Administrador'
 
@@ -66,11 +73,20 @@ export default function AdminDashboard({ user, onLogout }: Props) {
     return () => { active = false }
   }, [])
 
+  // Al mirar el panel *como admin*, RLS sigue enviando a los superadmin porque
+  // el rol real de la cuenta no cambió. Se ocultan aquí para que la
+  // previsualización sea fiel. Es filtrado de presentación, no de seguridad:
+  // la barrera real son las políticas RLS, que sí aplican a un admin auténtico.
+  const visibleUsers = useMemo(
+    () => (isSuperadmin ? users : users.filter((item) => item.role !== 'superadmin')),
+    [users, isSuperadmin],
+  )
+
   const metrics = useMemo(() => ({
-    users: users.filter((item) => item.role === 'passenger').length,
-    drivers: users.filter((item) => item.role === 'driver').length,
-    administrators: users.filter((item) => item.role === 'admin' || item.role === 'superadmin').length,
-  }), [users])
+    users: visibleUsers.filter((item) => item.role === 'passenger').length,
+    drivers: visibleUsers.filter((item) => item.role === 'driver').length,
+    administrators: visibleUsers.filter((item) => item.role === 'admin' || item.role === 'superadmin').length,
+  }), [visibleUsers])
 
   return (
     <main className="admin-shell">
@@ -84,10 +100,24 @@ export default function AdminDashboard({ user, onLogout }: Props) {
           ))}
         </nav>
         <div className="system-ok"><i />Sistema operativo<small>Acceso protegido</small></div>
+        {views.length > 1 && (
+          <label className="panel-switcher sidebar">
+            <span className="sr-only">Cambiar de panel</span>
+            <select value={viewAs} onChange={(event) => onSwitchView(event.target.value as Role)}>
+              {views.map((view) => <option key={view} value={view}>{panelLabel(view)}</option>)}
+            </select>
+          </label>
+        )}
         <button className="admin-logout" onClick={onLogout}>↪ Cerrar sesión</button>
       </aside>
 
       <section className="admin-main">
+        {viewingOtherPanel && (
+          <div className="viewing-as">
+            <span>◉ Vista previa: así ve el panel una cuenta de administrador</span>
+            <button onClick={() => onSwitchView(user.role as Role)}>Volver a mi panel</button>
+          </div>
+        )}
         <header>
           <div><small>{accessName}</small><h1>{activeSection}</h1></div>
           <div className="admin-profile"><span>{initials(user.name)}</span><div><strong>{user.name}</strong><small>{profileName}</small></div></div>
@@ -112,8 +142,8 @@ export default function AdminDashboard({ user, onLogout }: Props) {
                 <div className="admin-card-head"><div><h3>Usuarios registrados</h3><p>Información obtenida desde Supabase.</p></div><button onClick={() => setActiveSection('Usuarios')}>Ver todos</button></div>
                 {error && <p className="admin-error">{error}</p>}
                 {loading && <p className="admin-error">Cargando usuarios…</p>}
-                {!loading && !error && users.length === 0 && <p className="admin-error">Todavía no hay cuentas registradas.</p>}
-                {!loading && users.slice(0, 6).map((account) => (
+                {!loading && !error && visibleUsers.length === 0 && <p className="admin-error">Todavía no hay cuentas registradas.</p>}
+                {!loading && visibleUsers.slice(0, 6).map((account) => (
                   <div className="user-row" key={account.id}>
                     <span>{initials(account.name)}</span>
                     <div><strong>{account.name}</strong><small>{account.email}</small></div>
