@@ -1,3 +1,19 @@
+-- =====================================================================
+-- ARCHIVO HISTORICO - NO EJECUTAR
+-- =====================================================================
+-- Este script NO corresponde al esquema realmente desplegado en Supabase.
+-- Diferencias con la base real (proyecto jnnesfafbrlbycfkruph):
+--   * aqui el enum se llama app_role; en la base real es user_role
+--   * aqui la PK de profiles es user_id; en la base real es id
+--   * aqui existen phone y password_changed_at; la base real no los tenia
+--     (phone se agrego despues en migraciones/01)
+--   * las politicas RLS reales leen el rol desde la tabla via
+--     current_user_role(), no desde el JWT app_metadata
+--
+-- El esquema vigente esta en supabase/migraciones/. Ver el README de esa
+-- carpeta. Este archivo se conserva solo como referencia del diseno inicial.
+-- =====================================================================
+
 create type public.app_role as enum ('passenger','driver','admin','superadmin');
 
 create table public.profiles (

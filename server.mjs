@@ -1,3 +1,14 @@
+// =====================================================================
+// SIN USO - Reemplazado por Supabase Auth (2026-08-25)
+// =====================================================================
+// Ninguna pantalla llama ya a estos endpoints. La autenticacion vive en
+// src/lib/auth.ts sobre Supabase. Este archivo guarda usuarios en
+// data/users.json con un almacen local que no es el de produccion.
+//
+// Se conserva solo hasta confirmar que no hace falta. Al borrarlo, quitar
+// tambien el script "dev:api" de package.json y data/users.json.
+// =====================================================================
+
 import { createServer } from 'node:http'
 import { randomBytes, randomUUID, scryptSync, timingSafeEqual, createHmac } from 'node:crypto'
 import { readFile, writeFile, mkdir } from 'node:fs/promises'
