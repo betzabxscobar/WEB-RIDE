@@ -104,11 +104,13 @@ sobreescribir con `--dart-define` para apuntar a otro proyecto.
    no expone borrado. Contexto:
    [`../supabase/functions/cambiar-contrasena-inicial/ELIMINADA.md`](../supabase/functions/cambiar-contrasena-inicial/ELIMINADA.md).
 
-2. **Subir el límite de envío de correos.** La verificación de correo se queda
-   activada, usando solo Supabase. El único límite es el tope de envíos por
-   hora del servicio incluido, que se ajusta en **Authentication → Rate
-   Limits**. Conviene revisarlo antes de una demo. Las dos apps ya avisan
-   correctamente que hay que confirmar el correo. Ver [`CORREOS.md`](CORREOS.md).
+2. **Configurar Brevo como SMTP.** La verificación de correo está activada,
+   pero el servicio de correo incluido en Supabase tiene un tope bajo por hora
+   y el registro choca con él al segundo intento. Se decidió usar Brevo (300
+   correos/día, remitente único verificado porque no hay dominio propio).
+   Falta cargar las credenciales en **Authentication → Emails → SMTP Settings**
+   y subir el valor en **Rate Limits**. Pasos exactos: [`SMTP.md`](SMTP.md).
+   Las dos apps ya avisan correctamente que hay que confirmar el correo.
 
 3. **`server.mjs` quedó sin uso.** Ninguna pantalla lo llama. Borrarlo junto con
    `data/users.json` y el script `dev:api` cuando se confirme que no hace falta.

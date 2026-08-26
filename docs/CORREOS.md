@@ -2,8 +2,16 @@
 
 ## Decisión
 
-**La verificación de correo se queda activada, usando solo Supabase.** Sin
-proveedores externos.
+**La verificación de correo está activada**, y el envío pasa por **Brevo** como
+SMTP propio.
+
+El resto de la plataforma se apoya en Supabase. El correo es la excepción: su
+servicio incluido está pensado para desarrollo y tiene un tope de envíos por
+hora que no se levanta cambiando de plan. Al probar el registro se llegó al
+límite al segundo intento (`email rate limit exceeded`), así que hacía falta un
+SMTP de verdad.
+
+Pasos de configuración: [`SMTP.md`](SMTP.md).
 
 ## Cómo funciona
 
@@ -11,11 +19,11 @@ Con **Confirm email** activado en
 **Authentication → Sign In / Providers → Email**:
 
 1. La persona se registra. La cuenta se crea, pero **sin sesión**.
-2. Supabase envía el correo con el enlace de confirmación.
+2. Supabase envía el correo con el enlace de confirmación, ya vía Brevo.
 3. Al abrir el enlace, la cuenta queda confirmada.
 4. Recién ahí puede iniciar sesión.
 
-Las dos apps ya distinguen ese caso y avisan que revise el correo, en vez de
+Las dos apps distinguen ese caso y avisan que revise el correo, en vez de
 mostrarlo como un fallo:
 
 - **React** — `signUp` devuelve `{ status: 'needs_email_confirmation' }`, la
@@ -23,74 +31,57 @@ mostrarlo como un fallo:
 - **Flutter** — `AuthService.register` lanza `EmailConfirmationRequired`, que la
   pantalla de registro pinta con `NoticeBanner` (verde), no con `ErrorBanner`.
 
-## El límite real: volumen por hora
+## Qué correos se envían hoy
 
-Supabase incluye su propio servicio de correo, pero está pensado para
-desarrollo y trae un tope bajo de envíos por hora. Al probar el registro se
-llegó al tope al segundo intento:
+| Correo | Cuándo |
+|---|---|
+| Confirmación de cuenta | Al registrarse |
+| Restablecer contraseña | Desde «¿Olvidaste tu contraseña?» |
 
-```
-email rate limit exceeded
-```
+Ambos usan las plantillas por defecto de Supabase.
 
-**Cómo subirlo:** panel → **Authentication → Rate Limits** → *Rate limit for
-sending emails*. Ahí se ve el valor vigente del proyecto y hasta dónde deja
-subirlo. Conviene mirarlo antes de una demo o de una jornada de pruebas con
-varias personas registrándose seguidas.
+El módulo de viajes todavía no manda correos. Con Brevo hay margen para
+agregarlos (comprobante al finalizar, aviso de chofer asignado) sin chocar con
+ningún tope.
 
-Ese tope es el techo que impone Supabase por usar su servicio incluido; la
-única forma oficial de levantarlo del todo es un SMTP propio, que implica un
-proveedor externo y quedó descartado.
+## Límites del plan gratuito de Brevo
 
-## Qué hacer si el tope estorba
+- **300 correos al día.**
+- Un solo remitente verificado, porque el equipo no tiene dominio propio.
+- El límite por hora de Supabase se configura aparte, en
+  **Authentication → Rate Limits**. Si se deja en el valor del servicio
+  incluido, el SMTP nuevo no sirve de nada.
 
-Sin salir de Supabase:
-
-1. **Subir el límite** en Rate Limits hasta donde permita el proyecto.
-2. **Espaciar los registros** en pruebas y demos, en vez de crear diez cuentas
-   seguidas.
-3. **Confirmar a mano** cuando haga falta: panel → **Authentication → Users** →
-   la cuenta → confirmar el correo directamente, sin esperar el envío. Sirve
-   para desbloquear a alguien en una demo.
-4. **Crear las cuentas de prueba desde el panel**, ya confirmadas, en vez de
-   registrarlas por la app.
+Con dominio propio se podría verificar el dominio en Brevo (mejor
+entregabilidad, sin remitente único) o migrar a otro proveedor.
 
 ## Recuperación de contraseña
 
-También depende del correo, así que hereda el mismo tope. Todavía no está
-implementada: falta una página pública para pedir el enlace y otra para definir
-la contraseña nueva, con el flujo oficial de Supabase.
+Implementada en las dos apps. Ver la sección correspondiente en
+[`CONEXION_SUPABASE.md`](CONEXION_SUPABASE.md).
 
-Mientras tanto, un superadmin la restablece desde
-**Authentication → Users → … → Reset password**.
-
-## URLs permitidas
-
-Sin esto el enlace del correo lleva a una página de error.
-
-**Authentication → URL Configuration**:
-
-- **Site URL**: la URL de producción. Mientras no exista, `http://localhost:5173`.
-- **Redirect URLs**: todos los orígenes desde los que alguien pueda registrarse:
-  ```
-  http://localhost:5173
-  http://localhost:5173/**
-  ```
-
-El código manda `emailRedirectTo: window.location.origin` (`src/lib/auth.ts`),
-así que funciona igual en desarrollo y en producción — pero cada origen tiene
-que estar en esa lista.
-
-## Plantillas
-
-Se usan las de Supabase por defecto. No hay nada que configurar.
+**El enlace es de un solo uso.** Abrirlo dos veces devuelve
+`403: One-time token not found` — hay que pedir uno nuevo.
 
 ## En la app móvil
 
-El enlace de confirmación abre el navegador, no la app. La cuenta queda
-confirmada igual y la persona vuelve a la app a iniciar sesión.
+**Brevo cubre la app igual que la web, sin cambios de código.** Flutter usa los
+mismos dos endpoints (`signUp` y `resetPasswordForEmail`); las apps nunca tocan
+el SMTP, solo le piden a Supabase que envíe.
 
-Para que el enlace abra la app directamente harían falta *deep links* (un
-esquema propio en `AndroidManifest.xml` y en iOS, más `emailRedirectTo`
-apuntando a ese esquema). No es necesario para que la verificación funcione, así
-que quedó fuera.
+Pero hay un límite práctico mientras la web solo exista en `localhost`:
+
+Ninguna llamada de Flutter pasa `emailRedirectTo`, así que el enlace del correo
+usa el **Site URL** del proyecto. Es lo correcto —la app no tiene deep links y el
+enlace debe abrir la web—, pero significa que **quien se registre desde el
+teléfono recibirá un enlace a `localhost`, que en un teléfono no abre nada.**
+
+Mientras tanto:
+
+1. Abrir el correo desde la computadora donde corre `npm run dev`.
+2. O confirmar la cuenta a mano en **Authentication → Users**.
+3. La solución de fondo es publicar la web en una URL real y ponerla como Site
+   URL. De paso resuelve el dominio para el correo.
+
+Para que el enlace abriera la app directamente harían falta *deep links* (un
+esquema propio en `AndroidManifest.xml` y en iOS), que no están configurados.
