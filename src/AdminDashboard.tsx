@@ -1,22 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import './AdminDashboard.css'
-
-type AdminUser = {
-  id: string
-  name: string
-  email: string
-  phone: string
-  role: string
-  createdAt: string
-}
+import { listUsers, type User } from './lib/auth'
 
 type Props = {
   user: { name: string; email: string; role: string }
-  token: string
   onLogout: () => void
 }
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8788'
 
 const sections = [
   ['Resumen', '⌂'],
@@ -54,9 +43,9 @@ function formatDate(value: string) {
   return new Intl.DateTimeFormat('es-EC', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(value))
 }
 
-export default function AdminDashboard({ user, token, onLogout }: Props) {
+export default function AdminDashboard({ user, onLogout }: Props) {
   const [activeSection, setActiveSection] = useState('Resumen')
-  const [users, setUsers] = useState<AdminUser[]>([])
+  const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -64,24 +53,18 @@ export default function AdminDashboard({ user, token, onLogout }: Props) {
   const accessName = isSuperadmin ? 'SUPERADMINISTRACIÓN' : 'ADMINISTRACIÓN'
   const profileName = isSuperadmin ? 'Superadministrador' : 'Administrador'
 
+  // Las politicas RLS deciden que filas llegan: un admin no ve superadmins.
   useEffect(() => {
-    const controller = new AbortController()
-    fetch(`${API_URL}/api/admin/users`, {
-      headers: { Authorization: `Bearer ${token}` },
-      signal: controller.signal,
-    })
-      .then(async (response) => {
-        const data = await response.json()
-        if (!response.ok) throw new Error(data.message || 'No se pudieron cargar los usuarios.')
-        setUsers(data.users || [])
-      })
+    let active = true
+    listUsers()
+      .then((rows) => { if (active) setUsers(rows) })
       .catch((requestError) => {
-        if (requestError instanceof DOMException && requestError.name === 'AbortError') return
+        if (!active) return
         setError(requestError instanceof Error ? requestError.message : 'No se pudieron cargar los usuarios.')
       })
-      .finally(() => setLoading(false))
-    return () => controller.abort()
-  }, [token])
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
+  }, [])
 
   const metrics = useMemo(() => ({
     users: users.filter((item) => item.role === 'passenger').length,
@@ -126,7 +109,7 @@ export default function AdminDashboard({ user, token, onLogout }: Props) {
 
             <div className="admin-grid">
               <section className="admin-card user-table">
-                <div className="admin-card-head"><div><h3>Usuarios registrados</h3><p>Información obtenida desde el servicio local actual.</p></div><button onClick={() => setActiveSection('Usuarios')}>Ver todos</button></div>
+                <div className="admin-card-head"><div><h3>Usuarios registrados</h3><p>Información obtenida desde Supabase.</p></div><button onClick={() => setActiveSection('Usuarios')}>Ver todos</button></div>
                 {error && <p className="admin-error">{error}</p>}
                 {loading && <p className="admin-error">Cargando usuarios…</p>}
                 {!loading && !error && users.length === 0 && <p className="admin-error">Todavía no hay cuentas registradas.</p>}
@@ -145,8 +128,8 @@ export default function AdminDashboard({ user, token, onLogout }: Props) {
                 <ul>
                   <li className="done"><span>✓</span><div><b>Acceso por roles</b><small>Admin y superadmin diferenciados</small></div></li>
                   <li className="done"><span>✓</span><div><b>Primer acceso seguro</b><small>Cambio de contraseña administrativa</small></div></li>
-                  <li><span>3</span><div><b>Conexión con Supabase</b><small>Preparada para el integrador</small></div></li>
-                  <li><span>4</span><div><b>Gestión de viajes</b><small>Siguiente módulo funcional</small></div></li>
+                  <li className="done"><span>✓</span><div><b>Conexión con Supabase</b><small>Auth y perfiles en la nube</small></div></li>
+                  <li><span>4</span><div><b>Gestión de viajes</b><small>Tablas listas, falta la interfaz</small></div></li>
                 </ul>
               </section>
             </div>
