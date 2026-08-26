@@ -2,6 +2,48 @@ import { supabase } from './supabase'
 
 export type Role = 'passenger' | 'driver' | 'admin' | 'superadmin'
 
+/**
+ * Vistas a las que puede entrar una cuenta con ese rol.
+ *
+ * Es la regla central del cambio de panel:
+ *
+ * - `superadmin`: su panel, el panel visto como admin, usuario y chofer.
+ * - `admin`: su panel, usuario y chofer. **Nunca** la vista de superadmin.
+ * - `driver`: chofer y usuario.
+ * - `passenger`: solo usuario.
+ *
+ * Decide qué se ofrece en pantalla. Los permisos sobre los datos los sigue
+ * resolviendo RLS con el rol real de la cuenta: alguien que abre la vista de
+ * pasajero no obtiene permisos de pasajero, solo ve esa interfaz con sus
+ * propios datos.
+ */
+export function viewsAllowed(role: Role): Role[] {
+  switch (role) {
+    case 'superadmin':
+      return ['superadmin', 'admin', 'passenger', 'driver']
+    case 'admin':
+      return ['admin', 'passenger', 'driver']
+    case 'driver':
+      return ['driver', 'passenger']
+    default:
+      return ['passenger']
+  }
+}
+
+/** Nombre de la vista. Nombra la pantalla, no la cuenta. */
+export function panelLabel(view: Role): string {
+  switch (view) {
+    case 'superadmin':
+      return 'Panel de superadmin'
+    case 'admin':
+      return 'Panel de administración'
+    case 'driver':
+      return 'Vista de chofer'
+    default:
+      return 'Vista de usuario'
+  }
+}
+
 export type User = {
   id: string
   name: string
