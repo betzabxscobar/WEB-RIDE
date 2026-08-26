@@ -212,7 +212,7 @@ function App() {
       <div className="trust">
         <div className="trust-item"><img src={iconShield} alt="Protegido"/><span>Viajes Protegidos</span></div>
         <div className="trust-item"><img src={iconMoneda} alt="Transparente"/><span>Precio transparente</span></div>
-        <div className="trust-item"><img src={iconSoporte} alt="Soporte"/><span>Soporte 24/7</span></div>
+        <div className="trust-item"><img src={iconSoporte} alt="Soporte"/><span>Soporte</span></div>
       </div>
     </section>
 
