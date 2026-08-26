@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import './App.css'
+import logoTipo from './assets/LogoTipo.png'
+import iconShield from './assets/IconoEscudo.png'
+import iconMoneda from './assets/IconoMoneda.png'
+import iconSoporte from './assets/IconoSoporte.png'
 import AdminDashboard from './AdminDashboard'
 import { supabase } from './lib/supabase'
 import {
@@ -20,7 +24,7 @@ import {
 type Screen = 'welcome' | 'login' | 'register' | 'forgot' | 'home'
 
 function Logo() {
-  return <div className="logo" aria-label="Ride"><span>R</span></div>
+  return <img src={logoTipo} className="logo" alt="Ride" />
 }
 
 function App() {
@@ -193,7 +197,7 @@ function App() {
   const viewIsAdministrative = activeView === 'admin' || activeView === 'superadmin'
   if (screen === 'home' && user && viewIsAdministrative) return <AdminDashboard user={user} viewAs={activeView as Role} views={availableViews} onSwitchView={switchView} onLogout={logout} />
 
-  if (loading && screen === 'welcome') return <div className="loading-screen"><Logo /><span>Preparando Ride…</span></div>
+  if (loading && screen === 'welcome') return <div className="loading-screen"><span>Preparando Ride…</span></div>
 
   if (screen === 'home' && user) return <main className="user-home">
     {viewingOtherPanel && <ViewingAsBar role={user.role} onBack={() => setView(null)} />}
@@ -203,13 +207,17 @@ function App() {
 
   return <main className="auth-page">
     <section className="brand-panel">
-      <div className="brand-copy"><div className="wordmark"><Logo /><span>Ride</span></div><h1>Muévete con<br/><em>libertad.</em></h1><p>Una forma más segura, transparente y humana de llegar a donde quieres.</p></div>
+      <div className="brand-copy"><div className="wordmark"><img src={logoTipo} className="wordmark-logo" alt="Ride" /><span>Ride</span></div><h1>Muévete con<br/><em>libertad.</em></h1><p>Una forma más segura, transparente y humana de llegar a donde quieres.</p></div>
       <div className="city-art"><div className="moon"/><div className="route"><i/><i/><i/></div><div className="car">▰</div><div className="buildings"><i/><i/><i/><i/><i/><i/></div></div>
-      <div className="trust"><span>◈ Viajes protegidos</span><span>◉ Precio transparente</span></div>
+      <div className="trust">
+        <div className="trust-item"><img src={iconShield} alt="Protegido"/><span>Viajes Protegidos</span></div>
+        <div className="trust-item"><img src={iconMoneda} alt="Transparente"/><span>Precio transparente</span></div>
+        <div className="trust-item"><img src={iconSoporte} alt="Soporte"/><span>Soporte</span></div>
+      </div>
     </section>
 
     <section className="form-panel">
-      <div className="mobile-brand"><Logo /><b>Ride</b></div>
+      <div className="mobile-brand"><img src={logoTipo} className="wordmark-logo mobile-logo" alt="Ride" /><b>Ride</b></div>
       {screen === 'welcome' && <div className="auth-box welcome-box"><span className="eyebrow">BIENVENIDO A RIDE</span><h2>Tu próximo viaje<br/>empieza aquí.</h2><p>Crea una cuenta o inicia sesión para continuar.</p><button className="primary-action" onClick={() => setScreen('register')}>Crear cuenta <span>→</span></button><button className="secondary-action" onClick={() => setScreen('login')}>Ya tengo una cuenta</button><small>Al continuar aceptas nuestros <a>Términos</a> y la <a>Política de privacidad</a>.</small></div>}
       {screen === 'login' && <AuthForm title="Qué bueno verte" subtitle="Ingresa tus datos para continuar." submit="Iniciar sesión" loading={loading} message={message} notice={notice} showPassword={showPassword} setShowPassword={setShowPassword} onSubmit={(event) => { event.preventDefault(); handleLogin(event.currentTarget) }} onBack={() => { setScreen('welcome'); setMessage(''); setNotice('') }} footer={<>¿Aún no tienes cuenta? <button onClick={() => { setScreen('register'); setMessage(''); setNotice('') }}>Regístrate</button></>} extra={<button type="button" className="link-button" onClick={() => { setScreen('forgot'); setMessage(''); setNotice('') }}>¿Olvidaste tu contraseña?</button>} />}
       {screen === 'forgot' && <ForgotPasswordForm loading={loading} message={message} onSubmit={(event) => { event.preventDefault(); handleForgotPassword(event.currentTarget) }} onBack={() => { setScreen('login'); setMessage(''); setNotice('') }} />}

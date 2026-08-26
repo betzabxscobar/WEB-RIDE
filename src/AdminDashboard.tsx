@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import './AdminDashboard.css'
+import logoAsset from './assets/LogoTipo.png'
 import { listUsers, panelLabel, type Role, type User } from './lib/auth'
 import { listTrips, watchTrips, esFinal, ESTADO_LABEL, type Trip } from './lib/trips'
 
@@ -121,7 +122,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
   return (
     <main className="admin-shell">
       <aside className="admin-sidebar">
-        <div className="admin-brand"><div>R</div><span>Ride</span><small>{accessName}</small></div>
+        <div className="admin-brand"><img src={logoAsset} className="admin-brand-logo" alt="Ride" /><span>Ride</span><small>{accessName}</small></div>
         <nav aria-label="Panel administrativo">
           {sections.map(([label, icon]) => (
             <button key={label} className={activeSection === label ? 'active' : ''} onClick={() => setActiveSection(label)}>
