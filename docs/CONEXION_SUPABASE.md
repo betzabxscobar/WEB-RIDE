@@ -121,6 +121,50 @@ sobreescribir con `--dart-define` para apuntar a otro proyecto.
 
 6. **Protección de contraseñas filtradas** desactivada en Auth.
 
+## Cambio de panel
+
+Una cuenta administrativa puede moverse entre paneles sin cerrar sesión.
+
+| Rol real | Vistas disponibles |
+|---|---|
+| `superadmin` | Panel de superadmin · Panel de administración · Vista de usuario · Vista de chofer |
+| `admin` | Panel de administración · Vista de usuario · Vista de chofer |
+| `driver` | Vista de chofer · Vista de usuario |
+| `passenger` | Vista de usuario (y de chofer si ya registró un vehículo) |
+
+**Un `admin` nunca puede abrir la vista de superadmin.**
+
+### Cambia la vista, no los permisos
+
+El rol real sale de `public.profiles` y **no se toca**. Un admin que abre la
+vista de usuario sigue siendo admin para la base de datos: ve esa interfaz con
+sus propios datos, no con los de otra persona.
+
+No podría ser de otro modo. Las políticas RLS resuelven los permisos con
+`current_user_role()`, que lee la tabla, y `prevent_role_self_edit()` impide que
+nadie se cambie el rol a sí mismo — que es justo la barrera que evita una
+escalada de privilegios. Conceder permisos reales de otro rol exigiría
+desmontar eso.
+
+Antes de este cambio, `switchRole` en Flutter modificaba `user.role` en memoria,
+así que la app mentía sobre quién eras. Ahora el rol real y la vista activa son
+cosas distintas: `AuthService.activeView` y `AuthService.switchView()`.
+
+### Dónde vive la regla
+
+- **Flutter** — `UserRole.viewsAllowed()` en `lib/models/user_role.dart`
+- **React** — `viewsAllowed()` en `src/lib/auth.ts`
+
+Está aparte de la sesión a propósito, para poder probarla sin red. Las pruebas
+de Flutter cubren los cuatro roles.
+
+### Detalle de presentación
+
+Cuando un superadmin mira el panel *como admin*, RLS le sigue enviando a los
+superadmin porque su rol real no cambió. La lista los oculta en el cliente para
+que la previsualización sea fiel. Es filtrado de presentación, no de seguridad:
+la barrera real son las políticas RLS, que sí aplican a un admin auténtico.
+
 ## Recuperación de contraseña
 
 Implementada con el flujo oficial de Supabase, en las dos apps.
