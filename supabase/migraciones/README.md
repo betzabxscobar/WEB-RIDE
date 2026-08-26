@@ -86,14 +86,10 @@ Camino feliz confirmado:
 
 ## Pendientes
 
-1. **Tres cuentas administrativas tienen el rol equivocado.** En `profiles`,
-   `alexyanez1119@gmail.com`, `mayuriremache0@gmail.com` y
-   `javierconforme18@gmail.com` figuran como `passenger`; según
-   `docs/CONEXION_SUPABASE.md` deben ser `admin`. Corregir antes de probar el panel.
-2. **Ninguna app está conectada todavía.** No existe `.env`, `server.mjs` sigue
-   sirviendo auth en memoria y `AuthService` de Flutter también. Esa es la
-   siguiente etapa.
-3. **Storage**: faltan los buckets para `foto_url` y `documentos_conductor.url_archivo`.
-4. **Realtime**: falta habilitar la publicación en `viajes` y `ubicaciones` para
+1. **Storage**: faltan los buckets para `foto_url` y `documentos_conductor.url_archivo`.
+2. **Realtime**: falta habilitar la publicación en `viajes` y `ubicaciones` para
    el seguimiento GPS en vivo.
-5. **Protección de contraseñas filtradas** desactivada en Auth (aviso del linter).
+3. **Protección de contraseñas filtradas** desactivada en Auth (aviso del linter).
+
+Ya resueltos: los roles administrativos quedaron corregidos y las dos apps están
+conectadas a Supabase. Ver [`../../docs/CONEXION_SUPABASE.md`](../../docs/CONEXION_SUPABASE.md).
