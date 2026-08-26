@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import './AdminDashboard.css'
 import { listUsers, panelLabel, type Role, type User } from './lib/auth'
+import { listTrips, watchTrips, esFinal, ESTADO_LABEL, type Trip } from './lib/trips'
 
 type Props = {
   user: { name: string; email: string; role: string }
@@ -50,6 +51,8 @@ function formatDate(value: string) {
 export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLogout }: Props) {
   const [activeSection, setActiveSection] = useState('Resumen')
   const [users, setUsers] = useState<User[]>([])
+  const [trips, setTrips] = useState<Trip[]>([])
+  const [tripsError, setTripsError] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -72,6 +75,33 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
       .finally(() => { if (active) setLoading(false) })
     return () => { active = false }
   }, [])
+
+  // Los viajes se recargan solos: Realtime avisa cuando cambia alguno.
+  useEffect(() => {
+    let active = true
+    const cargar = () => {
+      listTrips()
+        .then((rows) => { if (active) setTrips(rows) })
+        .catch((e) => {
+          if (active) setTripsError(e instanceof Error ? e.message : 'No se pudieron cargar los viajes.')
+        })
+    }
+    cargar()
+    const dejarDeEscuchar = watchTrips(cargar)
+    return () => {
+      active = false
+      dejarDeEscuchar()
+    }
+  }, [])
+
+  const tripMetrics = useMemo(() => ({
+    total: trips.length,
+    activos: trips.filter((t) => !esFinal(t.estado)).length,
+    finalizados: trips.filter((t) => t.estado === 'FINALIZADO').length,
+    facturado: trips
+      .filter((t) => t.estado === 'FINALIZADO')
+      .reduce((suma, t) => suma + (t.tarifaFinal ?? 0), 0),
+  }), [trips])
 
   // Al mirar el panel *como admin*, RLS sigue enviando a los superadmin porque
   // el rol real de la cuenta no cambió. Se ocultan aquí para que la
@@ -134,7 +164,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
               <article><span className="metric-symbol blue">P</span><div><small>Pasajeros</small><strong>{metrics.users}</strong></div></article>
               <article><span className="metric-symbol mint">C</span><div><small>Conductores</small><strong>{metrics.drivers}</strong></div></article>
               <article><span className="metric-symbol violet">A</span><div><small>Equipo administrativo</small><strong>{metrics.administrators}</strong></div></article>
-              <article><span className="metric-symbol coral">V</span><div><small>Viajes registrados</small><strong>0</strong></div></article>
+              <article><span className="metric-symbol coral">V</span><div><small>Viajes registrados</small><strong>{tripMetrics.total}</strong></div></article>
             </section>
 
             <div className="admin-grid">
@@ -163,6 +193,40 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
                 </ul>
               </section>
             </div>
+          </div>
+        ) : activeSection === 'Viajes' ? (
+          <div className="admin-content">
+            <section className="admin-metrics">
+              <article><span className="metric-symbol blue">T</span><div><small>Viajes totales</small><strong>{tripMetrics.total}</strong></div></article>
+              <article><span className="metric-symbol mint">A</span><div><small>En curso ahora</small><strong>{tripMetrics.activos}</strong></div></article>
+              <article><span className="metric-symbol violet">F</span><div><small>Finalizados</small><strong>{tripMetrics.finalizados}</strong></div></article>
+              <article><span className="metric-symbol coral">$</span><div><small>Facturado</small><strong>${tripMetrics.facturado.toFixed(2)}</strong></div></article>
+            </section>
+
+            <section className="admin-card">
+              <div className="admin-card-head">
+                <div><h3>Monitoreo de viajes</h3><p>Se actualiza en vivo conforme cambian los estados.</p></div>
+              </div>
+              {tripsError && <p className="admin-error">{tripsError}</p>}
+              {!tripsError && trips.length === 0 && <p className="admin-error">Todavía no se ha registrado ningún viaje.</p>}
+              {trips.length > 0 && (
+                <div className="trips-table">
+                  {trips.map((trip) => (
+                    <div className="trip-row" key={trip.id}>
+                      <em className={`trip-state ${esFinal(trip.estado) ? trip.estado.toLowerCase() : 'activo'}`}>
+                        {ESTADO_LABEL[trip.estado]}
+                      </em>
+                      <div className="trip-route">
+                        <strong>{trip.origenTexto} → {trip.destinoTexto}</strong>
+                        <small>{trip.pasajeroNombre}{trip.conductorNombre ? ` · ${trip.conductorNombre}` : ' · sin chofer'}{trip.vehiculoPlaca ? ` · ${trip.vehiculoPlaca}` : ''}</small>
+                      </div>
+                      <b>${(trip.tarifaFinal ?? trip.tarifaEstimada).toFixed(2)}</b>
+                      <time>{formatDate(trip.fechaSolicitud)}</time>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
           </div>
         ) : (
           <section className="admin-placeholder">
