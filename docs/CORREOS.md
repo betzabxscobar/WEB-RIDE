@@ -65,8 +65,23 @@ Implementada en las dos apps. Ver la sección correspondiente en
 
 ## En la app móvil
 
-El enlace de confirmación abre el navegador, no la app. La cuenta queda
-confirmada igual y la persona vuelve a la app a iniciar sesión.
+**Brevo cubre la app igual que la web, sin cambios de código.** Flutter usa los
+mismos dos endpoints (`signUp` y `resetPasswordForEmail`); las apps nunca tocan
+el SMTP, solo le piden a Supabase que envíe.
 
-Para que abriera la app directamente harían falta *deep links*, que no están
-configurados. No es necesario para que la verificación funcione.
+Pero hay un límite práctico mientras la web solo exista en `localhost`:
+
+Ninguna llamada de Flutter pasa `emailRedirectTo`, así que el enlace del correo
+usa el **Site URL** del proyecto. Es lo correcto —la app no tiene deep links y el
+enlace debe abrir la web—, pero significa que **quien se registre desde el
+teléfono recibirá un enlace a `localhost`, que en un teléfono no abre nada.**
+
+Mientras tanto:
+
+1. Abrir el correo desde la computadora donde corre `npm run dev`.
+2. O confirmar la cuenta a mano en **Authentication → Users**.
+3. La solución de fondo es publicar la web en una URL real y ponerla como Site
+   URL. De paso resuelve el dominio para el correo.
+
+Para que el enlace abriera la app directamente harían falta *deep links* (un
+esquema propio en `AndroidManifest.xml` y en iOS), que no están configurados.

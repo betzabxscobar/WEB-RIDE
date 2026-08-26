@@ -63,14 +63,27 @@ Proyecto `jnnesfafbrlbycfkruph` →
 
 Supabase valida la conexión al guardar: si algo está mal, lo dice ahí mismo.
 
-## Paso 5 — Subir el límite
+## Paso 5 — El límite se ajusta solo
 
-En la misma pantalla, **Rate Limits** → *Rate limit for sending emails*. Sigue
-en el valor del servicio incluido. Con Brevo se puede subir a unos **200 por
-hora**, que cabe dentro del tope diario de 300 del plan gratuito.
+Al activar SMTP propio, Supabase sube el tope de **2 por hora** a **30 por
+hora** sin que haya que tocar nada. Se ve en los logs:
 
-Sin este paso el SMTP nuevo no sirve de nada: Supabase seguiría frenando los
-envíos con el límite viejo.
+```
+env GOTRUE_RATE_LIMIT_EMAIL_SENT changed,
+updating Email limiter from 2/1h to 30
+```
+
+**No hace falta subirlo más, y conviene no hacerlo.** El plan gratuito de Brevo
+da 300 correos al día: a 30/hora el margen calza bien, mientras que a 100 o 200
+por hora se agotaría la cuota diaria en pocas horas y los envíos empezarían a
+fallar sin motivo aparente.
+
+Si algún día hay una demo con mucha gente registrándose a la vez, se sube
+puntualmente en **Authentication → Rate Limits** y luego se baja.
+
+También está **Minimum interval per user** (60 s por defecto): a un mismo correo
+no se le puede enviar dos veces seguidas en menos de un minuto. Conviene
+dejarlo, pero explica por qué una segunda prueba inmediata parece fallar.
 
 ## Paso 6 — URLs permitidas
 
@@ -100,6 +113,46 @@ Si más adelante quieren personalizarlas: **Authentication → Emails → Templa
 
 Si no llega: revisar spam y luego el registro de Brevo en
 **Transactional → Logs**, que dice si el correo salió y qué pasó con él.
+
+## Resultado verificado (2026-08-26)
+
+Configurado y probado con un envío real:
+
+| Comprobación | Resultado |
+|---|---|
+| Límite de Supabase | Subió solo de **2/hora** a **30/hora** al activar SMTP propio |
+| `/recover` | `status 200`, sin errores |
+| Latencia | 735 ms, contra 238 ms de un login — es el ida y vuelta con Brevo |
+| Entrega según Brevo | 100% entregado |
+| **Carpeta de destino** | **Spam** |
+
+El «100% entregado» de Brevo significa que el servidor de Gmail aceptó el
+correo, no que llegara a bandeja de entrada. La carpeta la decide Gmail
+después, y Brevo no se entera.
+
+### Por qué cae en spam
+
+El correo dice venir de `@gmail.com` pero sale de los servidores de Brevo.
+Gmail sabe que ese dominio no autorizó a Brevo a enviar en su nombre, así que
+lo degrada. **No es un fallo de configuración**: es la consecuencia de usar un
+correo gratuito como remitente, y es lo que advierten los avisos de DKIM y
+DMARC en el panel de Brevo.
+
+No se arregla con más ajustes. Sin controlar el dominio del remitente no se
+puede firmar con DKIM ni publicar un DMARC que autorice a Brevo.
+
+### Mientras tanto
+
+Que cada persona marque **«No es spam»** en su Gmail al recibir el primero:
+Gmail aprende por destinatario y los siguientes llegan a bandeja. Sirve para el
+equipo; **no sirve para usuarios reales**, que no van a buscar en spam para
+confirmar su cuenta.
+
+### La solución de fondo
+
+Un dominio propio (unos 10-15 USD al año). Con él se verifica el dominio en
+Brevo, se firma con DKIM, y el problema desaparece. Es requisito antes de que
+alguien de fuera del equipo use la app.
 
 ## Qué gana Ride con esto
 
