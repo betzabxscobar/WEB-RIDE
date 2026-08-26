@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import './AdminDashboard.css'
 import { listUsers, panelLabel, type Role, type User } from './lib/auth'
 import { listTrips, watchTrips, esFinal, ESTADO_LABEL, type Trip } from './lib/trips'
+import DriversPanel from './DriversPanel'
 
 type Props = {
   user: { name: string; email: string; role: string }
@@ -194,6 +195,8 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
               </section>
             </div>
           </div>
+        ) : activeSection === 'Conductores' ? (
+          <DriversPanel />
         ) : activeSection === 'Viajes' ? (
           <div className="admin-content">
             <section className="admin-metrics">

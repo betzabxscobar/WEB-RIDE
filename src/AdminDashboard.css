@@ -40,3 +40,51 @@
   .trip-row b{grid-area:monto;justify-self:end}
   .trip-row time{grid-area:fecha}
 }
+
+/* --- Revision de conductores ----------------------------------------------- */
+.driver-row{border-bottom:1px solid #eef3f6}
+.driver-row:last-child{border-bottom:0}
+.driver-head{display:grid;grid-template-columns:96px 1fr auto auto;align-items:center;gap:14px;padding:13px 4px;cursor:pointer}
+.driver-head:hover{background:#fafcfd}
+.driver-id{min-width:0}
+.driver-id strong{display:block;font-size:12.5px;color:#0a1930;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.driver-id small{display:block;font-size:10.5px;color:#8794a0;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.driver-count{font-size:10.5px;color:#8794a0;white-space:nowrap}
+.driver-toggle{border:1px solid var(--line);background:#fff;color:#24394a;border-radius:8px;padding:6px 11px;font-size:11px;font-weight:700;cursor:pointer}
+.driver-state{font-style:normal;font-size:9.5px;font-weight:800;padding:5px 9px;border-radius:99px;text-align:center;text-transform:uppercase;letter-spacing:.3px}
+.driver-state.pendiente{background:#efedfe;color:#5a49d8}
+.driver-state.aprobado{background:#e4f7f0;color:#12856a}
+.driver-state.rechazado{background:#fdeeec;color:#b54d41}
+
+.driver-detail{padding:4px 4px 18px;display:grid;gap:12px}
+.driver-docs{display:grid;gap:8px}
+.doc-item{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#f7fafb;border-radius:9px;padding:9px 12px}
+.doc-item small{font-size:10.5px;color:#8794a0}
+.doc-state{font-size:11px;font-weight:800;min-width:74px}
+.doc-state.aprobado{color:#12856a}
+.doc-state.rechazado{color:#b54d41}
+.doc-state.pendiente{color:#5a49d8}
+.doc-state.falta{color:#a3b0ba}
+.doc-ok,.doc-no{border:0;border-radius:7px;padding:5px 10px;font-size:10.5px;font-weight:800;cursor:pointer}
+.doc-ok{background:#e4f7f0;color:#12856a}
+.doc-no{background:#fdeeec;color:#b54d41}
+.doc-ok:disabled,.doc-no:disabled{opacity:.5;cursor:not-allowed}
+
+.driver-cars{display:flex;gap:8px;flex-wrap:wrap}
+.car-chip{font-size:10.5px;background:#f2f6f8;color:#42596b;border-radius:99px;padding:5px 11px}
+.car-chip.activo{background:#e4f7f0;color:#12856a;font-weight:700}
+
+.driver-blocked{font-size:11px;color:#b54d41;background:#fdeeec;border-radius:8px;padding:9px 12px;margin:0}
+.driver-actions{display:flex;gap:9px;flex-wrap:wrap}
+.driver-approve,.driver-reject{border:0;border-radius:9px;padding:9px 15px;font-size:11.5px;font-weight:800;cursor:pointer}
+.driver-approve{background:#12856a;color:#fff}
+.driver-reject{background:#fff;color:#b54d41;border:1px solid #ffd8d2}
+.driver-approve:disabled{background:#cfdae1;color:#8794a0;cursor:not-allowed}
+
+@media(max-width:760px){
+  .driver-head{grid-template-columns:1fr auto;grid-template-areas:'estado boton' 'ident ident' 'conteo conteo';row-gap:7px}
+  .driver-state{grid-area:estado;justify-self:start}
+  .driver-id{grid-area:ident}
+  .driver-count{grid-area:conteo}
+  .driver-toggle{grid-area:boton}
+}
