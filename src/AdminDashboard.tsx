@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import './AdminDashboard.css'
-import logoAsset from './assets/LopoTipo.png'
+import logoAsset from './assets/LogoTipo.png'
 import { listUsers, panelLabel, type Role, type User } from './lib/auth'
 import { listTrips, watchTrips, esFinal, ESTADO_LABEL, type Trip } from './lib/trips'
 

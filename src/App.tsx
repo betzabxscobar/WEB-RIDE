@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import './App.css'
-import logoTipo from './assets/LopoTipo.png'
+import logoTipo from './assets/LogoTipo.png'
+import iconShield from './assets/IconoEscudo.png'
+import iconMoneda from './assets/IconoMoneda.png'
+import iconSoporte from './assets/IconoSoporte.png'
 import AdminDashboard from './AdminDashboard'
 import { supabase } from './lib/supabase'
 import {
@@ -206,7 +209,11 @@ function App() {
     <section className="brand-panel">
       <div className="brand-copy"><div className="wordmark"><img src={logoTipo} className="wordmark-logo" alt="Ride" /><span>Ride</span></div><h1>Muévete con<br/><em>libertad.</em></h1><p>Una forma más segura, transparente y humana de llegar a donde quieres.</p></div>
       <div className="city-art"><div className="moon"/><div className="route"><i/><i/><i/></div><div className="car">▰</div><div className="buildings"><i/><i/><i/><i/><i/><i/></div></div>
-      <div className="trust"><span>◈ Viajes protegidos</span><span>◉ Precio transparente</span></div>
+      <div className="trust">
+        <div className="trust-item"><img src={iconShield} alt="Protegido"/><span>Viajes Protegidos</span></div>
+        <div className="trust-item"><img src={iconMoneda} alt="Transparente"/><span>Precio transparente</span></div>
+        <div className="trust-item"><img src={iconSoporte} alt="Soporte"/><span>Soporte 24/7</span></div>
+      </div>
     </section>
 
     <section className="form-panel">
