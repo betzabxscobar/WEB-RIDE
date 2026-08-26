@@ -23,6 +23,7 @@ Se pueden ver con `list_migrations` o en el dashboard.
 | 10 | `10_rls_politicas.sql` | 2.5 | RLS en las 11 tablas nuevas |
 | 11 | `11_endurecer_funciones.sql` | — | Cierra avisos del linter de seguridad |
 | 12 | `12_corregir_validar_transicion_viaje.sql` | — | Corrección de un cast en 09 |
+| 13 | `13_handle_new_user_guarda_telefono.sql` | 2.2 | Guarda el teléfono al registrarse y crea la extensión 1:1 del rol |
 
 Son idempotentes: se pueden volver a ejecutar en orden sin romper nada.
 
