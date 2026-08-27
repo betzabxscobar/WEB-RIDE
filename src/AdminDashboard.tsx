@@ -14,7 +14,7 @@ type Props = {
   onLogout: () => void
 }
 
-type SidebarIconName = 'dashboard' | 'user' | 'wheel' | 'route' | 'money' | 'help' | 'logout'
+type SidebarIconName = 'dashboard' | 'user' | 'wheel' | 'route' | 'money' | 'help' | 'logout' | 'key'
 
 const sections: ReadonlyArray<{ label: string; icon: SidebarIconName }> = [
   { label: 'Resumen', icon: 'dashboard' },
@@ -34,6 +34,7 @@ function SidebarIcon({ name }: { name: SidebarIconName }) {
     money: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M12 8v8M14.3 10.1c-.5-.5-1.3-.8-2.3-.8-1.3 0-2.3.6-2.3 1.6 0 2.4 4.6 1.1 4.6 3.5 0 1-.9 1.6-2.3 1.6-1 0-1.9-.4-2.5-1" /></>,
     help: <><circle cx="12" cy="12" r="8.5" /><path d="M9.7 9.3a2.5 2.5 0 1 1 4.1 2c-1 .8-1.8 1.3-1.8 2.7M12 17.4h.01" /></>,
     logout: <><path d="M10 4H5.5A1.5 1.5 0 0 0 4 5.5v13A1.5 1.5 0 0 0 5.5 20H10" /><path d="M14 8l4 4-4 4M18 12H9" /></>,
+    key: <><circle cx="8.5" cy="15.5" r="3.5" /><path d="m11 13 8-8M16 5h3v3M14 10l2 2" /></>,
   }[name]
 
   return <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths}</svg>
@@ -175,7 +176,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
           <div className="admin-content">
             <section className="admin-welcome">
               <div><small>PANEL DE CONTROL</small><h2>Hola, {user.name.split(' ')[0]}</h2><p>Revisa el estado real de las cuentas registradas en Ride.</p></div>
-              <span className="secure-badge">◇ Sesión administrativa segura</span>
+              <span className="secure-badge"><SidebarIcon name="key" />Sesión administrativa segura</span>
             </section>
 
             <section className="admin-metrics">
