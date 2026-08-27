@@ -67,6 +67,10 @@
 img.logo{width:100%;height:100%;object-fit:contain;display:block !important}
 .mini-brand .logo{width:32px;height:36px !important}
 
+/* En la cabecera de usuario, el PNG se muestra sin el fondo celeste heredado. */
+.user-home .mini-brand{gap:2px}
+.user-home .mini-brand img.logo{width:48px;height:52px;background:none;clip-path:none;filter:none;animation:none}
+
 /* Constrain welcome wordmark logo size to avoid large cyan shape */
 .wordmark img.logo{width:96px;height:auto;display:block}
 .mobile-brand img.logo{width:48px;height:auto}
