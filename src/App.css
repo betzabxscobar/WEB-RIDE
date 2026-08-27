@@ -49,8 +49,11 @@
    el rol real. */
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .home-actions{display:flex;align-items:center;gap:10px}
-.panel-switcher select{border:1px solid #345064;background:transparent;color:#d6e5ed;border-radius:9px;padding:9px 11px;font-size:12px;font-weight:700;cursor:pointer}
-.panel-switcher select option{color:#0a1930;background:#fff}
+.panel-switcher{position:relative;display:inline-block}
+.panel-switcher:after{content:'▾';position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:#eafaff;font-size:11px;font-weight:700}
+.panel-switcher select{appearance:none;-webkit-appearance:none;-moz-appearance:none;border:1px solid rgba(18,53,72,.8);background:linear-gradient(135deg,#123548,#104057 60%,#15536a);background-color:#123548;color:#f1fbff;border-radius:9px;padding:9px 30px 9px 11px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.panel-switcher select option{color:#f1fbff;background:#123548}
+.panel-switcher select option:checked,.panel-switcher select option:hover{background:#1a4b63;color:#fff}
 .panel-switcher.sidebar select{width:100%;border-color:#c9d5da;color:#142335;background:#e5ecef;margin-bottom:10px}
 .panel-switcher.sidebar select option{background:#f1fbfe;color:#123548;font-weight:700}
 .panel-switcher.sidebar select option:checked{background:#ccecf4;color:#102b3a}
