@@ -47,8 +47,8 @@ function MetricIcon({ type }: { type: 'passenger' | 'driver' | 'admin' | 'trip' 
   const icon = {
     passenger: <svg {...commonProps}><circle cx="12" cy="8" r="3.5" /><path d="M4.5 20c.8-3.3 3.5-5 7.5-5s6.7 1.7 7.5 5" /></svg>,
     driver: <svg {...commonProps}><circle cx="12" cy="12" r="8.2" /><circle cx="12" cy="12" r="2.8" /><path d="M7 7.5 10.5 11M17 7.5 13.5 11M12 15v4" /></svg>,
-    admin: <svg {...commonProps}><rect x="4" y="5" width="16" height="14" rx="2.5" /><path d="M8 9h8M8 13h5" /><path d="M15.8 18.5v-2c0-1.1-.9-2-2-2h-1.6c-1.1 0-2 .9-2 2v2" /></svg>,
-    trip: <svg {...commonProps}><path d="M4 17.5 9.5 12l3 3 7-8" /><path d="M17.5 7H20v2.5" /><path d="M4 20h16" /></svg>,
+    admin: <svg {...commonProps}><path d="M12 3.5 18 5.7v5.5c0 3.7-2.2 7-6 9.8-3.8-2.8-6-6.1-6-9.8V5.7Z" /><path d="M9.5 12.5l1.8 1.8 3.2-4.2" /></svg>,
+    trip: <svg {...commonProps}><path d="M5 14 7 9h10l2 5" /><path d="M7 14h10" /><circle cx="8.5" cy="17" r="1.3" /><circle cx="15.5" cy="17" r="1.3" /><path d="M9 9V7.8A1.8 1.8 0 0 1 10.8 6h2.4A1.8 1.8 0 0 1 15 7.8V9" /></svg>,
     total: <svg {...commonProps}><path d="M7 7h10v10H7z" /><path d="M10 10h4v4h-4z" /></svg>,
     active: <svg {...commonProps}><path d="M12 3.5v8.8" /><path d="m8.8 8.5 3.2-3.2 3.2 3.2" /><path d="M6 15.8h12" /></svg>,
     done: <svg {...commonProps}><path d="M5 12.5 9 16.5l10-10" /></svg>,
