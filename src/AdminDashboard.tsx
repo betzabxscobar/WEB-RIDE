@@ -41,6 +41,23 @@ function SidebarIcon({ name }: { name: SidebarIconName }) {
   return <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths}</svg>
 }
 
+function MetricIcon({ type }: { type: 'passenger' | 'driver' | 'admin' | 'trip' | 'total' | 'active' | 'done' | 'money' }) {
+  const commonProps = { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.9, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, 'aria-hidden': true }
+
+  const icon = {
+    passenger: <svg {...commonProps}><circle cx="12" cy="8" r="3.5" /><path d="M4.5 20c.8-3.3 3.5-5 7.5-5s6.7 1.7 7.5 5" /></svg>,
+    driver: <svg {...commonProps}><circle cx="12" cy="12" r="8.2" /><circle cx="12" cy="12" r="2.8" /><path d="M7 7.5 10.5 11M17 7.5 13.5 11M12 15v4" /></svg>,
+    admin: <svg {...commonProps}><rect x="4" y="5" width="16" height="14" rx="2.5" /><path d="M8 9h8M8 13h5" /><path d="M15.8 18.5v-2c0-1.1-.9-2-2-2h-1.6c-1.1 0-2 .9-2 2v2" /></svg>,
+    trip: <svg {...commonProps}><path d="M4 17.5 9.5 12l3 3 7-8" /><path d="M17.5 7H20v2.5" /><path d="M4 20h16" /></svg>,
+    total: <svg {...commonProps}><path d="M7 7h10v10H7z" /><path d="M10 10h4v4h-4z" /></svg>,
+    active: <svg {...commonProps}><path d="M12 3.5v8.8" /><path d="m8.8 8.5 3.2-3.2 3.2 3.2" /><path d="M6 15.8h12" /></svg>,
+    done: <svg {...commonProps}><path d="M5 12.5 9 16.5l10-10" /></svg>,
+    money: <svg {...commonProps}><path d="M12 3.5v17" /><path d="M16.2 7.2c0-1.5-1.8-2.7-4.2-2.7s-4.2 1.2-4.2 2.7 1.8 2.7 4.2 2.7 4.2 1.2 4.2 2.7-1.8 2.7-4.2 2.7-4.2-1.2-4.2-2.7" /></svg>,
+  }[type]
+
+  return icon
+}
+
 function roleLabel(role: string) {
   if (role === 'superadmin') return 'Superadmin'
   if (role === 'admin') return 'Admin'
@@ -181,10 +198,10 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
             </section>
 
             <section className="admin-metrics">
-              <article><span className="metric-symbol blue">P</span><div><small>Pasajeros</small><strong>{metrics.users}</strong></div></article>
-              <article><span className="metric-symbol mint">C</span><div><small>Conductores</small><strong>{metrics.drivers}</strong></div></article>
-              <article><span className="metric-symbol violet">A</span><div><small>Equipo administrativo</small><strong>{metrics.administrators}</strong></div></article>
-              <article><span className="metric-symbol coral">V</span><div><small>Viajes registrados</small><strong>{tripMetrics.total}</strong></div></article>
+              <article><span className="metric-symbol blue"><MetricIcon type="passenger" /></span><div><small>Pasajeros</small><strong>{metrics.users}</strong></div></article>
+              <article><span className="metric-symbol mint"><MetricIcon type="driver" /></span><div><small>Conductores</small><strong>{metrics.drivers}</strong></div></article>
+              <article><span className="metric-symbol violet"><MetricIcon type="admin" /></span><div><small>Equipo administrativo</small><strong>{metrics.administrators}</strong></div></article>
+              <article><span className="metric-symbol coral"><MetricIcon type="trip" /></span><div><small>Viajes registrados</small><strong>{tripMetrics.total}</strong></div></article>
             </section>
 
             <div className="admin-grid">
@@ -219,10 +236,10 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
         ) : activeSection === 'Viajes' ? (
           <div className="admin-content">
             <section className="admin-metrics">
-              <article><span className="metric-symbol blue">T</span><div><small>Viajes totales</small><strong>{tripMetrics.total}</strong></div></article>
-              <article><span className="metric-symbol mint">A</span><div><small>En curso ahora</small><strong>{tripMetrics.activos}</strong></div></article>
-              <article><span className="metric-symbol violet">F</span><div><small>Finalizados</small><strong>{tripMetrics.finalizados}</strong></div></article>
-              <article><span className="metric-symbol coral">$</span><div><small>Facturado</small><strong>${tripMetrics.facturado.toFixed(2)}</strong></div></article>
+              <article><span className="metric-symbol blue"><MetricIcon type="total" /></span><div><small>Viajes totales</small><strong>{tripMetrics.total}</strong></div></article>
+              <article><span className="metric-symbol mint"><MetricIcon type="active" /></span><div><small>En curso ahora</small><strong>{tripMetrics.activos}</strong></div></article>
+              <article><span className="metric-symbol violet"><MetricIcon type="done" /></span><div><small>Finalizados</small><strong>{tripMetrics.finalizados}</strong></div></article>
+              <article><span className="metric-symbol coral"><MetricIcon type="money" /></span><div><small>Facturado</small><strong>${tripMetrics.facturado.toFixed(2)}</strong></div></article>
             </section>
 
             <section className="admin-card">
