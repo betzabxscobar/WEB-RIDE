@@ -51,7 +51,9 @@
 .home-actions{display:flex;align-items:center;gap:10px}
 .panel-switcher select{border:1px solid #345064;background:transparent;color:#d6e5ed;border-radius:9px;padding:9px 11px;font-size:12px;font-weight:700;cursor:pointer}
 .panel-switcher select option{color:#0a1930;background:#fff}
-.panel-switcher.sidebar select{width:100%;border-color:var(--line);color:#24394a;background:#fff;margin-bottom:10px}
+.panel-switcher.sidebar select{width:100%;border-color:#c9d5da;color:#142335;background:#e5ecef;margin-bottom:10px}
+.panel-switcher.sidebar select option{background:#f1fbfe;color:#123548;font-weight:700}
+.panel-switcher.sidebar select option:checked{background:#ccecf4;color:#102b3a}
 .viewing-as{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#efedfe;color:#0a1930;border-bottom:1px solid #d8d3fb;padding:9px 6vw;font-size:11.5px;font-weight:700}
 .viewing-as button{border:0;background:none;color:#5a49d8;font-weight:800;font-size:11.5px;cursor:pointer;padding:4px}
 .viewing-as button:hover{text-decoration:underline}
