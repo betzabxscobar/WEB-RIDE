@@ -14,14 +14,30 @@ type Props = {
   onLogout: () => void
 }
 
-const sections = [
-  ['Resumen', '⌂'],
-  ['Usuarios', '♙'],
-  ['Conductores', '◉'],
-  ['Viajes', '↗'],
-  ['Tarifas', '$'],
-  ['Soporte', '?'],
-] as const
+type SidebarIconName = 'dashboard' | 'user' | 'wheel' | 'route' | 'money' | 'help' | 'logout'
+
+const sections: ReadonlyArray<{ label: string; icon: SidebarIconName }> = [
+  { label: 'Resumen', icon: 'dashboard' },
+  { label: 'Usuarios', icon: 'user' },
+  { label: 'Conductores', icon: 'wheel' },
+  { label: 'Viajes', icon: 'route' },
+  { label: 'Tarifas', icon: 'money' },
+  { label: 'Soporte', icon: 'help' },
+]
+
+function SidebarIcon({ name }: { name: SidebarIconName }) {
+  const paths = {
+    dashboard: <><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></>,
+    user: <><circle cx="12" cy="8" r="3.5" /><path d="M4.5 20c.8-3.3 3.5-5 7.5-5s6.7 1.7 7.5 5" /></>,
+    wheel: <><circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="2.5" /><path d="M6 6.2 10.3 10M18 6.2 13.7 10M12 14.5V20" /></>,
+    route: <><circle cx="6" cy="18" r="2" /><circle cx="18" cy="6" r="2" /><path d="M8 18h2.5a3.5 3.5 0 0 0 3.5-3.5v-5A3.5 3.5 0 0 1 17.5 6H16" /></>,
+    money: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M12 8v8M14.3 10.1c-.5-.5-1.3-.8-2.3-.8-1.3 0-2.3.6-2.3 1.6 0 2.4 4.6 1.1 4.6 3.5 0 1-.9 1.6-2.3 1.6-1 0-1.9-.4-2.5-1" /></>,
+    help: <><circle cx="12" cy="12" r="8.5" /><path d="M9.7 9.3a2.5 2.5 0 1 1 4.1 2c-1 .8-1.8 1.3-1.8 2.7M12 17.4h.01" /></>,
+    logout: <><path d="M10 4H5.5A1.5 1.5 0 0 0 4 5.5v13A1.5 1.5 0 0 0 5.5 20H10" /><path d="M14 8l4 4-4 4M18 12H9" /></>,
+  }[name]
+
+  return <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths}</svg>
+}
 
 function roleLabel(role: string) {
   if (role === 'superadmin') return 'Superadmin'
@@ -125,9 +141,9 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
       <aside className="admin-sidebar">
         <div className="admin-brand"><img src={logoAsset} className="admin-brand-logo" alt="Ride" /><span>Ride</span><small>{accessName}</small></div>
         <nav aria-label="Panel administrativo">
-          {sections.map(([label, icon]) => (
+          {sections.map(({ label, icon }) => (
             <button key={label} className={activeSection === label ? 'active' : ''} onClick={() => setActiveSection(label)}>
-              <span>{icon}</span>{label}
+              <span><SidebarIcon name={icon} /></span>{label}
             </button>
           ))}
         </nav>
@@ -140,7 +156,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
             </select>
           </label>
         )}
-        <button className="admin-logout" onClick={onLogout}>↪ Cerrar sesión</button>
+        <button className="admin-logout" onClick={onLogout}><SidebarIcon name="logout" />Cerrar sesión</button>
       </aside>
 
       <section className="admin-main">
@@ -234,7 +250,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
           </div>
         ) : (
           <section className="admin-placeholder">
-            <span>{sections.find(([label]) => label === activeSection)?.[1]}</span>
+            <span><SidebarIcon name={sections.find((section) => section.label === activeSection)?.icon ?? 'dashboard'} /></span>
             <h2>{activeSection}</h2>
             <p>Este módulo se construirá en una siguiente etapa.</p>
             <button onClick={() => setActiveSection('Resumen')}>Volver al resumen</button>
