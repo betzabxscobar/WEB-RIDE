@@ -38,6 +38,7 @@ Se pueden ver con `list_migrations` o en el dashboard.
 | 25 | `25_notificaciones_automaticas.sql` | 1.4 | Avisos escritos por triggers |
 | 26 | `26_metodos_pago_y_tarifa_por_horario.sql` | 1.4 | Métodos de pago y tarifa por franja |
 | 27 | `27_storage_documentos_y_avatares.sql` | 1.1 | Buckets de Storage con RLS |
+| 28 | `28_direcciones_guardadas.sql` | 1.4 | Direcciones recientes y favoritas de cada usuario |
 
 Son idempotentes: se pueden volver a ejecutar en orden sin romper nada.
 
