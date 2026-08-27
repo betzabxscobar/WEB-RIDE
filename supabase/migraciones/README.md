@@ -39,6 +39,8 @@ Se pueden ver con `list_migrations` o en el dashboard.
 | 26 | `26_metodos_pago_y_tarifa_por_horario.sql` | 1.4 | Métodos de pago y tarifa por franja |
 | 27 | `27_storage_documentos_y_avatares.sql` | 1.1 | Buckets de Storage con RLS |
 | 28 | `28_direcciones_guardadas.sql` | 1.4 | Direcciones recientes y favoritas de cada usuario |
+| 29 | `29_h3_celdas_conductores.sql` | — | Celdas H3 en conductores, para comparar con PostGIS |
+| 30 | `30_difusion_por_celdas_h3.sql` | — | Difusión por celda; convive con la de radio |
 
 Son idempotentes: se pueden volver a ejecutar en orden sin romper nada.
 
