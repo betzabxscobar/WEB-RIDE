@@ -59,6 +59,12 @@ export type Quote = {
   aplicoMinima: boolean
 }
 
+export type TripPosition = {
+  lat: number
+  lng: number
+  recordedAt: string
+}
+
 const COLUMNAS = `
   id, estado, pasajero_id, conductor_id, tarifa_estimada, tarifa_final,
   fecha_solicitud, tarifa_nombre, pasajero_nombre, pasajero_telefono,
@@ -287,5 +293,39 @@ export function watchTrips(onChange: () => void): () => void {
 
   return () => {
     supabase.removeChannel(canal)
+  }
+}
+
+export async function getLatestTripPosition(tripId: string): Promise<TripPosition | null> {
+  const { data, error } = await supabase
+    .from('ubicaciones')
+    .select('latitud, longitud, registrado_en')
+    .eq('viaje_id', tripId)
+    .eq('tipo', 'posicion_actual')
+    .order('registrado_en', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (error) throw databaseMessage(error, 'No se pudo consultar la ubicación del conductor.')
+  if (!data) return null
+  return {
+    lat: Number(data.latitud),
+    lng: Number(data.longitud),
+    recordedAt: data.registrado_en as string,
+  }
+}
+
+export function watchTripPositions(tripId: string, onChange: () => void): () => void {
+  const channel = supabase
+    .channel(`posicion-viaje-${tripId}`)
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'ubicaciones', filter: `viaje_id=eq.${tripId}` },
+      onChange,
+    )
+    .subscribe()
+
+  return () => {
+    void supabase.removeChannel(channel)
   }
 }

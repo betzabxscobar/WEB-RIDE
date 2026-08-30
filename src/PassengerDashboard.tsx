@@ -27,6 +27,7 @@ import {
   cancelTrip,
   esFinal,
   ESTADO_LABEL,
+  getLatestTripPosition,
   hasRatedTrip,
   listPassengerTrips,
   listPlaces,
@@ -36,14 +37,16 @@ import {
   rateTrip,
   requestTrip,
   watchTrips,
+  watchTripPositions,
   type Coordinates,
   type Place,
   type Quote,
   type Trip,
+  type TripPosition,
   type TripStatus,
 } from './lib/trips'
 
-type Page = 'inicio' | 'pedir' | 'viajes' | 'avisos' | 'direcciones' | 'pagos' | 'cuenta'
+type Page = 'inicio' | 'pedir' | 'seguimiento' | 'viajes' | 'avisos' | 'direcciones' | 'pagos' | 'cuenta'
 
 type Props = {
   user: User
@@ -106,6 +109,9 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
   const [addresses, setAddresses] = useState<SavedAddress[]>([])
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
   const [payments, setPayments] = useState<RidePayment[]>([])
+  const [trackingTripId, setTrackingTripId] = useState<string | null>(null)
+  const [tripPosition, setTripPosition] = useState<TripPosition | null>(null)
+  const [offeredRatingTripId, setOfferedRatingTripId] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     try {
@@ -175,6 +181,25 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
     [destinationId, places],
   )
   const activeTrip = useMemo(() => trips.find((trip) => !esFinal(trip.estado)) ?? null, [trips])
+  const trackingTrip = useMemo(
+    () => trips.find((trip) => trip.id === trackingTripId) ?? activeTrip,
+    [activeTrip, trackingTripId, trips],
+  )
+
+  useEffect(() => {
+    const tripId = trackingTrip?.id
+    if (!tripId || esFinal(trackingTrip.estado)) {
+      queueMicrotask(() => setTripPosition(null))
+      return
+    }
+    const refresh = () => {
+      void getLatestTripPosition(tripId)
+        .then(setTripPosition)
+        .catch(() => setTripPosition(null))
+    }
+    queueMicrotask(refresh)
+    return watchTripPositions(tripId, refresh)
+  }, [trackingTrip?.estado, trackingTrip?.id])
 
   useEffect(() => {
     let current = true
@@ -278,8 +303,31 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
     } finally { setBusy(false) }
   }
 
+  useEffect(() => {
+    if (page !== 'seguimiento' || !trackingTrip || trackingTrip.estado !== 'FINALIZADO' || !trackingTrip.conductorId || offeredRatingTripId === trackingTrip.id || rating) return
+    const trip = trackingTrip
+    queueMicrotask(async () => {
+      setOfferedRatingTripId(trip.id)
+      setBusy(true); setError('')
+      try {
+        if (await hasRatedTrip(trip.id, user.id)) {
+          setNotice('Ya calificaste este viaje.')
+          return
+        }
+        setRatingScore(5); setRatingComment(''); setRating(trip)
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : 'No se pudo abrir la calificación.')
+      } finally { setBusy(false) }
+    })
+  }, [offeredRatingTripId, page, rating, trackingTrip, user.id])
+
   const go = (next: Page) => {
     setPage(next); setError(''); setNotice('')
+  }
+
+  const openTracking = (trip: Trip) => {
+    setTrackingTripId(trip.id)
+    go('seguimiento')
   }
 
   const openNotifications = async () => {
@@ -379,7 +427,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
     <section className="passenger-workspace">
       <header className="passenger-topbar">
         <div className="passenger-mobile-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
-        <div><span className="passenger-kicker">PANEL DE PASAJERO</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'pedir' ? 'Pide un viaje' : page === 'viajes' ? 'Tus viajes' : page === 'avisos' ? 'Tus avisos' : page === 'direcciones' ? 'Tus direcciones' : page === 'pagos' ? 'Tus pagos' : 'Tu cuenta'}</h1></div>
+        <div><span className="passenger-kicker">PANEL DE PASAJERO</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'pedir' ? 'Pide un viaje' : page === 'seguimiento' ? 'Seguimiento del viaje' : page === 'viajes' ? 'Tus viajes' : page === 'avisos' ? 'Tus avisos' : page === 'direcciones' ? 'Tus direcciones' : page === 'pagos' ? 'Tus pagos' : 'Tu cuenta'}</h1></div>
         <div className="passenger-top-actions">
           {views.length > 1 && <label className="passenger-view-select"><span>Vista</span><select value={activeView} onChange={(event) => onSwitchView(event.target.value as Role)}>{views.map((view) => <option value={view} key={view}>{panelLabel(view)}</option>)}</select></label>}
           <button className="notification-button" onClick={openNotifications} aria-label={unread ? `${unread} avisos sin leer` : 'Abrir avisos'}>♢{unread > 0 && <b>{unread > 9 ? '9+' : unread}</b>}</button>
@@ -390,9 +438,10 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
       <div className="passenger-content">
         {notice && <div className="passenger-feedback success"><span>✓</span>{notice}</div>}
         {error && <div className="passenger-feedback failure"><span>!</span>{error}<button onClick={() => setError('')}>Cerrar</button></div>}
-        {loading ? <LoadingPanel/> : page === 'inicio' ? <HomePage user={user} activeTrip={activeTrip} trips={trips} onRequest={() => go('pedir')} onTrips={() => go('viajes')} onCancel={setCanceling}/>
-          : page === 'pedir' ? <RequestPage places={places} origin={origin} originPlaceId={originPlaceId} destinationId={destinationId} quote={quote} quoting={quoting} locating={locating} busy={busy} activeTrip={activeTrip} onUseLocation={useLocation} onOrigin={selectOrigin} onDestination={selectDestination} onConfirm={confirmRequest} onActive={() => go('inicio')}/>
-          : page === 'viajes' ? <TripsPage trips={trips} busy={busy} onCancel={setCanceling} onRate={openRating}/>
+        {loading ? <LoadingPanel/> : page === 'inicio' ? <HomePage user={user} activeTrip={activeTrip} trips={trips} onRequest={() => go('pedir')} onTrips={() => go('viajes')} onCancel={setCanceling} onTrack={openTracking}/>
+          : page === 'pedir' ? <RequestPage places={places} origin={origin} originPlaceId={originPlaceId} destinationId={destinationId} quote={quote} quoting={quoting} locating={locating} busy={busy} activeTrip={activeTrip} onUseLocation={useLocation} onOrigin={selectOrigin} onDestination={selectDestination} onConfirm={confirmRequest} onActive={() => activeTrip && openTracking(activeTrip)}/>
+          : page === 'seguimiento' ? <TrackingPage trip={trackingTrip} position={tripPosition} onCancel={setCanceling} onBack={() => go('inicio')}/>
+          : page === 'viajes' ? <TripsPage trips={trips} busy={busy} onCancel={setCanceling} onRate={openRating} onTrack={openTracking}/>
           : page === 'avisos' ? <NotificationsPage notifications={notifications}/>
           : page === 'direcciones' ? <AddressesPage addresses={addresses} busy={busy} onSave={saveCurrentAddress} onFavorite={toggleFavoriteAddress} onDelete={removeAddress}/>
           : page === 'pagos' ? <PaymentsPage methods={paymentMethods} payments={payments} trips={trips} busy={busy} onAddCash={addCashPayment} onPreferred={selectPreferredPayment}/>
@@ -422,10 +471,10 @@ function LoadingPanel() {
   return <div className="passenger-loading"><i/><span>Actualizando tu información…</span></div>
 }
 
-function HomePage({ user, activeTrip, trips, onRequest, onTrips, onCancel }: { user: User; activeTrip: Trip | null; trips: Trip[]; onRequest: () => void; onTrips: () => void; onCancel: (trip: Trip) => void }) {
+function HomePage({ user, activeTrip, trips, onRequest, onTrips, onCancel, onTrack }: { user: User; activeTrip: Trip | null; trips: Trip[]; onRequest: () => void; onTrips: () => void; onCancel: (trip: Trip) => void; onTrack: (trip: Trip) => void }) {
   const recent = trips.filter((trip) => esFinal(trip.estado)).slice(0, 3)
   return <div className="passenger-page home-page">
-    <section className="passenger-welcome"><div><span>{activeTrip ? 'VIAJE ACTIVO' : 'LISTO PARA SALIR'}</span><h2>{activeTrip ? STATUS_HINT[activeTrip.estado] : '¿A dónde vamos hoy?'}</h2><p>{activeTrip ? `Destino: ${activeTrip.destinoTexto}` : 'Elige tu punto de partida y destino. Ride calcula la tarifa antes de confirmar.'}</p></div>{activeTrip ? <button onClick={() => document.getElementById('active-trip')?.scrollIntoView({ behavior: 'smooth' })}>Ver seguimiento</button> : <button onClick={onRequest}>Pedir un viaje <b>→</b></button>}</section>
+    <section className="passenger-welcome"><div><span>{activeTrip ? 'VIAJE ACTIVO' : 'LISTO PARA SALIR'}</span><h2>{activeTrip ? STATUS_HINT[activeTrip.estado] : '¿A dónde vamos hoy?'}</h2><p>{activeTrip ? `Destino: ${activeTrip.destinoTexto}` : 'Elige tu punto de partida y destino. Ride calcula la tarifa antes de confirmar.'}</p></div>{activeTrip ? <button onClick={() => onTrack(activeTrip)}>Ver seguimiento</button> : <button onClick={onRequest}>Pedir un viaje <b>→</b></button>}</section>
     {activeTrip ? <ActiveTrip trip={activeTrip} onCancel={onCancel}/> : <section className="start-ride-card"><div className="route-mark"><i/><span/><b/></div><div><small>NUEVA SOLICITUD</small><h3>Tu viaje empieza con dos puntos</h3><p>Usa tu ubicación actual o elige una dirección en Ecuador.</p></div><button onClick={onRequest}>Definir ruta</button></section>}
     <section className="passenger-section-head"><div><span>ACTIVIDAD</span><h2>Viajes recientes</h2></div>{trips.length > 0 && <button onClick={onTrips}>Ver todos →</button>}</section>
     {recent.length === 0 ? <EmptyState title="Aún no tienes viajes" text={`Cuando pidas el primero, ${user.name.split(' ')[0]}, podrás consultarlo aquí.`} action="Pedir mi primer viaje" onAction={onRequest}/> : <div className="recent-trip-list">{recent.map((trip) => <TripRow key={trip.id} trip={trip}/>)}</div>}
@@ -436,13 +485,19 @@ function ActiveTrip({ trip, onCancel }: { trip: Trip; onCancel: (trip: Trip) => 
   return <section className="active-trip" id="active-trip"><div className="active-trip-head"><div><span className={`trip-status ${trip.estado.toLowerCase()}`}>{ESTADO_LABEL[trip.estado]}</span><h2>{STATUS_HINT[trip.estado]}</h2></div><strong>{money(trip.tarifaFinal ?? trip.tarifaEstimada)}</strong></div><div className="trip-progress"><span style={{ width: `${progresoViaje(trip.estado)}%` }}/></div><div className="active-trip-grid"><Route trip={trip}/><div className="driver-card">{trip.conductorId ? <><span className="driver-avatar">{initials(trip.conductorNombre ?? 'Conductor')}</span><div><small>TU CONDUCTOR</small><strong>{trip.conductorNombre}</strong><p>{vehicle(trip)}</p>{trip.conductorCalificacion != null && <em>★ {trip.conductorCalificacion.toFixed(1)}</em>}</div></> : <><span className="searching-driver">⌁</span><div><small>CONDUCTOR</small><strong>Buscando disponibilidad</strong><p>La asignación aparecerá aquí automáticamente.</p></div></>}</div></div>{puedeCancelar(trip.estado) && <button className="cancel-trip" onClick={() => onCancel(trip)}>Cancelar viaje</button>}</section>
 }
 
+function TrackingPage({ trip, position, onCancel, onBack }: { trip: Trip | null; position: TripPosition | null; onCancel: (trip: Trip) => void; onBack: () => void }) {
+  if (!trip) return <EmptyState title="No hay un viaje para seguir" text="Cuando tengas un viaje activo podrás ver aquí cada cambio." action="Volver al inicio" onAction={onBack}/>
+  const mapUrl = position ? `https://www.openstreetmap.org/?mlat=${position.lat}&mlon=${position.lng}#map=16/${position.lat}/${position.lng}` : ''
+  return <div className="passenger-page tracking-page"><button className="tracking-back" onClick={onBack}>← Volver al inicio</button><section className="tracking-hero"><div><span className={`trip-status ${trip.estado.toLowerCase()}`}>{ESTADO_LABEL[trip.estado]}</span><h2>{STATUS_HINT[trip.estado]}</h2><p>Los cambios se muestran automáticamente.</p></div><strong>{money(trip.tarifaFinal ?? trip.tarifaEstimada)}</strong></section><div className="trip-progress tracking-progress"><span style={{ width: `${progresoViaje(trip.estado)}%` }}/></div><div className="tracking-layout"><section className="tracking-main"><h3>Recorrido</h3><Route trip={trip}/><div className="tracking-position"><span>⌖</span><div><small>UBICACIÓN DEL CONDUCTOR</small>{position ? <><strong>Actualizada {date(position.recordedAt)}</strong><p>{position.lat.toFixed(5)}, {position.lng.toFixed(5)}</p></> : <><strong>{trip.conductorId ? 'Esperando la primera actualización' : 'Se mostrará cuando se asigne un conductor'}</strong><p>Ride solo enseña una posición que el conductor haya enviado realmente.</p></>}</div>{position && <a href={mapUrl} target="_blank" rel="noreferrer">Abrir mapa ↗</a>}</div></section><aside className="tracking-driver"><h3>Conductor y vehículo</h3>{trip.conductorId ? <><div className="tracking-driver-profile"><span>{initials(trip.conductorNombre ?? 'Conductor')}</span><div><strong>{trip.conductorNombre}</strong>{trip.conductorCalificacion != null && <small>★ {trip.conductorCalificacion.toFixed(1)}</small>}</div></div><p>{vehicle(trip)}</p>{trip.conductorTelefono && <a href={`tel:${trip.conductorTelefono}`}>Llamar al conductor</a>}</> : <div className="tracking-search"><span>⌁</span><strong>Buscando conductor</strong><p>Cuando alguien acepte, aquí aparecerán sus datos y los del vehículo.</p></div>}</aside></div>{puedeCancelar(trip.estado) && <button className="tracking-cancel" onClick={() => onCancel(trip)}>Cancelar este viaje</button>}</div>
+}
+
 function RequestPage({ places, origin, originPlaceId, destinationId, quote, quoting, locating, busy, activeTrip, onUseLocation, onOrigin, onDestination, onConfirm, onActive }: { places: Place[]; origin: Coordinates | null; originPlaceId: string; destinationId: string; quote: Quote | null; quoting: boolean; locating: boolean; busy: boolean; activeTrip: Trip | null; onUseLocation: () => void; onOrigin: (id: string) => void; onDestination: (id: string) => void; onConfirm: () => void; onActive: () => void }) {
   if (activeTrip) return <EmptyState title="Ya tienes un viaje en curso" text={`Primero termina o cancela el viaje hacia ${activeTrip.destinoTexto}.`} action="Ver mi viaje" onAction={onActive}/>
   return <div className="passenger-page request-page"><div className="request-layout"><section className="request-form"><span className="passenger-kicker">DEFINE TU RECORRIDO</span><h2>Origen y destino</h2><p>Te mostraremos el precio antes de confirmar el viaje.</p><div className="route-form"><div className="route-field origin"><i/><label>Punto de partida<select value={originPlaceId} onChange={(event) => onOrigin(event.target.value)}><option value="">Elige un lugar</option>{originPlaceId === 'gps' && <option value="gps">Mi ubicación actual</option>}{places.map((place) => <option value={place.id} key={place.id}>{place.nombre}</option>)}</select><small>{origin?.label ?? 'Puedes usar tu ubicación actual'}</small></label></div><div className="route-line"/><div className="route-field destination"><i/><label>Destino<select value={destinationId} onChange={(event) => onDestination(event.target.value)}><option value="">¿A dónde quieres ir?</option>{places.map((place) => <option value={place.id} key={place.id}>{place.nombre}</option>)}</select><small>{places.find((place) => place.id === destinationId)?.direccion ?? 'Selecciona un destino disponible'}</small></label></div></div><button className="location-button" disabled={locating} onClick={onUseLocation}>{locating ? 'Obteniendo ubicación…' : '◎ Usar mi ubicación actual'}</button>{places.length === 0 && <p className="request-warning">Aún no hay direcciones disponibles. Inténtalo más tarde.</p>}</section><aside className="quote-card"><span className="passenger-kicker">RESUMEN</span><h3>Tu cotización</h3>{quoting ? <div className="quote-loading"><i/>Calculando la mejor tarifa…</div> : quote ? <><div className="quote-price"><span>Precio estimado</span><strong>{money(quote.total)}</strong></div><dl><div><dt>Distancia estimada</dt><dd>{quote.km.toFixed(2)} km</dd></div><div><dt>Tiempo estimado</dt><dd>{quote.minutos} min</dd></div><div><dt>Tarifa</dt><dd>{quote.tarifaNombre}</dd></div></dl><button disabled={busy} onClick={onConfirm}>{busy ? 'Solicitando…' : `Confirmar por ${money(quote.total)}`}<b>→</b></button><small>El precio final aparecerá cuando termine el viaje.</small></> : <div className="quote-empty"><span>↗</span><p>Completa el origen y el destino para conocer el precio antes de confirmar.</p></div>}</aside></div></div>
 }
 
-function TripsPage({ trips, busy, onCancel, onRate }: { trips: Trip[]; busy: boolean; onCancel: (trip: Trip) => void; onRate: (trip: Trip) => void }) {
-  return <div className="passenger-page trips-page"><section className="passenger-section-head"><div><span>HISTORIAL REAL</span><h2>Todos tus viajes</h2><p>{trips.length} {trips.length === 1 ? 'viaje registrado' : 'viajes registrados'}</p></div></section>{trips.length === 0 ? <EmptyState title="Aún no hay viajes" text="Tus solicitudes aparecerán aquí cuando pidas un viaje."/> : <div className="trip-history">{trips.map((trip) => <article key={trip.id}><TripRow trip={trip}/><div className="history-actions">{puedeCancelar(trip.estado) && <button onClick={() => onCancel(trip)}>Cancelar</button>}{trip.estado === 'FINALIZADO' && trip.conductorId && <button disabled={busy} onClick={() => onRate(trip)}>Calificar viaje</button>}</div></article>)}</div>}</div>
+function TripsPage({ trips, busy, onCancel, onRate, onTrack }: { trips: Trip[]; busy: boolean; onCancel: (trip: Trip) => void; onRate: (trip: Trip) => void; onTrack: (trip: Trip) => void }) {
+  return <div className="passenger-page trips-page"><section className="passenger-section-head"><div><span>HISTORIAL REAL</span><h2>Todos tus viajes</h2><p>{trips.length} {trips.length === 1 ? 'viaje registrado' : 'viajes registrados'}</p></div></section>{trips.length === 0 ? <EmptyState title="Aún no hay viajes" text="Tus solicitudes aparecerán aquí cuando pidas un viaje."/> : <div className="trip-history">{trips.map((trip) => <article key={trip.id}><TripRow trip={trip}/><div className="history-actions">{!esFinal(trip.estado) && <button onClick={() => onTrack(trip)}>Ver seguimiento</button>}{puedeCancelar(trip.estado) && <button onClick={() => onCancel(trip)}>Cancelar</button>}{trip.estado === 'FINALIZADO' && trip.conductorId && <button disabled={busy} onClick={() => onRate(trip)}>Calificar viaje</button>}</div></article>)}</div>}</div>
 }
 
 function NotificationsPage({ notifications }: { notifications: RideNotification[] }) {
