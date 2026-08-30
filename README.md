@@ -104,7 +104,9 @@ por la base de datos.
 
 - Los paneles de pasajero y conductor muestran la cuenta, pero todavía no
   permiten solicitar o gestionar viajes desde la web.
-- **Tarifas** y **Soporte** aparecen en el menú, pero aún son módulos de espera.
+- El panel administrativo muestra únicamente **Resumen**, **Usuarios**,
+  **Conductores** y **Viajes**; los módulos que todavía no funcionan no se
+  exponen en la navegación.
 - La configuración de Supabase y el orden de sus migraciones están documentados
   en [`docs/CONEXION_SUPABASE.md`](docs/CONEXION_SUPABASE.md).
 
