@@ -3,6 +3,12 @@ import './PassengerDashboard.css'
 import logoTipo from './assets/LogoTipo.png'
 import { panelLabel, type Role, type User } from './lib/auth'
 import {
+  listNotifications,
+  markAllNotificationsRead,
+  watchNotifications,
+  type RideNotification,
+} from './lib/notifications'
+import {
   cancelTrip,
   esFinal,
   ESTADO_LABEL,
@@ -22,7 +28,7 @@ import {
   type TripStatus,
 } from './lib/trips'
 
-type Page = 'inicio' | 'pedir' | 'viajes' | 'cuenta'
+type Page = 'inicio' | 'pedir' | 'viajes' | 'avisos' | 'cuenta'
 
 type Props = {
   user: User
@@ -81,6 +87,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
   const [rating, setRating] = useState<Trip | null>(null)
   const [ratingScore, setRatingScore] = useState(5)
   const [ratingComment, setRatingComment] = useState('')
+  const [notifications, setNotifications] = useState<RideNotification[]>([])
 
   const load = useCallback(async () => {
     try {
@@ -98,10 +105,23 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
     }
   }, [user.id])
 
+  const loadNotifications = useCallback(async () => {
+    try {
+      setNotifications(await listNotifications(user.id))
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'No pudimos actualizar tus avisos.')
+    }
+  }, [user.id])
+
   useEffect(() => {
     queueMicrotask(() => load())
     return watchTrips(() => load())
   }, [load])
+
+  useEffect(() => {
+    queueMicrotask(() => loadNotifications())
+    return watchNotifications(user.id, loadNotifications)
+  }, [loadNotifications, user.id])
 
   const destination = useMemo(
     () => places.find((place) => place.id === destinationId) ?? null,
@@ -215,6 +235,19 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
     setPage(next); setError(''); setNotice('')
   }
 
+  const openNotifications = async () => {
+    go('avisos')
+    if (!notifications.some((item) => !item.read)) return
+    try {
+      await markAllNotificationsRead()
+      await loadNotifications()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'No se pudieron actualizar tus avisos.')
+    }
+  }
+
+  const unread = notifications.filter((item) => !item.read).length
+
   return <main className="passenger-shell">
     <aside className="passenger-sidebar">
       <div className="passenger-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
@@ -222,6 +255,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
         <NavButton active={page === 'inicio'} icon="⌂" label="Inicio" onClick={() => go('inicio')}/>
         <NavButton active={page === 'pedir'} icon="↗" label="Pedir viaje" onClick={() => go('pedir')}/>
         <NavButton active={page === 'viajes'} icon="≡" label="Mis viajes" onClick={() => go('viajes')}/>
+        <NavButton active={page === 'avisos'} icon="♢" label="Avisos" onClick={openNotifications}/>
         <NavButton active={page === 'cuenta'} icon="○" label="Mi cuenta" onClick={() => go('cuenta')}/>
       </nav>
       <div className="passenger-profile">
@@ -234,9 +268,10 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
     <section className="passenger-workspace">
       <header className="passenger-topbar">
         <div className="passenger-mobile-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
-        <div><span className="passenger-kicker">PANEL DE PASAJERO</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'pedir' ? 'Pide un viaje' : page === 'viajes' ? 'Tus viajes' : 'Tu cuenta'}</h1></div>
+        <div><span className="passenger-kicker">PANEL DE PASAJERO</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'pedir' ? 'Pide un viaje' : page === 'viajes' ? 'Tus viajes' : page === 'avisos' ? 'Tus avisos' : 'Tu cuenta'}</h1></div>
         <div className="passenger-top-actions">
           {views.length > 1 && <label className="passenger-view-select"><span>Vista</span><select value={activeView} onChange={(event) => onSwitchView(event.target.value as Role)}>{views.map((view) => <option value={view} key={view}>{panelLabel(view)}</option>)}</select></label>}
+          <button className="notification-button" onClick={openNotifications} aria-label={unread ? `${unread} avisos sin leer` : 'Abrir avisos'}>♢{unread > 0 && <b>{unread > 9 ? '9+' : unread}</b>}</button>
           <button className="passenger-avatar" onClick={() => go('cuenta')} aria-label="Abrir mi cuenta">{initials(user.name)}</button>
         </div>
       </header>
@@ -247,6 +282,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
         {loading ? <LoadingPanel/> : page === 'inicio' ? <HomePage user={user} activeTrip={activeTrip} trips={trips} onRequest={() => go('pedir')} onTrips={() => go('viajes')} onCancel={setCanceling}/>
           : page === 'pedir' ? <RequestPage places={places} origin={origin} originPlaceId={originPlaceId} destinationId={destinationId} quote={quote} quoting={quoting} locating={locating} busy={busy} activeTrip={activeTrip} onUseLocation={useLocation} onOrigin={selectOrigin} onDestination={selectDestination} onConfirm={confirmRequest} onActive={() => go('inicio')}/>
           : page === 'viajes' ? <TripsPage trips={trips} busy={busy} onCancel={setCanceling} onRate={openRating}/>
+          : page === 'avisos' ? <NotificationsPage notifications={notifications}/>
           : <AccountPage user={user} trips={trips}/>
         }
       </div>
@@ -256,6 +292,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
       <NavButton active={page === 'inicio'} icon="⌂" label="Inicio" onClick={() => go('inicio')}/>
       <NavButton active={page === 'pedir'} icon="↗" label="Pedir" onClick={() => go('pedir')}/>
       <NavButton active={page === 'viajes'} icon="≡" label="Viajes" onClick={() => go('viajes')}/>
+      <NavButton active={page === 'avisos'} icon="♢" label="Avisos" onClick={openNotifications}/>
       <NavButton active={page === 'cuenta'} icon="○" label="Cuenta" onClick={() => go('cuenta')}/>
     </nav>
 
@@ -293,6 +330,10 @@ function RequestPage({ places, origin, originPlaceId, destinationId, quote, quot
 
 function TripsPage({ trips, busy, onCancel, onRate }: { trips: Trip[]; busy: boolean; onCancel: (trip: Trip) => void; onRate: (trip: Trip) => void }) {
   return <div className="passenger-page trips-page"><section className="passenger-section-head"><div><span>HISTORIAL REAL</span><h2>Todos tus viajes</h2><p>{trips.length} {trips.length === 1 ? 'viaje registrado' : 'viajes registrados'}</p></div></section>{trips.length === 0 ? <EmptyState title="Aún no hay viajes" text="Tus solicitudes aparecerán aquí cuando pidas un viaje."/> : <div className="trip-history">{trips.map((trip) => <article key={trip.id}><TripRow trip={trip}/><div className="history-actions">{puedeCancelar(trip.estado) && <button onClick={() => onCancel(trip)}>Cancelar</button>}{trip.estado === 'FINALIZADO' && trip.conductorId && <button disabled={busy} onClick={() => onRate(trip)}>Calificar viaje</button>}</div></article>)}</div>}</div>
+}
+
+function NotificationsPage({ notifications }: { notifications: RideNotification[] }) {
+  return <div className="passenger-page notifications-page"><section className="passenger-section-head"><div><span>ACTUALIZACIONES REALES</span><h2>Lo que ocurre con tu cuenta</h2><p>Los avisos aparecen cuando cambia un viaje o una solicitud.</p></div></section>{notifications.length === 0 ? <EmptyState title="No tienes avisos" text="Aquí aparecerán los cambios importantes de tus viajes."/> : <div className="notification-list">{notifications.map((item) => <article className={item.read ? '' : 'unread'} key={item.id}><span className="notification-mark">{item.read ? '✓' : '•'}</span><div><div className="notification-title"><h3>{item.title}</h3><time>{date(item.createdAt)}</time></div><p>{item.message}</p></div></article>)}</div>}</div>
 }
 
 function AccountPage({ user, trips }: { user: User; trips: Trip[] }) {
