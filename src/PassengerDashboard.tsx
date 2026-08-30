@@ -16,6 +16,14 @@ import {
   type RideNotification,
 } from './lib/notifications'
 import {
+  choosePreferredPayment,
+  listPaymentMethods,
+  listPaymentsForTrips,
+  registerCashPayment,
+  type PaymentMethod,
+  type RidePayment,
+} from './lib/payments'
+import {
   cancelTrip,
   esFinal,
   ESTADO_LABEL,
@@ -35,7 +43,7 @@ import {
   type TripStatus,
 } from './lib/trips'
 
-type Page = 'inicio' | 'pedir' | 'viajes' | 'avisos' | 'direcciones' | 'cuenta'
+type Page = 'inicio' | 'pedir' | 'viajes' | 'avisos' | 'direcciones' | 'pagos' | 'cuenta'
 
 type Props = {
   user: User
@@ -96,6 +104,8 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
   const [ratingComment, setRatingComment] = useState('')
   const [notifications, setNotifications] = useState<RideNotification[]>([])
   const [addresses, setAddresses] = useState<SavedAddress[]>([])
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
+  const [payments, setPayments] = useState<RidePayment[]>([])
 
   const load = useCallback(async () => {
     try {
@@ -129,6 +139,19 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
     }
   }, [user.id])
 
+  const loadPaymentData = useCallback(async () => {
+    try {
+      const [methods, history] = await Promise.all([
+        listPaymentMethods(user.id),
+        listPaymentsForTrips(trips.map((trip) => trip.id)),
+      ])
+      setPaymentMethods(methods)
+      setPayments(history)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'No pudimos actualizar tus pagos.')
+    }
+  }, [trips, user.id])
+
   useEffect(() => {
     queueMicrotask(() => load())
     return watchTrips(() => load())
@@ -142,6 +165,10 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
   useEffect(() => {
     queueMicrotask(() => loadAddresses())
   }, [loadAddresses])
+
+  useEffect(() => {
+    queueMicrotask(() => loadPaymentData())
+  }, [loadPaymentData])
 
   const destination = useMemo(
     () => places.find((place) => place.id === destinationId) ?? null,
@@ -309,6 +336,27 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
     } finally { setBusy(false) }
   }
 
+  const addCashPayment = async () => {
+    setBusy(true); setError(''); setNotice('')
+    try {
+      await registerCashPayment()
+      await loadPaymentData()
+      setNotice('El pago en efectivo quedó como opción principal.')
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'No se pudo registrar la forma de pago.')
+    } finally { setBusy(false) }
+  }
+
+  const selectPreferredPayment = async (method: PaymentMethod) => {
+    setBusy(true); setError('')
+    try {
+      await choosePreferredPayment(method.id)
+      await loadPaymentData()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'No se pudo cambiar la forma de pago.')
+    } finally { setBusy(false) }
+  }
+
   return <main className="passenger-shell">
     <aside className="passenger-sidebar">
       <div className="passenger-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
@@ -318,6 +366,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
         <NavButton active={page === 'viajes'} icon="≡" label="Mis viajes" onClick={() => go('viajes')}/>
         <NavButton active={page === 'avisos'} icon="♢" label="Avisos" onClick={openNotifications}/>
         <NavButton active={page === 'direcciones'} icon="⌖" label="Direcciones" onClick={() => go('direcciones')}/>
+        <NavButton active={page === 'pagos'} icon="$" label="Pagos" onClick={() => go('pagos')}/>
         <NavButton active={page === 'cuenta'} icon="○" label="Mi cuenta" onClick={() => go('cuenta')}/>
       </nav>
       <div className="passenger-profile">
@@ -330,7 +379,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
     <section className="passenger-workspace">
       <header className="passenger-topbar">
         <div className="passenger-mobile-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
-        <div><span className="passenger-kicker">PANEL DE PASAJERO</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'pedir' ? 'Pide un viaje' : page === 'viajes' ? 'Tus viajes' : page === 'avisos' ? 'Tus avisos' : page === 'direcciones' ? 'Tus direcciones' : 'Tu cuenta'}</h1></div>
+        <div><span className="passenger-kicker">PANEL DE PASAJERO</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'pedir' ? 'Pide un viaje' : page === 'viajes' ? 'Tus viajes' : page === 'avisos' ? 'Tus avisos' : page === 'direcciones' ? 'Tus direcciones' : page === 'pagos' ? 'Tus pagos' : 'Tu cuenta'}</h1></div>
         <div className="passenger-top-actions">
           {views.length > 1 && <label className="passenger-view-select"><span>Vista</span><select value={activeView} onChange={(event) => onSwitchView(event.target.value as Role)}>{views.map((view) => <option value={view} key={view}>{panelLabel(view)}</option>)}</select></label>}
           <button className="notification-button" onClick={openNotifications} aria-label={unread ? `${unread} avisos sin leer` : 'Abrir avisos'}>♢{unread > 0 && <b>{unread > 9 ? '9+' : unread}</b>}</button>
@@ -346,7 +395,8 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
           : page === 'viajes' ? <TripsPage trips={trips} busy={busy} onCancel={setCanceling} onRate={openRating}/>
           : page === 'avisos' ? <NotificationsPage notifications={notifications}/>
           : page === 'direcciones' ? <AddressesPage addresses={addresses} busy={busy} onSave={saveCurrentAddress} onFavorite={toggleFavoriteAddress} onDelete={removeAddress}/>
-          : <AccountPage user={user} trips={trips} addresses={addresses} onAddresses={() => go('direcciones')}/>
+          : page === 'pagos' ? <PaymentsPage methods={paymentMethods} payments={payments} trips={trips} busy={busy} onAddCash={addCashPayment} onPreferred={selectPreferredPayment}/>
+          : <AccountPage user={user} trips={trips} addresses={addresses} methods={paymentMethods} onAddresses={() => go('direcciones')} onPayments={() => go('pagos')}/>
         }
       </div>
     </section>
@@ -410,9 +460,15 @@ function AddressesPage({ addresses, busy, onSave, onFavorite, onDelete }: { addr
   return <div className="passenger-page addresses-page"><section className="passenger-section-head"><div><span>LUGARES PERSONALES</span><h2>Direcciones guardadas</h2><p>Guarda el punto donde estás para encontrarlo rápidamente en un próximo viaje.</p></div></section><div className="address-layout"><section className="address-form"><h3>Guardar mi ubicación actual</h3><p>Escribe cómo quieres reconocer este lugar. Las coordenadas se obtienen del navegador.</p><label>Nombre del lugar<input maxLength={40} value={label} onChange={(event) => setLabel(event.target.value)} placeholder="Ej. Casa, trabajo o universidad"/></label><label>Referencia visible<input maxLength={120} value={address} onChange={(event) => setAddress(event.target.value)} placeholder="Ej. Entrada principal, calle y sector"/></label><button disabled={busy || !label.trim() || !address.trim()} onClick={submit}>{busy ? 'Guardando…' : '⌖ Usar mi ubicación y guardar'}</button><small>Ride nunca te pedirá escribir coordenadas manualmente.</small></section><section className="address-list">{addresses.length === 0 ? <EmptyState title="No tienes direcciones guardadas" text="Guarda tu ubicación actual para usarla al pedir un viaje."/> : addresses.map((item) => <article key={item.id}><span className={item.favorite ? 'address-pin favorite' : 'address-pin'}>⌖</span><div><div className="address-title"><h3>{item.label}</h3>{item.favorite && <b>Favorita</b>}</div><p>{item.address}</p><small>Guardada el {date(item.lastUsedAt)}</small></div><div className="address-actions"><button disabled={busy} onClick={() => onFavorite(item)}>{item.favorite ? 'Quitar favorita' : 'Hacer favorita'}</button><button className="danger" disabled={busy} onClick={() => onDelete(item)}>Eliminar</button></div></article>)}</section></div></div>
 }
 
-function AccountPage({ user, trips, addresses, onAddresses }: { user: User; trips: Trip[]; addresses: SavedAddress[]; onAddresses: () => void }) {
+function PaymentsPage({ methods, payments, trips, busy, onAddCash, onPreferred }: { methods: PaymentMethod[]; payments: RidePayment[]; trips: Trip[]; busy: boolean; onAddCash: () => void; onPreferred: (method: PaymentMethod) => void }) {
+  const tripDestination = (tripId: string) => trips.find((trip) => trip.id === tripId)?.destinoTexto ?? 'Viaje Ride'
+  const statusLabel: Record<RidePayment['status'], string> = { pendiente: 'Pendiente', completado: 'Completado', fallido: 'Fallido' }
+  return <div className="passenger-page payments-page"><section className="passenger-section-head"><div><span>COBROS REGISTRADOS</span><h2>Formas de pago</h2><p>La aplicación no guarda números de tarjeta ni datos bancarios.</p></div></section><div className="payment-layout"><section className="payment-methods"><div className="payment-head"><h3>Tus opciones</h3>{!methods.some((method) => method.type === 'efectivo') && <button disabled={busy} onClick={onAddCash}>+ Agregar efectivo</button>}</div>{methods.length === 0 ? <div className="payment-empty"><span>$</span><h4>Sin formas de pago</h4><p>Puedes registrar efectivo ahora. Las tarjetas se habilitarán cuando Ride tenga una pasarela de pago real.</p><button disabled={busy} onClick={onAddCash}>{busy ? 'Agregando…' : 'Usar efectivo'}</button></div> : <div className="payment-method-list">{methods.map((method) => <article key={method.id}><span>{method.type === 'efectivo' ? '$' : '▣'}</span><div><strong>{method.type === 'efectivo' ? 'Efectivo' : 'Tarjeta tokenizada'}</strong><small>{method.preferred ? 'Opción principal' : `Agregada el ${date(method.createdAt)}`}</small></div>{method.preferred ? <b>Principal</b> : <button disabled={busy} onClick={() => onPreferred(method)}>Elegir</button>}</article>)}</div>}<aside className="payment-security"><b>Pago seguro</b><p>Una tarjeta solo podrá agregarse mediante el token de una pasarela. Ride no aceptará ni almacenará el número escrito directamente.</p></aside></section><section className="payment-history"><h3>Movimientos</h3>{payments.length === 0 ? <p className="payment-no-history">Aún no tienes cobros registrados.</p> : payments.map((payment) => <article key={payment.id}><span className={`payment-state ${payment.status}`}>{statusLabel[payment.status]}</span><div><strong>{tripDestination(payment.tripId)}</strong><small>{date(payment.createdAt)} · {payment.type === 'reembolso' ? 'Reembolso' : payment.type === 'reintento' ? 'Reintento' : 'Pago'}</small></div><b>{money(payment.amount)}</b></article>)}</section></div></div>
+}
+
+function AccountPage({ user, trips, addresses, methods, onAddresses, onPayments }: { user: User; trips: Trip[]; addresses: SavedAddress[]; methods: PaymentMethod[]; onAddresses: () => void; onPayments: () => void }) {
   const completed = trips.filter((trip) => trip.estado === 'FINALIZADO').length
-  return <div className="passenger-page account-page"><section className="account-hero"><span className="account-avatar">{initials(user.name)}</span><div><span className="passenger-kicker">PERFIL DE PASAJERO</span><h2>{user.name}</h2><p>Tu información de Ride y actividad reciente.</p></div></section><section className="account-layout"><div className="account-details"><h3>Datos personales</h3><dl><div><dt>Nombre</dt><dd>{user.name}</dd></div><div><dt>Correo</dt><dd>{user.email}</dd></div><div><dt>Teléfono</dt><dd>{user.phone || 'Sin teléfono registrado'}</dd></div><div><dt>Tipo de cuenta</dt><dd>Pasajero</dd></div></dl><button className="account-link" onClick={onAddresses}>Administrar {addresses.length} {addresses.length === 1 ? 'dirección guardada' : 'direcciones guardadas'} →</button></div><div className="account-summary"><span>VIAJES FINALIZADOS</span><strong>{completed}</strong><p>{trips.length - completed} solicitudes en otros estados</p></div></section></div>
+  return <div className="passenger-page account-page"><section className="account-hero"><span className="account-avatar">{initials(user.name)}</span><div><span className="passenger-kicker">PERFIL DE PASAJERO</span><h2>{user.name}</h2><p>Tu información de Ride y actividad reciente.</p></div></section><section className="account-layout"><div className="account-details"><h3>Datos personales</h3><dl><div><dt>Nombre</dt><dd>{user.name}</dd></div><div><dt>Correo</dt><dd>{user.email}</dd></div><div><dt>Teléfono</dt><dd>{user.phone || 'Sin teléfono registrado'}</dd></div><div><dt>Tipo de cuenta</dt><dd>Pasajero</dd></div></dl><div className="account-links"><button className="account-link" onClick={onAddresses}>Administrar {addresses.length} {addresses.length === 1 ? 'dirección guardada' : 'direcciones guardadas'} →</button><button className="account-link" onClick={onPayments}>Administrar {methods.length} {methods.length === 1 ? 'forma de pago' : 'formas de pago'} →</button></div></div><div className="account-summary"><span>VIAJES FINALIZADOS</span><strong>{completed}</strong><p>{trips.length - completed} solicitudes en otros estados</p></div></section></div>
 }
 
 function Route({ trip }: { trip: Trip }) {
