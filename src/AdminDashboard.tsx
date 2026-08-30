@@ -19,9 +19,9 @@ const sections = [
   ['Usuarios', '♙'],
   ['Conductores', '◉'],
   ['Viajes', '↗'],
-  ['Tarifas', '$'],
-  ['Soporte', '?'],
 ] as const
+
+type Section = (typeof sections)[number][0]
 
 function roleLabel(role: string) {
   if (role === 'superadmin') return 'Superadmin'
@@ -50,8 +50,26 @@ function formatDate(value: string) {
   return new Intl.DateTimeFormat('es-EC', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(value))
 }
 
+function UserRows({ users, loading, error, limit }: { users: User[]; loading: boolean; error: string; limit?: number }) {
+  const rows = limit == null ? users : users.slice(0, limit)
+
+  return <>
+    {error && <p className="admin-error">{error}</p>}
+    {loading && <p className="admin-empty">Cargando usuarios…</p>}
+    {!loading && !error && users.length === 0 && <p className="admin-empty">Todavía no hay cuentas registradas.</p>}
+    {!loading && !error && rows.map((account) => (
+      <div className="user-row" key={account.id}>
+        <span>{initials(account.name)}</span>
+        <div><strong>{account.name}</strong><small>{account.email}</small></div>
+        <em className={roleClass(account.role)}>{roleLabel(account.role)}</em>
+        <time>{formatDate(account.createdAt)}</time>
+      </div>
+    ))}
+  </>
+}
+
 export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLogout }: Props) {
-  const [activeSection, setActiveSection] = useState('Resumen')
+  const [activeSection, setActiveSection] = useState<Section>('Resumen')
   const [users, setUsers] = useState<User[]>([])
   const [trips, setTrips] = useState<Trip[]>([])
   const [tripsError, setTripsError] = useState('')
@@ -131,7 +149,6 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
             </button>
           ))}
         </nav>
-        <div className="system-ok"><i />Sistema operativo<small>Acceso protegido</small></div>
         {views.length > 1 && (
           <label className="panel-switcher sidebar">
             <span className="sr-only">Cambiar de panel</span>
@@ -172,29 +189,16 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
             <div className="admin-grid">
               <section className="admin-card user-table">
                 <div className="admin-card-head"><div><h3>Usuarios registrados</h3><p>Información obtenida desde Supabase.</p></div><button onClick={() => setActiveSection('Usuarios')}>Ver todos</button></div>
-                {error && <p className="admin-error">{error}</p>}
-                {loading && <p className="admin-error">Cargando usuarios…</p>}
-                {!loading && !error && visibleUsers.length === 0 && <p className="admin-error">Todavía no hay cuentas registradas.</p>}
-                {!loading && visibleUsers.slice(0, 6).map((account) => (
-                  <div className="user-row" key={account.id}>
-                    <span>{initials(account.name)}</span>
-                    <div><strong>{account.name}</strong><small>{account.email}</small></div>
-                    <em className={roleClass(account.role)}>{roleLabel(account.role)}</em>
-                    <time>{formatDate(account.createdAt)}</time>
-                  </div>
-                ))}
-              </section>
-
-              <section className="admin-card next-steps">
-                <div className="admin-card-head"><div><h3>Estado de implementación</h3><p>Avance funcional del proyecto.</p></div></div>
-                <ul>
-                  <li className="done"><span>✓</span><div><b>Acceso por roles</b><small>Admin y superadmin diferenciados</small></div></li>
-                  <li className="done"><span>✓</span><div><b>Primer acceso seguro</b><small>Cambio de contraseña administrativa</small></div></li>
-                  <li className="done"><span>✓</span><div><b>Conexión con Supabase</b><small>Auth y perfiles en la nube</small></div></li>
-                  <li><span>4</span><div><b>Gestión de viajes</b><small>Tablas listas, falta la interfaz</small></div></li>
-                </ul>
+                <UserRows users={visibleUsers} loading={loading} error={error} limit={6} />
               </section>
             </div>
+          </div>
+        ) : activeSection === 'Usuarios' ? (
+          <div className="admin-content">
+            <section className="admin-card user-table">
+              <div className="admin-card-head"><div><h3>Usuarios registrados</h3><p>Perfiles visibles para tu nivel de acceso.</p></div></div>
+              <UserRows users={visibleUsers} loading={loading} error={error} />
+            </section>
           </div>
         ) : activeSection === 'Conductores' ? (
           <DriversPanel />
@@ -232,14 +236,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
               )}
             </section>
           </div>
-        ) : (
-          <section className="admin-placeholder">
-            <span>{sections.find(([label]) => label === activeSection)?.[1]}</span>
-            <h2>{activeSection}</h2>
-            <p>Este módulo se construirá en una siguiente etapa.</p>
-            <button onClick={() => setActiveSection('Resumen')}>Volver al resumen</button>
-          </section>
-        )}
+        ) : null}
       </section>
     </main>
   )

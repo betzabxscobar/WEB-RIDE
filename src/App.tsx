@@ -2,9 +2,6 @@ import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import './App.css'
 import logoTipo from './assets/LogoTipo.png'
-import iconShield from './assets/IconoEscudo.png'
-import iconMoneda from './assets/IconoMoneda.png'
-import iconSoporte from './assets/IconoSoporte.png'
 import AdminDashboard from './AdminDashboard'
 import { supabase } from './lib/supabase'
 import {
@@ -202,23 +199,18 @@ function App() {
   if (screen === 'home' && user) return <main className="user-home">
     {viewingOtherPanel && <ViewingAsBar role={user.role} onBack={() => setView(null)} />}
     <header><div className="mini-brand"><Logo /><b>Ride</b></div><div className="home-actions"><PanelSwitcher views={availableViews} active={activeView} onSwitch={switchView} /><button onClick={logout}>Cerrar sesión</button></div></header>
-    <section><span className="success-mark">✓</span><p>Sesión iniciada correctamente</p><h1>Hola, {user.name.split(' ')[0]}</h1><p className="home-copy">{viewingOtherPanel ? `Así ve la app una cuenta de ${activeView === 'driver' ? 'conductor' : 'pasajero'}.` : `Tu cuenta de ${activeView === 'driver' ? 'conductor' : 'pasajero'} está lista.`}</p><div className="account-card"><div><small>Correo</small><strong>{user.email}</strong></div><div><small>Teléfono</small><strong>{user.phone || 'Sin teléfono'}</strong></div><div><small>Modo</small><strong>{activeView === 'driver' ? 'Conduzco' : 'Viajo'}</strong></div></div><p className="next-note">La solicitud de viajes será el siguiente módulo.</p></section>
+    <section><span className="success-mark">✓</span><p>Sesión iniciada correctamente</p><h1>Hola, {user.name.split(' ')[0]}</h1><p className="home-copy">{viewingOtherPanel ? `Así ve la app una cuenta de ${activeView === 'driver' ? 'conductor' : 'pasajero'}.` : `Tu cuenta de ${activeView === 'driver' ? 'conductor' : 'pasajero'} está lista.`}</p><div className="account-card"><div><small>Correo</small><strong>{user.email}</strong></div><div><small>Teléfono</small><strong>{user.phone || 'Sin teléfono'}</strong></div><div><small>Modo</small><strong>{activeView === 'driver' ? 'Conduzco' : 'Viajo'}</strong></div></div></section>
   </main>
 
   return <main className="auth-page">
     <section className="brand-panel">
       <div className="brand-copy"><div className="wordmark"><img src={logoTipo} className="wordmark-logo" alt="Ride" /><span>Ride</span></div><h1>Muévete con<br/><em>libertad.</em></h1><p>Una forma más segura, transparente y humana de llegar a donde quieres.</p></div>
       <div className="city-art"><div className="moon"/><div className="route"><i/><i/><i/></div><div className="car">▰</div><div className="buildings"><i/><i/><i/><i/><i/><i/></div></div>
-      <div className="trust">
-        <div className="trust-item"><img src={iconShield} alt="Protegido"/><span>Viajes Protegidos</span></div>
-        <div className="trust-item"><img src={iconMoneda} alt="Transparente"/><span>Precio transparente</span></div>
-        <div className="trust-item"><img src={iconSoporte} alt="Soporte"/><span>Soporte</span></div>
-      </div>
     </section>
 
     <section className="form-panel">
       <div className="mobile-brand"><img src={logoTipo} className="wordmark-logo mobile-logo" alt="Ride" /><b>Ride</b></div>
-      {screen === 'welcome' && <div className="auth-box welcome-box"><span className="eyebrow">BIENVENIDO A RIDE</span><h2>Tu próximo viaje<br/>empieza aquí.</h2><p>Crea una cuenta o inicia sesión para continuar.</p><button className="primary-action" onClick={() => setScreen('register')}>Crear cuenta <span>→</span></button><button className="secondary-action" onClick={() => setScreen('login')}>Ya tengo una cuenta</button><small>Al continuar aceptas nuestros <a>Términos</a> y la <a>Política de privacidad</a>.</small></div>}
+      {screen === 'welcome' && <div className="auth-box welcome-box"><span className="eyebrow">BIENVENIDO A RIDE</span><h2>Tu próximo viaje<br/>empieza aquí.</h2><p>Crea una cuenta o inicia sesión para continuar.</p><button className="primary-action" onClick={() => setScreen('register')}>Crear cuenta <span>→</span></button><button className="secondary-action" onClick={() => setScreen('login')}>Ya tengo una cuenta</button></div>}
       {screen === 'login' && <AuthForm title="Qué bueno verte" subtitle="Ingresa tus datos para continuar." submit="Iniciar sesión" loading={loading} message={message} notice={notice} showPassword={showPassword} setShowPassword={setShowPassword} onSubmit={(event) => { event.preventDefault(); handleLogin(event.currentTarget) }} onBack={() => { setScreen('welcome'); setMessage(''); setNotice('') }} footer={<>¿Aún no tienes cuenta? <button onClick={() => { setScreen('register'); setMessage(''); setNotice('') }}>Regístrate</button></>} extra={<button type="button" className="link-button" onClick={() => { setScreen('forgot'); setMessage(''); setNotice('') }}>¿Olvidaste tu contraseña?</button>} />}
       {screen === 'forgot' && <ForgotPasswordForm loading={loading} message={message} onSubmit={(event) => { event.preventDefault(); handleForgotPassword(event.currentTarget) }} onBack={() => { setScreen('login'); setMessage(''); setNotice('') }} />}
       {screen === 'register' && <RegisterForm loading={loading} message={message} notice={notice} showPassword={showPassword} setShowPassword={setShowPassword} onSubmit={(event) => { event.preventDefault(); handleRegister(event.currentTarget) }} onBack={() => { setScreen('welcome'); setMessage(''); setNotice('') }} onLogin={() => { setScreen('login'); setMessage(''); setNotice('') }} />}
