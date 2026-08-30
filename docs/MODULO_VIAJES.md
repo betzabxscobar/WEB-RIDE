@@ -10,7 +10,7 @@ proveedor externo, descartado por decisión del proyecto:
 | Falta | Por qué | Qué se hace en su lugar |
 |---|---|---|
 | Mapa visual | Los tiles vienen de Google, Mapbox u OpenStreetMap | Origen y destino en texto, con coordenadas reales detrás |
-| Geocodificación | Convertir «Av. 9 de Octubre» en coordenadas es un servicio | Catálogo `public.lugares` con puntos conocidos |
+| Geocodificación | Convertir «Av. 9 de Octubre» en coordenadas es un servicio | Direcciones verificadas en `direcciones_guardadas` y catálogo administrado `lugares` |
 | Ruta por calles | Requiere un motor de rutas | Distancia en línea recta × factor urbano |
 
 Lo que **sí** se hace con Supabase: calcular distancias (Postgres), cotizar por
@@ -55,8 +55,11 @@ con Realtime y ofrece calificar al terminar.
 `public.conductores`, no una bandera local) → solicitudes abiertas → aceptar →
 avanzar estados → finalizar → calificar al pasajero.
 
-**Panel web** — sección *Viajes*: métricas y monitoreo en vivo de todos los
-viajes. RLS da lectura global a las cuentas administrativas.
+**Panel web de pasajero** — ubicación del navegador o dirección guardada →
+cotización → solicitud → seguimiento en vivo → cancelación o calificación.
+
+**Panel web administrativo** — sección *Viajes*: métricas y monitoreo en vivo
+de todos los viajes. RLS da lectura global a las cuentas administrativas.
 
 ## Dónde vive cada cosa
 
@@ -67,7 +70,9 @@ viajes. RLS da lectura global a las cuentas administrativas.
 - `lib/screens/trips/` — solicitud, seguimiento, chofer y calificación
 
 **WEB-RIDE (React)**
-- `src/lib/trips.ts` — consulta y suscripción
+- `src/lib/trips.ts` — cotización, solicitud, historial, cancelación,
+  calificación y suscripción
+- `src/PassengerDashboard.tsx` — panel funcional del pasajero
 - `src/AdminDashboard.tsx` — sección *Viajes*
 
 ## Un defecto que apareció al probar

@@ -1,8 +1,9 @@
 # WEB-RIDE
 
 Aplicación web de Ride desarrollada con React, TypeScript, Vite y Supabase. En
-el estado actual concentra el acceso por roles y las funciones administrativas
-de consulta, revisión de conductores y monitoreo de viajes.
+el estado actual concentra la solicitud de viajes para pasajeros, el acceso
+por roles y las funciones administrativas de consulta, revisión de conductores
+y monitoreo.
 
 ## Casos de uso implementados
 
@@ -100,10 +101,43 @@ por la base de datos.
 
 **Resultado:** el equipo administrativo puede supervisar el ciclo de viajes.
 
+### CU-W09. Solicitar y seguir un viaje
+
+**Actor:** pasajero autenticado.
+
+1. El usuario entra en **Pedir viaje** y define el origen con la ubicación del
+   navegador o una dirección guardada.
+2. Selecciona un destino verificado y el sistema calcula distancia, tiempo y
+   tarifa vigente en Supabase.
+3. El usuario confirma el precio y el sistema crea una única solicitud activa.
+4. El panel muestra el estado, la ruta, el conductor y el vehículo cuando son
+   asignados, y se actualiza mediante Realtime.
+5. Mientras el viaje no haya iniciado, el usuario puede cancelarlo.
+
+**Resultado:** la solicitud comparte el mismo ciclo y las mismas reglas que
+APPRIDE; el navegador nunca fija el precio ni altera el estado directamente.
+
+### CU-W10. Consultar y calificar viajes propios
+
+**Actor:** pasajero autenticado.
+
+1. El usuario entra en **Mis viajes**.
+2. El sistema consulta únicamente los viajes del pasajero y muestra ruta,
+   fecha, estado y valor.
+3. Si un viaje terminó y tuvo conductor, el usuario puede asignar de una a
+   cinco estrellas y escribir un comentario.
+4. Supabase impide calificar dos veces el mismo viaje.
+
+**Resultado:** el historial y las calificaciones quedan compartidos entre la
+web y la aplicación móvil.
+
 ## Alcance actual
 
-- Los paneles de pasajero y conductor muestran la cuenta, pero todavía no
-  permiten solicitar o gestionar viajes desde la web.
+- El panel de pasajero permite cotizar, solicitar, seguir, cancelar, consultar
+  y calificar viajes con datos reales. Los puntos disponibles provienen de las
+  direcciones guardadas del usuario y del catálogo activo administrado.
+- El panel de conductor todavía no permite aceptar ni gestionar viajes desde
+  la web; esas operaciones siguen disponibles en APPRIDE.
 - El panel administrativo muestra únicamente **Resumen**, **Usuarios**,
   **Conductores** y **Viajes**; los módulos que todavía no funcionan no se
   exponen en la navegación.
