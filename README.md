@@ -117,5 +117,6 @@ npm install
 npm run dev
 ```
 
-Se requieren `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` en el archivo
-`.env` local.
+La aplicación usa por defecto el proyecto público de Ride. Para apuntar a otro
+proyecto, copia `.env.example` como `.env` y cambia
+`VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY`.
