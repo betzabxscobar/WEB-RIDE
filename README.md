@@ -107,7 +107,7 @@ por la base de datos.
 
 1. El usuario entra en **Pedir viaje** y define el origen con la ubicación del
    navegador o una dirección guardada.
-2. Selecciona un destino verificado y el sistema calcula distancia, tiempo y
+2. Selecciona un destino disponible y el sistema calcula distancia, tiempo y
    tarifa vigente en Supabase.
 3. El usuario confirma el precio y el sistema crea una única solicitud activa.
 4. El panel muestra el estado, la ruta, el conductor y el vehículo cuando son
@@ -131,11 +131,51 @@ APPRIDE; el navegador nunca fija el precio ni altera el estado directamente.
 **Resultado:** el historial y las calificaciones quedan compartidos entre la
 web y la aplicación móvil.
 
+### CU-W11. Seguir un viaje y recibir avisos
+
+**Actor:** pasajero autenticado con un viaje activo.
+
+1. El usuario abre **Ver seguimiento**.
+2. La web muestra el estado, el recorrido, el conductor y el vehículo.
+3. Si el conductor reporta su posición, el pasajero puede abrirla en el mapa.
+4. Cada cambio de estado genera un aviso y actualiza la campana en tiempo real.
+5. Al finalizar, la web ofrece calificar al conductor.
+
+**Resultado:** el pasajero recibe en la web los mismos cambios reales que se
+guardan para APPRIDE, sin inventar una posición cuando el conductor no la envía.
+
+### CU-W12. Administrar direcciones propias
+
+**Actor:** pasajero autenticado.
+
+1. El usuario entra en **Direcciones** y permite usar su ubicación actual.
+2. Escribe un nombre y una referencia comprensible para reconocer el lugar.
+3. Puede marcar la dirección como favorita o eliminarla.
+4. La dirección aparece como opción al definir el próximo viaje.
+
+**Resultado:** las direcciones quedan asociadas a la cuenta y están protegidas
+para que cada usuario solo pueda consultar o modificar las suyas.
+
+### CU-W13. Consultar pagos
+
+**Actor:** pasajero autenticado.
+
+1. El usuario entra en **Pagos**.
+2. Puede registrar efectivo y elegir su forma de pago principal.
+3. Consulta los cobros y reembolsos registrados en sus propios viajes.
+4. La web no permite escribir números de tarjeta; esa opción requiere una
+   pasarela que entregue un token seguro.
+
+**Resultado:** la gestión disponible es real y no expone datos bancarios ni
+presenta una tarjeta simulada.
+
 ## Alcance actual
 
 - El panel de pasajero permite cotizar, solicitar, seguir, cancelar, consultar
-  y calificar viajes con datos reales. Los puntos disponibles provienen de las
-  direcciones guardadas del usuario y del catálogo activo administrado.
+  y calificar viajes con datos reales. También administra avisos, direcciones
+  guardadas, efectivo e historial de cobros.
+- Los puntos disponibles provienen de las direcciones guardadas del usuario y
+  del catálogo activo administrado.
 - El panel de conductor todavía no permite aceptar ni gestionar viajes desde
   la web; esas operaciones siguen disponibles en APPRIDE.
 - El panel administrativo muestra únicamente **Resumen**, **Usuarios**,

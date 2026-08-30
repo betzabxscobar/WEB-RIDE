@@ -56,7 +56,8 @@ con Realtime y ofrece calificar al terminar.
 avanzar estados → finalizar → calificar al pasajero.
 
 **Panel web de pasajero** — ubicación del navegador o dirección guardada →
-cotización → solicitud → seguimiento en vivo → cancelación o calificación.
+cotización → solicitud → seguimiento en vivo con última posición reportada →
+cancelación o calificación. También incorpora avisos, direcciones y pagos.
 
 **Panel web administrativo** — sección *Viajes*: métricas y monitoreo en vivo
 de todos los viajes. RLS da lectura global a las cuentas administrativas.
@@ -71,7 +72,10 @@ de todos los viajes. RLS da lectura global a las cuentas administrativas.
 
 **WEB-RIDE (React)**
 - `src/lib/trips.ts` — cotización, solicitud, historial, cancelación,
-  calificación y suscripción
+  calificación, posición y suscripción
+- `src/lib/notifications.ts` — avisos del usuario y lectura en tiempo real
+- `src/lib/addresses.ts` — alta, favorito y eliminación de direcciones propias
+- `src/lib/payments.ts` — efectivo, método principal e historial de cobros
 - `src/PassengerDashboard.tsx` — panel funcional del pasajero
 - `src/AdminDashboard.tsx` — sección *Viajes*
 
@@ -144,9 +148,9 @@ equipo.
    pero falta la tarea programada que lo aplique.
 2. **Tarifa final = cotización.** `finalizar_viaje()` cobra lo cotizado. Con
    seguimiento GPS continuo se podría recalcular sobre la distancia recorrida.
-3. **Métodos de pago.** La tabla existe y `finalizar_viaje()` la usa si hay uno
-   predeterminado, pero no hay pantalla para darlos de alta: hoy todo cobro
-   queda como `pendiente`.
+3. **Pasarela de tarjetas.** La web ya permite registrar efectivo y consultar
+   cobros. Para tarjetas falta un proveedor que genere el token; nunca se debe
+   recibir el número de tarjeta directamente en Ride.
 4. **Búsqueda por cercanía.** Todos los choferes disponibles ven todas las
    solicitudes. `distancia_km()` ya permitiría filtrar por radio.
 5. **Deep links.** Sin ellos, el chofer no recibe avisos con la app cerrada.
