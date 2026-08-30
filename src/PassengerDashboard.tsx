@@ -3,6 +3,13 @@ import './PassengerDashboard.css'
 import logoTipo from './assets/LogoTipo.png'
 import { panelLabel, type Role, type User } from './lib/auth'
 import {
+  addSavedAddress,
+  deleteSavedAddress,
+  listSavedAddresses,
+  setFavoriteAddress,
+  type SavedAddress,
+} from './lib/addresses'
+import {
   listNotifications,
   markAllNotificationsRead,
   watchNotifications,
@@ -28,7 +35,7 @@ import {
   type TripStatus,
 } from './lib/trips'
 
-type Page = 'inicio' | 'pedir' | 'viajes' | 'avisos' | 'cuenta'
+type Page = 'inicio' | 'pedir' | 'viajes' | 'avisos' | 'direcciones' | 'cuenta'
 
 type Props = {
   user: User
@@ -88,6 +95,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
   const [ratingScore, setRatingScore] = useState(5)
   const [ratingComment, setRatingComment] = useState('')
   const [notifications, setNotifications] = useState<RideNotification[]>([])
+  const [addresses, setAddresses] = useState<SavedAddress[]>([])
 
   const load = useCallback(async () => {
     try {
@@ -113,6 +121,14 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
     }
   }, [user.id])
 
+  const loadAddresses = useCallback(async () => {
+    try {
+      setAddresses(await listSavedAddresses(user.id))
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'No pudimos actualizar tus direcciones.')
+    }
+  }, [user.id])
+
   useEffect(() => {
     queueMicrotask(() => load())
     return watchTrips(() => load())
@@ -122,6 +138,10 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
     queueMicrotask(() => loadNotifications())
     return watchNotifications(user.id, loadNotifications)
   }, [loadNotifications, user.id])
+
+  useEffect(() => {
+    queueMicrotask(() => loadAddresses())
+  }, [loadAddresses])
 
   const destination = useMemo(
     () => places.find((place) => place.id === destinationId) ?? null,
@@ -248,6 +268,47 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
 
   const unread = notifications.filter((item) => !item.read).length
 
+  const saveCurrentAddress = async (label: string, address: string) => {
+    if (!navigator.geolocation) {
+      setError('Tu navegador no permite obtener la ubicación.')
+      return
+    }
+    setBusy(true); setError(''); setNotice('')
+    navigator.geolocation.getCurrentPosition(async (position) => {
+      try {
+        await addSavedAddress(user.id, label, address, position.coords.latitude, position.coords.longitude)
+        await Promise.all([loadAddresses(), load()])
+        setNotice('La dirección quedó guardada y ya puedes usarla al pedir un viaje.')
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : 'No se pudo guardar la dirección.')
+      } finally { setBusy(false) }
+    }, () => {
+      setError('No pudimos acceder a tu ubicación. Revisa el permiso del navegador.')
+      setBusy(false)
+    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 })
+  }
+
+  const toggleFavoriteAddress = async (address: SavedAddress) => {
+    setBusy(true); setError('')
+    try {
+      await setFavoriteAddress(address.id, !address.favorite)
+      await Promise.all([loadAddresses(), load()])
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'No se pudo actualizar la dirección.')
+    } finally { setBusy(false) }
+  }
+
+  const removeAddress = async (address: SavedAddress) => {
+    setBusy(true); setError('')
+    try {
+      await deleteSavedAddress(address.id)
+      await Promise.all([loadAddresses(), load()])
+      setNotice('La dirección fue eliminada.')
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'No se pudo eliminar la dirección.')
+    } finally { setBusy(false) }
+  }
+
   return <main className="passenger-shell">
     <aside className="passenger-sidebar">
       <div className="passenger-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
@@ -256,6 +317,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
         <NavButton active={page === 'pedir'} icon="↗" label="Pedir viaje" onClick={() => go('pedir')}/>
         <NavButton active={page === 'viajes'} icon="≡" label="Mis viajes" onClick={() => go('viajes')}/>
         <NavButton active={page === 'avisos'} icon="♢" label="Avisos" onClick={openNotifications}/>
+        <NavButton active={page === 'direcciones'} icon="⌖" label="Direcciones" onClick={() => go('direcciones')}/>
         <NavButton active={page === 'cuenta'} icon="○" label="Mi cuenta" onClick={() => go('cuenta')}/>
       </nav>
       <div className="passenger-profile">
@@ -268,7 +330,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
     <section className="passenger-workspace">
       <header className="passenger-topbar">
         <div className="passenger-mobile-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
-        <div><span className="passenger-kicker">PANEL DE PASAJERO</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'pedir' ? 'Pide un viaje' : page === 'viajes' ? 'Tus viajes' : page === 'avisos' ? 'Tus avisos' : 'Tu cuenta'}</h1></div>
+        <div><span className="passenger-kicker">PANEL DE PASAJERO</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'pedir' ? 'Pide un viaje' : page === 'viajes' ? 'Tus viajes' : page === 'avisos' ? 'Tus avisos' : page === 'direcciones' ? 'Tus direcciones' : 'Tu cuenta'}</h1></div>
         <div className="passenger-top-actions">
           {views.length > 1 && <label className="passenger-view-select"><span>Vista</span><select value={activeView} onChange={(event) => onSwitchView(event.target.value as Role)}>{views.map((view) => <option value={view} key={view}>{panelLabel(view)}</option>)}</select></label>}
           <button className="notification-button" onClick={openNotifications} aria-label={unread ? `${unread} avisos sin leer` : 'Abrir avisos'}>♢{unread > 0 && <b>{unread > 9 ? '9+' : unread}</b>}</button>
@@ -283,7 +345,8 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
           : page === 'pedir' ? <RequestPage places={places} origin={origin} originPlaceId={originPlaceId} destinationId={destinationId} quote={quote} quoting={quoting} locating={locating} busy={busy} activeTrip={activeTrip} onUseLocation={useLocation} onOrigin={selectOrigin} onDestination={selectDestination} onConfirm={confirmRequest} onActive={() => go('inicio')}/>
           : page === 'viajes' ? <TripsPage trips={trips} busy={busy} onCancel={setCanceling} onRate={openRating}/>
           : page === 'avisos' ? <NotificationsPage notifications={notifications}/>
-          : <AccountPage user={user} trips={trips}/>
+          : page === 'direcciones' ? <AddressesPage addresses={addresses} busy={busy} onSave={saveCurrentAddress} onFavorite={toggleFavoriteAddress} onDelete={removeAddress}/>
+          : <AccountPage user={user} trips={trips} addresses={addresses} onAddresses={() => go('direcciones')}/>
         }
       </div>
     </section>
@@ -336,9 +399,20 @@ function NotificationsPage({ notifications }: { notifications: RideNotification[
   return <div className="passenger-page notifications-page"><section className="passenger-section-head"><div><span>ACTUALIZACIONES REALES</span><h2>Lo que ocurre con tu cuenta</h2><p>Los avisos aparecen cuando cambia un viaje o una solicitud.</p></div></section>{notifications.length === 0 ? <EmptyState title="No tienes avisos" text="Aquí aparecerán los cambios importantes de tus viajes."/> : <div className="notification-list">{notifications.map((item) => <article className={item.read ? '' : 'unread'} key={item.id}><span className="notification-mark">{item.read ? '✓' : '•'}</span><div><div className="notification-title"><h3>{item.title}</h3><time>{date(item.createdAt)}</time></div><p>{item.message}</p></div></article>)}</div>}</div>
 }
 
-function AccountPage({ user, trips }: { user: User; trips: Trip[] }) {
+function AddressesPage({ addresses, busy, onSave, onFavorite, onDelete }: { addresses: SavedAddress[]; busy: boolean; onSave: (label: string, address: string) => void; onFavorite: (address: SavedAddress) => void; onDelete: (address: SavedAddress) => void }) {
+  const [label, setLabel] = useState('')
+  const [address, setAddress] = useState('')
+  const submit = () => {
+    if (!label.trim() || !address.trim()) return
+    onSave(label, address)
+    setLabel(''); setAddress('')
+  }
+  return <div className="passenger-page addresses-page"><section className="passenger-section-head"><div><span>LUGARES PERSONALES</span><h2>Direcciones guardadas</h2><p>Guarda el punto donde estás para encontrarlo rápidamente en un próximo viaje.</p></div></section><div className="address-layout"><section className="address-form"><h3>Guardar mi ubicación actual</h3><p>Escribe cómo quieres reconocer este lugar. Las coordenadas se obtienen del navegador.</p><label>Nombre del lugar<input maxLength={40} value={label} onChange={(event) => setLabel(event.target.value)} placeholder="Ej. Casa, trabajo o universidad"/></label><label>Referencia visible<input maxLength={120} value={address} onChange={(event) => setAddress(event.target.value)} placeholder="Ej. Entrada principal, calle y sector"/></label><button disabled={busy || !label.trim() || !address.trim()} onClick={submit}>{busy ? 'Guardando…' : '⌖ Usar mi ubicación y guardar'}</button><small>Ride nunca te pedirá escribir coordenadas manualmente.</small></section><section className="address-list">{addresses.length === 0 ? <EmptyState title="No tienes direcciones guardadas" text="Guarda tu ubicación actual para usarla al pedir un viaje."/> : addresses.map((item) => <article key={item.id}><span className={item.favorite ? 'address-pin favorite' : 'address-pin'}>⌖</span><div><div className="address-title"><h3>{item.label}</h3>{item.favorite && <b>Favorita</b>}</div><p>{item.address}</p><small>Guardada el {date(item.lastUsedAt)}</small></div><div className="address-actions"><button disabled={busy} onClick={() => onFavorite(item)}>{item.favorite ? 'Quitar favorita' : 'Hacer favorita'}</button><button className="danger" disabled={busy} onClick={() => onDelete(item)}>Eliminar</button></div></article>)}</section></div></div>
+}
+
+function AccountPage({ user, trips, addresses, onAddresses }: { user: User; trips: Trip[]; addresses: SavedAddress[]; onAddresses: () => void }) {
   const completed = trips.filter((trip) => trip.estado === 'FINALIZADO').length
-  return <div className="passenger-page account-page"><section className="account-hero"><span className="account-avatar">{initials(user.name)}</span><div><span className="passenger-kicker">PERFIL DE PASAJERO</span><h2>{user.name}</h2><p>Tu información de Ride y actividad reciente.</p></div></section><section className="account-layout"><div className="account-details"><h3>Datos personales</h3><dl><div><dt>Nombre</dt><dd>{user.name}</dd></div><div><dt>Correo</dt><dd>{user.email}</dd></div><div><dt>Teléfono</dt><dd>{user.phone || 'Sin teléfono registrado'}</dd></div><div><dt>Tipo de cuenta</dt><dd>Pasajero</dd></div></dl></div><div className="account-summary"><span>VIAJES FINALIZADOS</span><strong>{completed}</strong><p>{trips.length - completed} solicitudes en otros estados</p></div></section></div>
+  return <div className="passenger-page account-page"><section className="account-hero"><span className="account-avatar">{initials(user.name)}</span><div><span className="passenger-kicker">PERFIL DE PASAJERO</span><h2>{user.name}</h2><p>Tu información de Ride y actividad reciente.</p></div></section><section className="account-layout"><div className="account-details"><h3>Datos personales</h3><dl><div><dt>Nombre</dt><dd>{user.name}</dd></div><div><dt>Correo</dt><dd>{user.email}</dd></div><div><dt>Teléfono</dt><dd>{user.phone || 'Sin teléfono registrado'}</dd></div><div><dt>Tipo de cuenta</dt><dd>Pasajero</dd></div></dl><button className="account-link" onClick={onAddresses}>Administrar {addresses.length} {addresses.length === 1 ? 'dirección guardada' : 'direcciones guardadas'} →</button></div><div className="account-summary"><span>VIAJES FINALIZADOS</span><strong>{completed}</strong><p>{trips.length - completed} solicitudes en otros estados</p></div></section></div>
 }
 
 function Route({ trip }: { trip: Trip }) {
