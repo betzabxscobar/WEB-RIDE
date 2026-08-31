@@ -169,22 +169,63 @@ para que cada usuario solo pueda consultar o modificar las suyas.
 **Resultado:** la gestión disponible es real y no expone datos bancarios ni
 presenta una tarjeta simulada.
 
+### CU-W14. Completar el perfil del conductor
+
+**Actor:** conductor autenticado.
+
+1. El conductor registra o edita sus vehículos y deja uno activo.
+2. Sube licencia, SOAT y matrícula en imagen o PDF.
+3. Consulta el estado de cada documento y puede reemplazar uno rechazado.
+4. Los archivos se guardan en un bucket privado y se abren mediante enlaces temporales.
+
+**Resultado:** la administración recibe la información necesaria para revisar
+y aprobar al conductor sin exponer públicamente sus documentos.
+
+### CU-W15. Ponerse disponible y recibir solicitudes
+
+**Actor:** conductor aprobado con vehículo activo.
+
+1. El conductor activa su jornada desde **Inicio**.
+2. La web obtiene su ubicación y la reporta al ponerse en línea y cada minuto.
+3. El sistema muestra solicitudes abiertas cercanas y las actualiza mediante Realtime.
+4. El conductor acepta una solicitud; la base evita que dos conductores tomen el mismo viaje.
+
+**Resultado:** el viaje queda asignado al conductor y desaparece de las demás ofertas.
+
+### CU-W16. Ejecutar un viaje como conductor
+
+**Actor:** conductor con un viaje asignado.
+
+1. La web dibuja en el mapa la ruta por calles y muestra los datos del pasajero.
+2. El conductor avanza por los estados **En camino**, **En el origen** y **En curso**.
+3. Puede cancelar antes de iniciar o finalizar cuando termina el recorrido.
+4. Al finalizar, el servidor liquida la tarifa y permite calificar al pasajero una sola vez.
+
+**Resultado:** el ciclo completo queda registrado y se refleja en tiempo real para
+el pasajero, la app móvil y la administración.
+
 ## Alcance actual
 
 - El panel de pasajero permite cotizar, solicitar, seguir, cancelar, consultar
   y calificar viajes con datos reales. También administra avisos, direcciones
   guardadas, efectivo e historial de cobros.
-- Los puntos disponibles provienen de las direcciones guardadas del usuario y
-  del catálogo activo administrado.
-- El panel de conductor todavía no permite aceptar ni gestionar viajes desde
-  la web; esas operaciones siguen disponibles en APPRIDE.
+- El origen y el destino pueden buscarse, elegirse en el mapa, tomarse del GPS
+  o recuperarse de las direcciones guardadas y del catálogo activo.
+- El panel de conductor permite gestionar vehículos y documentos, activar la
+  disponibilidad, reportar la ubicación, aceptar solicitudes, completar el
+  ciclo del viaje y calificar al pasajero.
 - El panel administrativo muestra únicamente **Resumen**, **Usuarios**,
   **Conductores** y **Viajes**; los módulos que todavía no funcionan no se
   exponen en la navegación.
+- Los mapas usan OpenStreetMap y las rutas por calles se obtienen con OSRM. El
+  servidor público configurado por defecto es apropiado para desarrollo, no
+  para una puesta en producción.
 - La configuración de Supabase y el orden de sus migraciones están documentados
   en [`docs/CONEXION_SUPABASE.md`](docs/CONEXION_SUPABASE.md).
 
 ## Ejecución local
+
+Requisitos: Node.js 20 o posterior y npm.
 
 ```sh
 npm install
@@ -194,3 +235,23 @@ npm run dev
 La aplicación usa por defecto el proyecto público de Ride. Para apuntar a otro
 proyecto, copia `.env.example` como `.env` y cambia
 `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY`.
+
+También puede definirse `VITE_OSRM_URL` para usar un servidor de rutas propio:
+
+```env
+VITE_OSRM_URL=https://rutas.ejemplo.com
+```
+
+## Comandos disponibles
+
+```sh
+npm run dev       # servidor de desarrollo
+npm run build     # comprobación de TypeScript y compilación de producción
+npm run lint      # análisis estático
+npm run preview   # vista previa de la compilación
+```
+
+Los scripts administrativos requieren variables de servidor y nunca deben usar
+una clave `service_role` dentro de variables `VITE_*`. Consulta
+[`docs/CONEXION_SUPABASE.md`](docs/CONEXION_SUPABASE.md) antes de provisionar
+cuentas o aplicar migraciones.
