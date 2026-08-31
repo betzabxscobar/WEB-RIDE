@@ -132,7 +132,7 @@ img.logo{width:100%;height:100%;object-fit:contain;display:block !important}
   .security-icon{width:47px;height:47px;border-radius:14px}
   .first-access h1{font-size:26px;letter-spacing:-.7px}
 }
-.viewing-as{min-height:48px;box-sizing:border-box}
+.viewing-as{min-height:48px;box-sizing:border-box;position:fixed;inset:0 0 auto;z-index:2000}
 html[data-ride-theme="light"] .viewing-as{background:#eef8fb;color:#12384a;border-color:#cfe4eb}
 html[data-ride-theme="light"] .viewing-as button{color:#147f9f}
 html[data-ride-theme="dark"] .viewing-as{background:#0e2a38!important;color:#dcecf2!important;border-color:#294452!important}
