@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import './PassengerDashboard.css'
 import logoTipo from './assets/LogoTipo.png'
+import RideMap from './components/RideMap'
 import { panelLabel, type Role, type User } from './lib/auth'
+import { reverseGeocode, searchPlaces } from './lib/geocoding'
+import { routeBetween, type RoadRoute } from './lib/routing'
 import {
   addSavedAddress,
   deleteSavedAddress,
@@ -97,6 +100,8 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
   const [origin, setOrigin] = useState<Coordinates | null>(null)
   const [originPlaceId, setOriginPlaceId] = useState('')
   const [destinationId, setDestinationId] = useState('')
+  const [destinationPoint, setDestinationPoint] = useState<Place | null>(null)
+  const [roadRoute, setRoadRoute] = useState<RoadRoute | null>(null)
   const [quote, setQuote] = useState<Quote | null>(null)
   const [locating, setLocating] = useState(false)
   const [quoting, setQuoting] = useState(false)
@@ -177,8 +182,8 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
   }, [loadPaymentData])
 
   const destination = useMemo(
-    () => places.find((place) => place.id === destinationId) ?? null,
-    [destinationId, places],
+    () => destinationPoint ?? places.find((place) => place.id === destinationId) ?? null,
+    [destinationId, destinationPoint, places],
   )
   const activeTrip = useMemo(() => trips.find((trip) => !esFinal(trip.estado)) ?? null, [trips])
   const trackingTrip = useMemo(
@@ -202,13 +207,31 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
   }, [trackingTrip?.estado, trackingTrip?.id])
 
   useEffect(() => {
+    const controller = new AbortController()
     let current = true
-    if (!origin || !destination) return () => { current = false }
-    quoteTrip(origin, destination)
+    queueMicrotask(() => { if (current) setRoadRoute(null) })
+    if (!origin || !destination) return () => { current = false; controller.abort() }
+    queueMicrotask(() => { if (current) setQuoting(true) })
+
+    void quoteTrip(origin, destination)
       .then((nextQuote) => { if (current) { setQuote(nextQuote); setError('') } })
       .catch((cause) => { if (current) setError(cause instanceof Error ? cause.message : 'No pudimos cotizar el viaje.') })
+
+    void routeBetween(origin, destination, controller.signal)
+      .then(async (route) => {
+        if (!current || !route) return
+        setRoadRoute(route)
+        const adjusted = await quoteTrip(origin, destination, route.meters / 1000)
+        if (current) setQuote(adjusted)
+      })
+      .catch((cause) => {
+        if (current && !(cause instanceof DOMException && cause.name === 'AbortError')) {
+          setError('No pudimos trazar la ruta; la cotización sigue disponible.')
+        }
+      })
       .finally(() => { if (current) setQuoting(false) })
-    return () => { current = false }
+
+    return () => { current = false; controller.abort() }
   }, [origin, destination])
 
   const selectOrigin = (id: string) => {
@@ -219,10 +242,20 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
     setOrigin(place ? { lat: place.lat, lng: place.lng, label: place.nombre } : null)
   }
 
+  const selectOriginPoint = (place: Place) => {
+    setQuote(null); setOriginPlaceId(place.id)
+    setOrigin({ lat: place.lat, lng: place.lng, label: [place.nombre, place.direccion].filter(Boolean).join(', ') })
+  }
+
   const selectDestination = (id: string) => {
     setQuote(null)
     setQuoting(Boolean(id && origin))
     setDestinationId(id)
+    setDestinationPoint(null)
+  }
+
+  const selectDestinationPoint = (place: Place) => {
+    setQuote(null); setDestinationId(place.id); setDestinationPoint(place)
   }
 
   const useLocation = () => {
@@ -439,7 +472,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
         {notice && <div className="passenger-feedback success"><span>✓</span>{notice}</div>}
         {error && <div className="passenger-feedback failure"><span>!</span>{error}<button onClick={() => setError('')}>Cerrar</button></div>}
         {loading ? <LoadingPanel/> : page === 'inicio' ? <HomePage user={user} activeTrip={activeTrip} trips={trips} onRequest={() => go('pedir')} onTrips={() => go('viajes')} onCancel={setCanceling} onTrack={openTracking}/>
-          : page === 'pedir' ? <RequestPage places={places} origin={origin} originPlaceId={originPlaceId} destinationId={destinationId} quote={quote} quoting={quoting} locating={locating} busy={busy} activeTrip={activeTrip} onUseLocation={useLocation} onOrigin={selectOrigin} onDestination={selectDestination} onConfirm={confirmRequest} onActive={() => activeTrip && openTracking(activeTrip)}/>
+          : page === 'pedir' ? <RequestPage places={places} origin={origin} destination={destination} originPlaceId={originPlaceId} destinationId={destinationId} quote={quote} route={roadRoute} quoting={quoting} locating={locating} busy={busy} activeTrip={activeTrip} onUseLocation={useLocation} onOrigin={selectOrigin} onOriginPoint={selectOriginPoint} onDestination={selectDestination} onDestinationPoint={selectDestinationPoint} onConfirm={confirmRequest} onActive={() => activeTrip && openTracking(activeTrip)}/>
           : page === 'seguimiento' ? <TrackingPage trip={trackingTrip} position={tripPosition} onCancel={setCanceling} onBack={() => go('inicio')}/>
           : page === 'viajes' ? <TripsPage trips={trips} busy={busy} onCancel={setCanceling} onRate={openRating} onTrack={openTracking}/>
           : page === 'avisos' ? <NotificationsPage notifications={notifications}/>
@@ -487,13 +520,51 @@ function ActiveTrip({ trip, onCancel }: { trip: Trip; onCancel: (trip: Trip) => 
 
 function TrackingPage({ trip, position, onCancel, onBack }: { trip: Trip | null; position: TripPosition | null; onCancel: (trip: Trip) => void; onBack: () => void }) {
   if (!trip) return <EmptyState title="No hay un viaje para seguir" text="Cuando tengas un viaje activo podrás ver aquí cada cambio." action="Volver al inicio" onAction={onBack}/>
-  const mapUrl = position ? `https://www.openstreetmap.org/?mlat=${position.lat}&mlon=${position.lng}#map=16/${position.lat}/${position.lng}` : ''
-  return <div className="passenger-page tracking-page"><button className="tracking-back" onClick={onBack}>← Volver al inicio</button><section className="tracking-hero"><div><span className={`trip-status ${trip.estado.toLowerCase()}`}>{ESTADO_LABEL[trip.estado]}</span><h2>{STATUS_HINT[trip.estado]}</h2><p>Los cambios se muestran automáticamente.</p></div><strong>{money(trip.tarifaFinal ?? trip.tarifaEstimada)}</strong></section><div className="trip-progress tracking-progress"><span style={{ width: `${progresoViaje(trip.estado)}%` }}/></div><div className="tracking-layout"><section className="tracking-main"><h3>Recorrido</h3><Route trip={trip}/><div className="tracking-position"><span>⌖</span><div><small>UBICACIÓN DEL CONDUCTOR</small>{position ? <><strong>Actualizada {date(position.recordedAt)}</strong><p>{position.lat.toFixed(5)}, {position.lng.toFixed(5)}</p></> : <><strong>{trip.conductorId ? 'Esperando la primera actualización' : 'Se mostrará cuando se asigne un conductor'}</strong><p>Ride solo enseña una posición que el conductor haya enviado realmente.</p></>}</div>{position && <a href={mapUrl} target="_blank" rel="noreferrer">Abrir mapa ↗</a>}</div></section><aside className="tracking-driver"><h3>Conductor y vehículo</h3>{trip.conductorId ? <><div className="tracking-driver-profile"><span>{initials(trip.conductorNombre ?? 'Conductor')}</span><div><strong>{trip.conductorNombre}</strong>{trip.conductorCalificacion != null && <small>★ {trip.conductorCalificacion.toFixed(1)}</small>}</div></div><p>{vehicle(trip)}</p>{trip.conductorTelefono && <a href={`tel:${trip.conductorTelefono}`}>Llamar al conductor</a>}</> : <div className="tracking-search"><span>⌁</span><strong>Buscando conductor</strong><p>Cuando alguien acepte, aquí aparecerán sus datos y los del vehículo.</p></div>}</aside></div>{puedeCancelar(trip.estado) && <button className="tracking-cancel" onClick={() => onCancel(trip)}>Cancelar este viaje</button>}</div>
+  return <div className="passenger-page tracking-page"><button className="tracking-back" onClick={onBack}>← Volver al inicio</button><section className="tracking-hero"><div><span className={`trip-status ${trip.estado.toLowerCase()}`}>{ESTADO_LABEL[trip.estado]}</span><h2>{STATUS_HINT[trip.estado]}</h2><p>Los cambios se muestran automáticamente.</p></div><strong>{money(trip.tarifaFinal ?? trip.tarifaEstimada)}</strong></section><div className="trip-progress tracking-progress"><span style={{ width: `${progresoViaje(trip.estado)}%` }}/></div><TripTrackingMap trip={trip} position={position}/><div className="tracking-layout"><section className="tracking-main"><h3>Recorrido</h3><Route trip={trip}/><div className="tracking-position"><span>⌖</span><div><small>UBICACIÓN DEL CONDUCTOR</small>{position ? <><strong>Actualizada {date(position.recordedAt)}</strong><p>{position.lat.toFixed(5)}, {position.lng.toFixed(5)}</p></> : <><strong>{trip.conductorId ? 'Esperando la primera actualización' : 'Se mostrará cuando se asigne un conductor'}</strong><p>Ride solo enseña una posición que el conductor haya enviado realmente.</p></>}</div></div></section><aside className="tracking-driver"><h3>Conductor y vehículo</h3>{trip.conductorId ? <><div className="tracking-driver-profile"><span>{initials(trip.conductorNombre ?? 'Conductor')}</span><div><strong>{trip.conductorNombre}</strong>{trip.conductorCalificacion != null && <small>★ {trip.conductorCalificacion.toFixed(1)}</small>}</div></div><p>{vehicle(trip)}</p>{trip.conductorTelefono && <a href={`tel:${trip.conductorTelefono}`}>Llamar al conductor</a>}</> : <div className="tracking-search"><span>⌁</span><strong>Buscando conductor</strong><p>Cuando alguien acepte, aquí aparecerán sus datos y los del vehículo.</p></div>}</aside></div>{puedeCancelar(trip.estado) && <button className="tracking-cancel" onClick={() => onCancel(trip)}>Cancelar este viaje</button>}</div>
 }
 
-function RequestPage({ places, origin, originPlaceId, destinationId, quote, quoting, locating, busy, activeTrip, onUseLocation, onOrigin, onDestination, onConfirm, onActive }: { places: Place[]; origin: Coordinates | null; originPlaceId: string; destinationId: string; quote: Quote | null; quoting: boolean; locating: boolean; busy: boolean; activeTrip: Trip | null; onUseLocation: () => void; onOrigin: (id: string) => void; onDestination: (id: string) => void; onConfirm: () => void; onActive: () => void }) {
+function RequestPage({ places, origin, destination, originPlaceId, destinationId, quote, route, quoting, locating, busy, activeTrip, onUseLocation, onOrigin, onOriginPoint, onDestination, onDestinationPoint, onConfirm, onActive }: { places: Place[]; origin: Coordinates | null; destination: Place | null; originPlaceId: string; destinationId: string; quote: Quote | null; route: RoadRoute | null; quoting: boolean; locating: boolean; busy: boolean; activeTrip: Trip | null; onUseLocation: () => void; onOrigin: (id: string) => void; onOriginPoint: (place: Place) => void; onDestination: (id: string) => void; onDestinationPoint: (place: Place) => void; onConfirm: () => void; onActive: () => void }) {
+  const [picking, setPicking] = useState<'origin' | 'destination'>('destination')
+  const pickMap = async (lat: number, lng: number) => {
+    const place = await reverseGeocode(lat, lng)
+    if (picking === 'origin') onOriginPoint(place); else onDestinationPoint(place)
+  }
   if (activeTrip) return <EmptyState title="Ya tienes un viaje en curso" text={`Primero termina o cancela el viaje hacia ${activeTrip.destinoTexto}.`} action="Ver mi viaje" onAction={onActive}/>
-  return <div className="passenger-page request-page"><div className="request-layout"><section className="request-form"><span className="passenger-kicker">DEFINE TU RECORRIDO</span><h2>Origen y destino</h2><p>Te mostraremos el precio antes de confirmar el viaje.</p><div className="route-form"><div className="route-field origin"><i/><label>Punto de partida<select value={originPlaceId} onChange={(event) => onOrigin(event.target.value)}><option value="">Elige un lugar</option>{originPlaceId === 'gps' && <option value="gps">Mi ubicación actual</option>}{places.map((place) => <option value={place.id} key={place.id}>{place.nombre}</option>)}</select><small>{origin?.label ?? 'Puedes usar tu ubicación actual'}</small></label></div><div className="route-line"/><div className="route-field destination"><i/><label>Destino<select value={destinationId} onChange={(event) => onDestination(event.target.value)}><option value="">¿A dónde quieres ir?</option>{places.map((place) => <option value={place.id} key={place.id}>{place.nombre}</option>)}</select><small>{places.find((place) => place.id === destinationId)?.direccion ?? 'Selecciona un destino disponible'}</small></label></div></div><button className="location-button" disabled={locating} onClick={onUseLocation}>{locating ? 'Obteniendo ubicación…' : '◎ Usar mi ubicación actual'}</button>{places.length === 0 && <p className="request-warning">Aún no hay direcciones disponibles. Inténtalo más tarde.</p>}</section><aside className="quote-card"><span className="passenger-kicker">RESUMEN</span><h3>Tu cotización</h3>{quoting ? <div className="quote-loading"><i/>Calculando la mejor tarifa…</div> : quote ? <><div className="quote-price"><span>Precio estimado</span><strong>{money(quote.total)}</strong></div><dl><div><dt>Distancia estimada</dt><dd>{quote.km.toFixed(2)} km</dd></div><div><dt>Tiempo estimado</dt><dd>{quote.minutos} min</dd></div><div><dt>Tarifa</dt><dd>{quote.tarifaNombre}</dd></div></dl><button disabled={busy} onClick={onConfirm}>{busy ? 'Solicitando…' : `Confirmar por ${money(quote.total)}`}<b>→</b></button><small>El precio final aparecerá cuando termine el viaje.</small></> : <div className="quote-empty"><span>↗</span><p>Completa el origen y el destino para conocer el precio antes de confirmar.</p></div>}</aside></div></div>
+  return <div className="passenger-page request-page"><div className="request-layout"><section className="request-form"><span className="passenger-kicker">DEFINE TU RECORRIDO</span><h2>Origen y destino</h2><p>Busca cualquier dirección de Ecuador o elige un punto directamente en el mapa.</p><PlaceSearch key={`origin-${originPlaceId}-${origin?.lat}`} label="Punto de partida" value={origin?.label ?? ''} center={origin} saved={places} onFocus={() => setPicking('origin')} onSelect={onOriginPoint}/><select className="saved-place-select" value={originPlaceId} onFocus={() => setPicking('origin')} onChange={(event) => onOrigin(event.target.value)}><option value="">Direcciones guardadas para el origen</option>{originPlaceId === 'gps' && <option value="gps">Mi ubicación actual</option>}{places.map((place) => <option value={place.id} key={place.id}>{place.nombre}</option>)}</select><PlaceSearch key={`destination-${destinationId}-${destination?.lat}`} label="Destino" value={destination ? [destination.nombre, destination.direccion].filter(Boolean).join(', ') : ''} center={origin} saved={places} onFocus={() => setPicking('destination')} onSelect={onDestinationPoint}/><select className="saved-place-select" value={destinationId} onFocus={() => setPicking('destination')} onChange={(event) => onDestination(event.target.value)}><option value="">Direcciones guardadas para el destino</option>{places.map((place) => <option value={place.id} key={place.id}>{place.nombre}</option>)}</select><button className="location-button" disabled={locating} onClick={onUseLocation}>{locating ? 'Obteniendo ubicación…' : '◎ Usar mi ubicación actual'}</button><small className="map-pick-hint">Al tocar el mapa cambiarás el {picking === 'origin' ? 'origen' : 'destino'}.</small></section><aside className="quote-card"><span className="passenger-kicker">RESUMEN</span><h3>Tu cotización</h3>{quoting && !quote ? <div className="quote-loading"><i/>Calculando la mejor tarifa…</div> : quote ? <><div className="quote-price"><span>Precio estimado</span><strong>{money(quote.total)}</strong></div><dl><div><dt>Distancia estimada</dt><dd>{quote.km.toFixed(2)} km</dd></div><div><dt>Tiempo estimado</dt><dd>{quote.minutos} min</dd></div><div><dt>Ruta</dt><dd>{route ? 'Por calles' : 'Estimación inicial'}</dd></div><div><dt>Tarifa</dt><dd>{quote.tarifaNombre}</dd></div></dl><button disabled={busy || quoting} onClick={onConfirm}>{busy ? 'Solicitando…' : quoting ? 'Ajustando ruta…' : `Confirmar por ${money(quote.total)}`}<b>→</b></button><small>El precio se calcula en el servidor con la distancia de la ruta.</small></> : <div className="quote-empty"><span>↗</span><p>Completa el origen y el destino para conocer el precio antes de confirmar.</p></div>}</aside></div><RideMap origin={origin} destination={destination} route={route} onPick={(lat, lng) => void pickMap(lat, lng)} className="request-map"/></div>
+}
+
+function PlaceSearch({ label, value, center, saved, onFocus, onSelect }: { label: string; value: string; center: Coordinates | null; saved: Place[]; onFocus: () => void; onSelect: (place: Place) => void }) {
+  const [query, setQuery] = useState(value)
+  const [results, setResults] = useState<Place[]>([])
+  const [searching, setSearching] = useState(false)
+  useEffect(() => {
+    const controller = new AbortController()
+    const timer = window.setTimeout(() => {
+      if (query.trim().length < 3 || query === value) { setResults([]); return }
+      setSearching(true)
+      void searchPlaces(query, center ?? undefined, controller.signal)
+        .then(setResults)
+        .catch((error) => { if (!(error instanceof DOMException && error.name === 'AbortError')) setResults([]) })
+        .finally(() => setSearching(false))
+    }, 350)
+    return () => { window.clearTimeout(timer); controller.abort() }
+  }, [center, query, value])
+  const choose = (place: Place) => { setQuery([place.nombre, place.direccion].filter(Boolean).join(', ')); setResults([]); onSelect(place) }
+  const suggestions = results.length ? results : query.trim().length >= 3 ? saved.filter((place) => `${place.nombre} ${place.direccion}`.toLowerCase().includes(query.toLowerCase())).slice(0, 5) : []
+  return <label className="place-search" onFocus={onFocus}><span>{label}</span><div><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={label === 'Destino' ? '¿A dónde quieres ir?' : 'Busca calle, sitio o ciudad'} autoComplete="off"/>{searching && <i/>}</div>{suggestions.length > 0 && <ul>{suggestions.map((place) => <li key={place.id}><button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => choose(place)}><strong>{place.nombre}</strong><small>{place.direccion}</small></button></li>)}</ul>}</label>
+}
+
+function TripTrackingMap({ trip, position }: { trip: Trip; position: TripPosition | null }) {
+  const [route, setRoute] = useState<RoadRoute | null>(null)
+  const origin = useMemo(() => trip.origenLat != null && trip.origenLng != null ? { lat: trip.origenLat, lng: trip.origenLng, label: trip.origenTexto } : null, [trip.origenLat, trip.origenLng, trip.origenTexto])
+  const destination = useMemo(() => trip.destinoLat != null && trip.destinoLng != null ? { id: `trip-${trip.id}`, nombre: trip.destinoTexto, direccion: '', lat: trip.destinoLat, lng: trip.destinoLng } : null, [trip.destinoLat, trip.destinoLng, trip.destinoTexto, trip.id])
+  useEffect(() => {
+    const controller = new AbortController()
+    if (!origin || !destination) return () => controller.abort()
+    void routeBetween(origin, destination, controller.signal).then(setRoute).catch(() => setRoute(null))
+    return () => controller.abort()
+  }, [destination, origin, trip.id])
+  return <RideMap origin={origin} destination={destination} driver={position} route={route} className="tracking-map"/>
 }
 
 function TripsPage({ trips, busy, onCancel, onRate, onTrack }: { trips: Trip[]; busy: boolean; onCancel: (trip: Trip) => void; onRate: (trip: Trip) => void; onTrack: (trip: Trip) => void }) {

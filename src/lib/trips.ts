@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { gridDisk, latLngToCell } from 'h3-js'
 
 /** Los nueve valores de `public.enum_estado_viaje`. */
 export type TripStatus =
@@ -208,13 +209,13 @@ export async function listPlaces(userId: string): Promise<Place[]> {
   }))
 }
 
-export async function quoteTrip(origin: Coordinates, destination: Place): Promise<Quote> {
+export async function quoteTrip(origin: Coordinates, destination: Place, roadKm?: number): Promise<Quote> {
   const { data, error } = await supabase.rpc('cotizar_viaje', {
     p_origen_lat: origin.lat,
     p_origen_lng: origin.lng,
     p_destino_lat: destination.lat,
     p_destino_lng: destination.lng,
-    p_distancia_km: null,
+    p_distancia_km: roadKm ?? null,
     p_tarifa_id: null,
   })
   if (error) throw databaseMessage(error, 'No se pudo calcular el precio del viaje.')
@@ -234,16 +235,24 @@ export async function quoteTrip(origin: Coordinates, destination: Place): Promis
 }
 
 export async function requestTrip(origin: Coordinates, destination: Place, quote: Quote): Promise<string> {
+  let originCell: string | null = null
+  let diffusionCells: string[] | null = null
+  try {
+    originCell = latLngToCell(origin.lat, origin.lng, 7)
+    diffusionCells = gridDisk(originCell, 4)
+  } catch {
+    // PostGIS sigue siendo el respaldo si H3 no puede calcularse en el navegador.
+  }
   const { data, error } = await supabase.rpc('solicitar_viaje', {
     p_origen_lat: origin.lat,
     p_origen_lng: origin.lng,
     p_origen_texto: origin.label,
     p_destino_lat: destination.lat,
     p_destino_lng: destination.lng,
-    p_destino_texto: destination.nombre,
+    p_destino_texto: [destination.nombre, destination.direccion].filter(Boolean).join(', '),
     p_tarifa_id: quote.tarifaId,
-    p_origen_celda_h3_7: null,
-    p_celdas_difusion: null,
+    p_origen_celda_h3_7: originCell,
+    p_celdas_difusion: diffusionCells,
     p_distancia_km: quote.km,
   })
   if (error) throw databaseMessage(error, 'No se pudo solicitar el viaje.')

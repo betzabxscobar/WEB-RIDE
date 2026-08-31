@@ -22,3 +22,15 @@
 @media(max-width:980px){.payment-layout{grid-template-columns:1fr}}
 @media(max-width:900px){.tracking-layout{grid-template-columns:1fr}}
 @media(max-width:600px){.tracking-hero{display:grid;padding:22px}.tracking-hero h2{font-size:20px}.tracking-position{grid-template-columns:42px 1fr}.tracking-position a{grid-column:1/-1;text-align:center}}
+
+.place-search{position:relative;display:grid;gap:7px;margin-top:15px;color:#31495a;font-size:10px;font-weight:800;z-index:8}
+.place-search>div{position:relative}.place-search input,.saved-place-select{box-sizing:border-box;width:100%;border:1px solid var(--p-line);border-radius:11px;background:#fff;color:var(--p-ink);padding:12px 13px;font:inherit;font-size:11px;outline:0}
+.place-search input:focus,.saved-place-select:focus{border-color:#55bddd;box-shadow:0 0 0 4px rgba(85,189,221,.11)}
+.place-search>div i{position:absolute;right:12px;top:12px;width:13px;height:13px;border:2px solid #cce5ed;border-top-color:#2eb4df;border-radius:50%;animation:passenger-spin .8s linear infinite}
+.place-search ul{position:absolute;z-index:500;left:0;right:0;top:61px;list-style:none;margin:0;padding:6px;border:1px solid var(--p-line);border-radius:12px;background:#fff;box-shadow:0 18px 48px rgba(7,27,43,.18);max-height:265px;overflow:auto}
+.place-search li button{width:100%;display:grid;gap:3px;border:0;border-radius:8px;background:#fff;padding:10px;text-align:left;color:var(--p-ink)}
+.place-search li button:hover{background:#eef8fb}.place-search li strong{font-size:10px}.place-search li small{color:var(--p-muted);font-size:8px;line-height:1.4}
+.saved-place-select{margin-top:7px;color:#607480;font-size:9px}.map-pick-hint{display:block;margin:10px 0 0 27px;color:var(--p-muted);font-size:8px}
+.ride-map{overflow:hidden;border:1px solid var(--p-line);border-radius:19px;background:#dfecef;box-shadow:0 12px 38px rgba(12,48,65,.06)}.ride-map-canvas{width:100%;height:100%;min-height:360px}.request-map{margin-top:22px;height:430px}.tracking-map{height:390px;margin-top:18px}.tracking-map .ride-map-canvas{min-height:390px}
+.leaflet-container{font-family:Inter,sans-serif}.leaflet-tooltip{border:0!important;border-radius:7px!important;background:#082638!important;color:#fff!important;box-shadow:0 5px 14px rgba(7,27,43,.2)!important;font-size:9px!important;font-weight:800!important}.leaflet-tooltip:before{border-top-color:#082638!important}
+@media(max-width:760px){.request-map{height:340px}.ride-map-canvas{min-height:340px}.tracking-map,.tracking-map .ride-map-canvas{height:320px;min-height:320px}.place-search ul{position:fixed;left:16px;right:16px;top:auto}}
