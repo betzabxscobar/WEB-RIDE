@@ -2,21 +2,20 @@
 
 Ciclo completo pasajero ↔ chofer, más el monitoreo en el panel web.
 
-## Sin mapa: qué se puede y qué no
+## Direcciones y mapa
 
-Un Uber real necesita tres cosas que Supabase no ofrece y que exigirían un
-proveedor externo, descartado por decisión del proyecto:
+**Actualizado el 2026-08-26.** El catálogo de 15 lugares quedó sustituido por
+búsqueda de direcciones de todo el mundo (Photon) y mapa visual (teselas de
+OpenStreetMap). Detalle en [`MAPAS_Y_DIRECCIONES.md`](MAPAS_Y_DIRECCIONES.md).
 
-| Falta | Por qué | Qué se hace en su lugar |
-|---|---|---|
-| Mapa visual | Los tiles vienen de Google, Mapbox u OpenStreetMap | Origen y destino en texto, con coordenadas reales detrás |
-| Geocodificación | Convertir «Av. 9 de Octubre» en coordenadas es un servicio | Catálogo `public.lugares` con puntos conocidos |
-| Ruta por calles | Requiere un motor de rutas | Distancia en línea recta × factor urbano |
+Lo único que sigue sin resolverse es la **ruta por calles**: la distancia se
+calcula en línea recta y `factor_trayecto_urbano()` (1.35) la ajusta. Una ruta
+real exigiría un motor de rutas.
 
-Lo que **sí** se hace con Supabase: calcular distancias (Postgres), cotizar por
-tarifa vigente, transmitir el estado en vivo (Realtime) y todo el ciclo de
-estados, pagos y calificaciones. El GPS del teléfono es del dispositivo, no un
-servicio externo, así que el origen puede ser la ubicación real.
+Supabase mantiene las reglas del viaje, las tarifas, los pagos, las
+calificaciones, las direcciones guardadas y los cambios en tiempo real. Photon
+y OpenStreetMap aportan la búsqueda mundial y el mapa; el GPS sigue viniendo
+del dispositivo del usuario.
 
 ## Reparto de responsabilidades
 
@@ -55,8 +54,12 @@ con Realtime y ofrece calificar al terminar.
 `public.conductores`, no una bandera local) → solicitudes abiertas → aceptar →
 avanzar estados → finalizar → calificar al pasajero.
 
-**Panel web** — sección *Viajes*: métricas y monitoreo en vivo de todos los
-viajes. RLS da lectura global a las cuentas administrativas.
+**Panel web de pasajero** — ubicación del navegador o dirección guardada →
+cotización → solicitud → seguimiento en vivo con última posición reportada →
+cancelación o calificación. También incorpora avisos, direcciones y pagos.
+
+**Panel web administrativo** — sección *Viajes*: métricas y monitoreo en vivo
+de todos los viajes. RLS da lectura global a las cuentas administrativas.
 
 ## Dónde vive cada cosa
 
@@ -67,7 +70,12 @@ viajes. RLS da lectura global a las cuentas administrativas.
 - `lib/screens/trips/` — solicitud, seguimiento, chofer y calificación
 
 **WEB-RIDE (React)**
-- `src/lib/trips.ts` — consulta y suscripción
+- `src/lib/trips.ts` — cotización, solicitud, historial, cancelación,
+  calificación, posición y suscripción
+- `src/lib/notifications.ts` — avisos del usuario y lectura en tiempo real
+- `src/lib/addresses.ts` — alta, favorito y eliminación de direcciones propias
+- `src/lib/payments.ts` — efectivo, método principal e historial de cobros
+- `src/PassengerDashboard.tsx` — panel funcional del pasajero
 - `src/AdminDashboard.tsx` — sección *Viajes*
 
 ## Un defecto que apareció al probar
@@ -139,9 +147,9 @@ equipo.
    pero falta la tarea programada que lo aplique.
 2. **Tarifa final = cotización.** `finalizar_viaje()` cobra lo cotizado. Con
    seguimiento GPS continuo se podría recalcular sobre la distancia recorrida.
-3. **Métodos de pago.** La tabla existe y `finalizar_viaje()` la usa si hay uno
-   predeterminado, pero no hay pantalla para darlos de alta: hoy todo cobro
-   queda como `pendiente`.
+3. **Pasarela de tarjetas.** La web ya permite registrar efectivo y consultar
+   cobros. Para tarjetas falta un proveedor que genere el token; nunca se debe
+   recibir el número de tarjeta directamente en Ride.
 4. **Búsqueda por cercanía.** Todos los choferes disponibles ven todas las
    solicitudes. `distancia_km()` ya permitiría filtrar por radio.
 5. **Deep links.** Sin ellos, el chofer no recibe avisos con la app cerrada.

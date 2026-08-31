@@ -7,8 +7,8 @@ export type Role = 'passenger' | 'driver' | 'admin' | 'superadmin'
  *
  * Es la regla central del cambio de panel:
  *
- * - `superadmin`: su panel, el panel visto como admin, usuario y chofer.
- * - `admin`: su panel, usuario y chofer. **Nunca** la vista de superadmin.
+ * - `superadmin`: su panel y el panel visto como admin.
+ * - `admin`: solo su panel. **Nunca** la vista de superadmin.
  * - `driver`: chofer y usuario.
  * - `passenger`: solo usuario.
  *
@@ -20,9 +20,9 @@ export type Role = 'passenger' | 'driver' | 'admin' | 'superadmin'
 export function viewsAllowed(role: Role): Role[] {
   switch (role) {
     case 'superadmin':
-      return ['superadmin', 'admin', 'passenger', 'driver']
+      return ['superadmin', 'admin']
     case 'admin':
-      return ['admin', 'passenger', 'driver']
+      return ['admin']
     case 'driver':
       return ['driver', 'passenger']
     default:

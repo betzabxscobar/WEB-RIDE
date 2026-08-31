@@ -110,6 +110,10 @@ en la carpeta de otro.
 
 **React**
 - `DriversPanel.tsx` — revisión de documentos y aprobación
+- `PassengerDashboard.tsx` — campana, lista de avisos, direcciones y pagos
+- `lib/notifications.ts` — lectura y suscripción Realtime
+- `lib/addresses.ts` — direcciones propias protegidas por RLS
+- `lib/payments.ts` — efectivo, método principal e historial
 
 El botón de aprobar no solo se deshabilita: **dice qué falta** («Licencia sin
 aprobar · Sin vehículo registrado»).

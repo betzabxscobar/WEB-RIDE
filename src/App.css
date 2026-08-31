@@ -91,3 +91,53 @@ img.logo{width:100%;height:100%;object-fit:contain;display:block !important}
 
 /* Improve readability for the brand paragraph */
 .brand-copy>p{color:#eaf8ff !important;font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,0.25);font-size:15px;line-height:1.5}
+
+/* Recuperacion de contraseña y primer acceso administrativo */
+.first-access{
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  padding:40px 24px;
+  background:
+    linear-gradient(115deg,rgba(4,20,32,.96),rgba(8,45,65,.88)),
+    url('./assets/FondoObscuroRide.png') center/cover no-repeat;
+}
+.first-access::before,.first-access::after{content:'';position:absolute;z-index:-1;border-radius:50%;pointer-events:none}
+.first-access::before{width:560px;height:560px;right:-210px;top:-280px;background:radial-gradient(circle,rgba(105,210,240,.2),transparent 68%)}
+.first-access::after{width:420px;height:420px;left:-190px;bottom:-250px;background:radial-gradient(circle,rgba(85,205,184,.14),transparent 70%)}
+.first-access>section{
+  width:min(100%,510px);
+  position:relative;
+  padding:38px 42px 34px;
+  border:1px solid rgba(255,255,255,.76);
+  border-radius:26px;
+  background:rgba(252,253,255,.97);
+  box-shadow:0 28px 80px rgba(0,10,18,.38),0 2px 8px rgba(0,10,18,.12);
+  animation:enter-refined .45s cubic-bezier(.22,1,.36,1);
+}
+.first-access .mini-brand{font-size:21px;margin-bottom:30px;color:var(--ink)}
+.first-access .mini-brand .logo{width:34px;height:39px!important;filter:drop-shadow(0 7px 14px rgba(38,157,243,.18));animation:none}
+.security-icon{width:52px;height:52px;display:grid;place-items:center;position:relative;margin-bottom:18px;border:1px solid #bceadd;border-radius:16px;background:linear-gradient(145deg,#e8faf6,#d8f5ee);box-shadow:0 9px 24px rgba(41,170,142,.12)}
+.security-icon::before{content:'';width:18px;height:15px;margin-top:8px;border-radius:4px;background:#1ba68c;box-shadow:inset 0 -2px rgba(5,94,76,.16)}
+.security-icon::after{content:'';position:absolute;width:13px;height:13px;top:10px;border:3px solid #1ba68c;border-bottom:0;border-radius:9px 9px 0 0}
+.first-access .eyebrow{display:block;color:#168db9;font-size:10px;font-weight:800;letter-spacing:1.55px}
+.first-access h1{margin:9px 0 12px;color:var(--ink);font:800 32px/1.16 Sora,sans-serif;letter-spacing:-1px}
+.first-access p{max-width:410px;margin:0 0 27px;color:var(--muted);font-size:13px;line-height:1.65}
+.first-access form{display:grid;gap:16px}
+.first-access label{display:grid;gap:8px;color:#31495a;font-size:11px;font-weight:700}
+.first-access input{width:100%;min-height:46px;padding:12px 14px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink);font-size:13px;outline:0;transition:border-color .2s,box-shadow .2s,transform .2s}
+.first-access input::placeholder{color:#9aa8b3}
+.first-access input:focus{border-color:#55bddd;box-shadow:0 0 0 4px rgba(85,189,221,.13);transform:translateY(-1px)}
+.first-access .primary-action{min-height:48px;margin-top:5px;color:#082438;background:linear-gradient(135deg,#8de0f2,#4bbde7)}
+.cancel-access{display:block;margin:18px auto 0;padding:6px 10px;border:0;background:transparent;color:#718293;font-size:11px;font-weight:700;transition:color .2s,transform .2s}
+.cancel-access:hover{color:#137fa8;transform:translateY(-1px)}
+@media(max-width:560px){
+  .first-access{padding:18px;background:linear-gradient(155deg,#061823,#0d354a)}
+  .first-access>section{padding:29px 23px 26px;border-radius:21px}
+  .first-access .mini-brand{margin-bottom:24px}
+  .security-icon{width:47px;height:47px;border-radius:14px}
+  .first-access h1{font-size:26px;letter-spacing:-.7px}
+}
