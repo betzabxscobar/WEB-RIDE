@@ -41,6 +41,10 @@
 @media(max-width:1050px){.account-links{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.account-links{grid-template-columns:1fr}.account-links .account-link{min-height:58px}}
 
+@media(min-width:761px){.viewing-as+.passenger-shell .passenger-sidebar{top:48px}.passenger-sidebar{scrollbar-width:thin;scrollbar-color:rgba(103,209,237,.45) transparent}.passenger-sidebar::-webkit-scrollbar{width:6px}.passenger-sidebar::-webkit-scrollbar-track{background:transparent}.passenger-sidebar::-webkit-scrollbar-thumb{background:rgba(103,209,237,.4);border-radius:99px}}
+
+.theme-dark .quote-price{background:linear-gradient(135deg,#153b4b,#153c39)}.theme-dark .driver-card,.theme-dark .payment-method-list article,.theme-dark .notification-list article,.theme-dark .start-ride-card,.theme-dark .active-trip,.theme-dark .trip-row,.theme-dark .trip-history article{background:var(--p-paper);color:var(--p-ink)}.theme-dark .passenger-empty{background:rgba(16,42,56,.6);border-color:var(--p-line)}.theme-dark .route-field select,.theme-dark .address-form input,.theme-dark .rating-fields textarea{background:#153341;color:var(--p-ink);border-color:var(--p-line)}.theme-dark .history-actions button,.theme-dark .payment-method-list article>button,.theme-dark .dialog-secondary{background:#153341;color:#7ed8f1;border-color:var(--p-line)}.theme-dark .notification-list article.unread{background:#123b4d}.theme-dark .trip-progress,.theme-dark .tracking-progress{background:#254451}.theme-dark .passenger-profile{border-color:rgba(255,255,255,.12)}
+
 .place-search{position:relative;display:grid;gap:7px;margin-top:15px;color:#31495a;font-size:10px;font-weight:800;z-index:8}
 .place-search>div{position:relative}.place-search input,.saved-place-select{box-sizing:border-box;width:100%;border:1px solid var(--p-line);border-radius:11px;background:#fff;color:var(--p-ink);padding:12px 13px;font:inherit;font-size:11px;outline:0}
 .place-search input:focus,.saved-place-select:focus{border-color:#55bddd;box-shadow:0 0 0 4px rgba(85,189,221,.11)}

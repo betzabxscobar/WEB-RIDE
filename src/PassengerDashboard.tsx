@@ -141,6 +141,11 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
   }
   const darkMode = theme === 'dark' || (theme === 'system' && systemDark)
 
+  useEffect(() => {
+    document.documentElement.dataset.rideTheme = darkMode ? 'dark' : 'light'
+    return () => { delete document.documentElement.dataset.rideTheme }
+  }, [darkMode])
+
   const load = useCallback(async () => {
     try {
       const [nextTrips, nextPlaces] = await Promise.all([
