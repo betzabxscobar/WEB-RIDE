@@ -23,6 +23,11 @@
 @media(max-width:900px){.tracking-layout{grid-template-columns:1fr}}
 @media(max-width:600px){.tracking-hero{display:grid;padding:22px}.tracking-hero h2{font-size:20px}.tracking-position{grid-template-columns:42px 1fr}.tracking-position a{grid-column:1/-1;text-align:center}}
 
+/* El autocompletado forma parte del flujo para no tapar el siguiente campo. */
+.place-search ul{position:static;z-index:auto;max-height:230px;margin-top:2px}
+.quick-places{display:grid;gap:8px;margin-top:10px}.quick-places>span{color:#718591;font-size:8px;font-weight:800;letter-spacing:.7px;text-transform:uppercase}.quick-places>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.quick-places button{min-width:0;display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px;align-items:center;border:1px solid #deeaee;border-radius:10px;background:#f8fbfc;padding:9px;text-align:left;color:var(--p-ink)}.quick-places button:hover{border-color:#9bd8e8;background:#f0fafc}.quick-places button>b{width:28px;height:28px;border-radius:9px;background:#e2f5fa;color:#1688aa;display:grid;place-items:center}.quick-places button>span{min-width:0;display:grid;gap:3px}.quick-places strong,.quick-places small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.quick-places strong{font-size:9px}.quick-places small{color:var(--p-muted);font-size:7px}.ride-map{position:relative;z-index:0;isolation:isolate}.passenger-dialog-backdrop{z-index:3000}
+@media(max-width:760px){.place-search ul{position:static;left:auto;right:auto;top:auto}.quick-places>div{grid-template-columns:1fr}}
+
 .place-search{position:relative;display:grid;gap:7px;margin-top:15px;color:#31495a;font-size:10px;font-weight:800;z-index:8}
 .place-search>div{position:relative}.place-search input,.saved-place-select{box-sizing:border-box;width:100%;border:1px solid var(--p-line);border-radius:11px;background:#fff;color:var(--p-ink);padding:12px 13px;font:inherit;font-size:11px;outline:0}
 .place-search input:focus,.saved-place-select:focus{border-color:#55bddd;box-shadow:0 0 0 4px rgba(85,189,221,.11)}

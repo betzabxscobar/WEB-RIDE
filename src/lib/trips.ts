@@ -47,6 +47,9 @@ export type Place = {
   direccion: string
   lat: number
   lng: number
+  source?: 'recent' | 'recommended'
+  favorite?: boolean
+  lastUsedAt?: string | null
 }
 
 export type Coordinates = { lat: number; lng: number; label: string }
@@ -266,7 +269,7 @@ export async function listPlaces(userId: string): Promise<Place[]> {
       .order('nombre'),
     supabase
       .from('direcciones_guardadas')
-      .select('id, etiqueta, direccion, latitud, longitud')
+      .select('id, etiqueta, direccion, latitud, longitud, favorita, usada_en')
       .eq('usuario_id', userId)
       .order('favorita', { ascending: false })
       .order('usada_en', { ascending: false }),
@@ -275,14 +278,25 @@ export async function listPlaces(userId: string): Promise<Place[]> {
   if (catalog.error) throw databaseMessage(catalog.error, 'No se pudo cargar el catálogo de destinos.')
   if (saved.error) throw databaseMessage(saved.error, 'No se pudieron cargar tus direcciones.')
 
-  const rows = [...(saved.data ?? []).map((row) => ({ ...row, nombre: row.etiqueta || row.direccion })), ...(catalog.data ?? [])]
-  return rows.map((row) => ({
+  const recentPlaces: Place[] = (saved.data ?? []).map((row) => ({
+    id: row.id as string,
+    nombre: (row.etiqueta || row.direccion) as string,
+    direccion: row.direccion as string,
+    lat: Number(row.latitud),
+    lng: Number(row.longitud),
+    source: 'recent',
+    favorite: Boolean(row.favorita),
+    lastUsedAt: (row.usada_en as string | null) ?? null,
+  }))
+  const recommendedPlaces: Place[] = (catalog.data ?? []).map((row) => ({
     id: row.id as string,
     nombre: row.nombre as string,
     direccion: row.direccion as string,
     lat: Number(row.latitud),
     lng: Number(row.longitud),
+    source: 'recommended',
   }))
+  return [...recentPlaces, ...recommendedPlaces]
 }
 
 export async function quoteTrip(origin: Coordinates, destination: Place, roadKm?: number): Promise<Quote> {
