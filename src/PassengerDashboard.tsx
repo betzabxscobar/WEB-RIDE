@@ -51,7 +51,8 @@ import {
   type TripStatus,
 } from './lib/trips'
 
-type Page = 'inicio' | 'pedir' | 'seguimiento' | 'viajes' | 'avisos' | 'direcciones' | 'pagos' | 'cuenta'
+type Page = 'inicio' | 'pedir' | 'seguimiento' | 'viajes' | 'avisos' | 'direcciones' | 'pagos' | 'cuenta' | 'configuracion'
+type ThemePreference = 'system' | 'light' | 'dark'
 
 type Props = {
   user: User
@@ -119,6 +120,26 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
   const [trackingTripId, setTrackingTripId] = useState<string | null>(null)
   const [tripPosition, setTripPosition] = useState<TripPosition | null>(null)
   const [offeredRatingTripId, setOfferedRatingTripId] = useState<string | null>(null)
+  const [theme, setTheme] = useState<ThemePreference>(() => (localStorage.getItem('ride-theme') as ThemePreference | null) ?? 'system')
+  const [systemDark, setSystemDark] = useState(() => window.matchMedia('(prefers-color-scheme: dark)').matches)
+  const [reducedMotion, setReducedMotion] = useState(() => localStorage.getItem('ride-reduced-motion') === 'true')
+
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
+    const update = (event: MediaQueryListEvent) => setSystemDark(event.matches)
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
+
+  const changeTheme = (next: ThemePreference) => {
+    setTheme(next)
+    localStorage.setItem('ride-theme', next)
+  }
+  const changeReducedMotion = (enabled: boolean) => {
+    setReducedMotion(enabled)
+    localStorage.setItem('ride-reduced-motion', String(enabled))
+  }
+  const darkMode = theme === 'dark' || (theme === 'system' && systemDark)
 
   const load = useCallback(async () => {
     try {
@@ -451,7 +472,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
     } finally { setBusy(false) }
   }
 
-  return <main className="passenger-shell">
+  return <main className={`passenger-shell ${darkMode ? 'theme-dark' : 'theme-light'} ${reducedMotion ? 'reduced-motion' : ''}`}>
     <aside className="passenger-sidebar">
       <div className="passenger-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
       <nav aria-label="Panel del pasajero">
@@ -462,6 +483,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
         <NavButton active={page === 'direcciones'} icon="⌖" label="Direcciones" onClick={() => go('direcciones')}/>
         <NavButton active={page === 'pagos'} icon="$" label="Pagos" onClick={() => go('pagos')}/>
         <NavButton active={page === 'cuenta'} icon="○" label="Mi cuenta" onClick={() => go('cuenta')}/>
+        <NavButton active={page === 'configuracion'} icon="⚙" label="Configuración" onClick={() => go('configuracion')}/>
       </nav>
       <div className="passenger-profile">
         <span>{initials(user.name)}</span>
@@ -473,7 +495,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
     <section className="passenger-workspace">
       <header className="passenger-topbar">
         <div className="passenger-mobile-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
-        <div><span className="passenger-kicker">PANEL DE PASAJERO</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'pedir' ? 'Pide un viaje' : page === 'seguimiento' ? 'Seguimiento del viaje' : page === 'viajes' ? 'Tus viajes' : page === 'avisos' ? 'Tus avisos' : page === 'direcciones' ? 'Tus direcciones' : page === 'pagos' ? 'Tus pagos' : 'Tu cuenta'}</h1></div>
+        <div><span className="passenger-kicker">PANEL DE PASAJERO</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'pedir' ? 'Pide un viaje' : page === 'seguimiento' ? 'Seguimiento del viaje' : page === 'viajes' ? 'Tus viajes' : page === 'avisos' ? 'Tus avisos' : page === 'direcciones' ? 'Tus direcciones' : page === 'pagos' ? 'Tus pagos' : page === 'configuracion' ? 'Configuración' : 'Tu cuenta'}</h1></div>
         <div className="passenger-top-actions">
           {views.length > 1 && <label className="passenger-view-select"><span>Vista</span><select value={activeView} onChange={(event) => onSwitchView(event.target.value as Role)}>{views.map((view) => <option value={view} key={view}>{panelLabel(view)}</option>)}</select></label>}
           <button className="notification-button" onClick={openNotifications} aria-label={unread ? `${unread} avisos sin leer` : 'Abrir avisos'}>♢{unread > 0 && <b>{unread > 9 ? '9+' : unread}</b>}</button>
@@ -491,7 +513,8 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
           : page === 'avisos' ? <NotificationsPage notifications={notifications}/>
           : page === 'direcciones' ? <AddressesPage addresses={addresses} busy={busy} onSave={saveCurrentAddress} onFavorite={toggleFavoriteAddress} onDelete={removeAddress}/>
           : page === 'pagos' ? <PaymentsPage methods={paymentMethods} payments={payments} trips={trips} busy={busy} onAddCash={addCashPayment} onPreferred={selectPreferredPayment} onDelete={removePaymentMethod}/>
-          : <AccountPage user={user} trips={trips} addresses={addresses} methods={paymentMethods} onAddresses={() => go('direcciones')} onPayments={() => go('pagos')}/>
+          : page === 'configuracion' ? <SettingsPage theme={theme} reducedMotion={reducedMotion} onTheme={changeTheme} onReducedMotion={changeReducedMotion}/>
+          : <AccountPage user={user} trips={trips} addresses={addresses} methods={paymentMethods} onAddresses={() => go('direcciones')} onPayments={() => go('pagos')} onSettings={() => go('configuracion')}/>
         }
       </div>
     </section>
@@ -620,9 +643,18 @@ function PaymentsPage({ methods, payments, trips, busy, onAddCash, onPreferred, 
   return <div className="passenger-page payments-page"><section className="passenger-section-head"><div><span>COBROS REGISTRADOS</span><h2>Formas de pago</h2><p>La aplicación no guarda números de tarjeta ni datos bancarios.</p></div></section><div className="payment-layout"><section className="payment-methods"><div className="payment-head"><h3>Tus opciones</h3>{!methods.some((method) => method.type === 'efectivo') && <button disabled={busy} onClick={onAddCash}>+ Agregar efectivo</button>}</div>{methods.length === 0 ? <div className="payment-empty"><span>$</span><h4>Sin formas de pago</h4><p>Puedes registrar efectivo ahora. Las tarjetas se habilitarán cuando Ride tenga una pasarela de pago real.</p><button disabled={busy} onClick={onAddCash}>{busy ? 'Agregando…' : 'Usar efectivo'}</button></div> : <div className="payment-method-list">{methods.map((method) => <article key={method.id}><span>{method.type === 'efectivo' ? '$' : '▣'}</span><div><strong>{method.type === 'efectivo' ? 'Efectivo' : 'Tarjeta tokenizada'}</strong><small>{method.preferred ? 'Opción principal' : `Agregada el ${date(method.createdAt)}`}</small></div><div className="payment-method-actions">{method.preferred ? <b>Principal</b> : <button disabled={busy} onClick={() => onPreferred(method)}>Elegir</button>}<button className="delete" disabled={busy} onClick={() => onDelete(method)}>Eliminar</button></div></article>)}</div>}<aside className="payment-security"><b>Pago seguro</b><p>Una tarjeta solo podrá agregarse mediante el token de una pasarela. Ride no aceptará ni almacenará el número escrito directamente.</p></aside></section><section className="payment-history"><h3>Movimientos</h3>{payments.length === 0 ? <p className="payment-no-history">Aún no tienes cobros registrados.</p> : payments.map((payment) => <article key={payment.id}><span className={`payment-state ${payment.status}`}>{statusLabel[payment.status]}</span><div><strong>{tripDestination(payment.tripId)}</strong><small>{date(payment.createdAt)} · {payment.type === 'reembolso' ? 'Reembolso' : payment.type === 'reintento' ? 'Reintento' : 'Pago'}</small></div><b>{money(payment.amount)}</b></article>)}</section></div></div>
 }
 
-function AccountPage({ user, trips, addresses, methods, onAddresses, onPayments }: { user: User; trips: Trip[]; addresses: SavedAddress[]; methods: PaymentMethod[]; onAddresses: () => void; onPayments: () => void }) {
+function AccountPage({ user, trips, addresses, methods, onAddresses, onPayments, onSettings }: { user: User; trips: Trip[]; addresses: SavedAddress[]; methods: PaymentMethod[]; onAddresses: () => void; onPayments: () => void; onSettings: () => void }) {
   const completed = trips.filter((trip) => trip.estado === 'FINALIZADO').length
-  return <div className="passenger-page account-page"><section className="account-hero"><span className="account-avatar">{initials(user.name)}</span><div><span className="passenger-kicker">PERFIL DE PASAJERO</span><h2>{user.name}</h2><p>Tu información de Ride y actividad reciente.</p></div></section><section className="account-layout"><div className="account-details"><h3>Datos personales</h3><dl><div><dt>Nombre</dt><dd>{user.name}</dd></div><div><dt>Correo</dt><dd>{user.email}</dd></div><div><dt>Teléfono</dt><dd>{user.phone || 'Sin teléfono registrado'}</dd></div><div><dt>Tipo de cuenta</dt><dd>Pasajero</dd></div></dl><div className="account-links"><button className="account-link" onClick={onAddresses}>Administrar {addresses.length} {addresses.length === 1 ? 'dirección guardada' : 'direcciones guardadas'} →</button><button className="account-link" onClick={onPayments}>Administrar {methods.length} {methods.length === 1 ? 'forma de pago' : 'formas de pago'} →</button></div></div><div className="account-summary"><span>VIAJES FINALIZADOS</span><strong>{completed}</strong><p>{trips.length - completed} solicitudes en otros estados</p></div></section></div>
+  return <div className="passenger-page account-page"><section className="account-hero"><span className="account-avatar">{initials(user.name)}</span><div><span className="passenger-kicker">PERFIL DE PASAJERO</span><h2>{user.name}</h2><p>Tu información personal y actividad reciente.</p></div></section><section className="account-layout"><div className="account-details"><h3>Datos personales</h3><dl><div><dt>Nombre</dt><dd>{user.name}</dd></div><div><dt>Correo</dt><dd>{user.email}</dd></div><div><dt>Teléfono</dt><dd>{user.phone || 'Sin teléfono registrado'}</dd></div><div><dt>Tipo de cuenta</dt><dd>Pasajero</dd></div></dl><div className="account-links"><button className="account-link" onClick={onAddresses}>Administrar {addresses.length} {addresses.length === 1 ? 'dirección guardada' : 'direcciones guardadas'} →</button><button className="account-link" onClick={onPayments}>Administrar {methods.length} {methods.length === 1 ? 'forma de pago' : 'formas de pago'} →</button><button className="account-link" onClick={onSettings}>Abrir configuración →</button></div></div><div className="account-summary"><span>VIAJES FINALIZADOS</span><strong>{completed}</strong><p>{trips.length - completed} solicitudes en otros estados</p></div></section></div>
+}
+
+function SettingsPage({ theme, reducedMotion, onTheme, onReducedMotion }: { theme: ThemePreference; reducedMotion: boolean; onTheme: (theme: ThemePreference) => void; onReducedMotion: (enabled: boolean) => void }) {
+  const themes: { value: ThemePreference; icon: string; title: string; text: string }[] = [
+    { value: 'system', icon: '◐', title: 'Usar el sistema', text: 'Cambia automáticamente con tu dispositivo.' },
+    { value: 'light', icon: '☀', title: 'Modo claro', text: 'Fondo luminoso y alto contraste.' },
+    { value: 'dark', icon: '☾', title: 'Modo oscuro', text: 'Reduce el brillo en ambientes con poca luz.' },
+  ]
+  return <div className="passenger-page settings-page"><section className="passenger-section-head"><div><span>PREFERENCIAS</span><h2>Configuración</h2><p>Personaliza cómo se ve y se comporta Ride en este navegador.</p></div></section><section className="settings-card"><div className="settings-card-head"><span>◐</span><div><h3>Apariencia</h3><p>Elige el tema visual que prefieras.</p></div></div><div className="theme-options">{themes.map((item) => <button key={item.value} className={theme === item.value ? 'selected' : ''} onClick={() => onTheme(item.value)} aria-pressed={theme === item.value}><b>{item.icon}</b><span><strong>{item.title}</strong><small>{item.text}</small></span><i>{theme === item.value ? '✓' : ''}</i></button>)}</div></section><section className="settings-card"><div className="settings-card-head"><span>◇</span><div><h3>Accesibilidad</h3><p>Ajustes para una experiencia más cómoda.</p></div></div><label className="settings-toggle"><span><strong>Reducir movimiento</strong><small>Desactiva transiciones y animaciones decorativas.</small></span><input type="checkbox" checked={reducedMotion} onChange={(event) => onReducedMotion(event.target.checked)}/><i/></label></section><small className="settings-storage">Estas preferencias se guardan solamente en este navegador.</small></div>
 }
 
 function Route({ trip }: { trip: Trip }) {
