@@ -49,6 +49,12 @@ export async function choosePreferredPayment(id: string): Promise<void> {
   if (error) throw new Error('No se pudo cambiar la forma de pago principal.')
 }
 
+export async function deletePaymentMethod(id: string): Promise<void> {
+  const { error } = await supabase.from('metodos_pago').delete().eq('id', id)
+  if (error?.message.toLowerCase().includes('foreign key')) throw new Error('No puedes eliminar una forma de pago que ya tiene cobros registrados.')
+  if (error) throw new Error('No se pudo eliminar la forma de pago.')
+}
+
 export async function listPaymentsForTrips(tripIds: string[]): Promise<RidePayment[]> {
   if (tripIds.length === 0) return []
   const { data, error } = await supabase
