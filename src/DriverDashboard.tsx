@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import RideMap from './components/RideMap'
 import logoTipo from './assets/LogoTipo.png'
 import { panelLabel, type Role, type User } from './lib/auth'
+import { AppearanceSettings, useAppearance } from './components/AppearanceSettings'
 import { routeBetween, type RoadRoute } from './lib/routing'
 import {
   activateVehicle,
@@ -35,7 +36,7 @@ import {
   type TripPosition,
 } from './lib/trips'
 
-type Page = 'inicio' | 'viajes' | 'vehiculos' | 'documentos' | 'cuenta'
+type Page = 'inicio' | 'viajes' | 'vehiculos' | 'documentos' | 'cuenta' | 'configuracion'
 type Props = { user: User; views: Role[]; activeView: Role; onSwitchView: (view: Role) => void; onLogout: () => void }
 
 const EMPTY_STATE: DriverState = { exists: false, approved: false, approvalStatus: 'pendiente', available: false, hasActiveVehicle: false, rating: null }
@@ -63,6 +64,7 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
   const [ratingTrip, setRatingTrip] = useState<Trip | null>(null)
   const [ratingScore, setRatingScore] = useState(5)
   const [ratingComment, setRatingComment] = useState('')
+  const appearance = useAppearance()
 
   const activeTrip = useMemo(() => trips.find((trip) => !esFinal(trip.estado)) ?? null, [trips])
 
@@ -126,7 +128,7 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
   const go = (next: Page) => { setPage(next); setError(''); setNotice('') }
   const canWork = state.approved && state.hasActiveVehicle
 
-  return <main className="driver-shell">
+  return <main className={`driver-shell ${appearance.darkMode ? 'theme-dark' : ''} ${appearance.reducedMotion ? 'reduced-motion' : ''}`}>
     <aside className="driver-sidebar">
       <div className="driver-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
       <nav aria-label="Panel del conductor">
@@ -135,6 +137,7 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
         <DriverNav active={page === 'vehiculos'} icon="▰" label="Vehículos" onClick={() => go('vehiculos')}/>
         <DriverNav active={page === 'documentos'} icon="▤" label="Documentos" onClick={() => go('documentos')}/>
         <DriverNav active={page === 'cuenta'} icon="○" label="Mi cuenta" onClick={() => go('cuenta')}/>
+        <DriverNav active={page === 'configuracion'} icon="⚙" label="Configuración" onClick={() => go('configuracion')}/>
       </nav>
       <div className="driver-profile"><span>{initials(user.name)}</span><div><strong>{user.name}</strong><small>{state.available ? 'En línea' : 'Fuera de línea'}</small></div></div>
       <button className="driver-logout" onClick={onLogout}>Cerrar sesión</button>
@@ -147,6 +150,7 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
           : page === 'viajes' ? <DriverTrips active={activeTrip} requests={requests} history={trips} position={position} busy={busy} canWork={canWork} available={state.available} onAccept={(trip) => void action(() => acceptTrip(trip.id), 'Solicitud aceptada.')} onAdvance={(trip) => void action(() => advanceTrip(trip.id).then(() => undefined))} onFinish={finalize} onCancel={(trip) => void action(() => cancelTrip(trip.id), 'Viaje cancelado.')}/>
           : page === 'vehiculos' ? <VehiclesPage vehicles={vehicles} busy={busy} onSave={(input) => void action(() => saveVehicle(input).then(() => undefined), 'Vehículo guardado.')} onActivate={(id) => void action(() => activateVehicle(id), 'Vehículo activado.')}/>
           : page === 'documentos' ? <DocumentsPage documents={documents} busy={busy} onUpload={(type, file) => void action(() => uploadDriverDocument(user.id, type, file), 'Documento enviado para revisión.')} onOpen={async (path) => { try { window.open(await ownDocumentUrl(path), '_blank', 'noopener,noreferrer') } catch (cause) { setError(cause instanceof Error ? cause.message : 'No se pudo abrir el documento.') } }}/>
+          : page === 'configuracion' ? <div className="driver-page settings-page"><section className="driver-section-head"><span>PREFERENCIAS</span><h2>Configuración</h2><p>Personaliza todos los paneles de Ride.</p></section><AppearanceSettings theme={appearance.theme} reducedMotion={appearance.reducedMotion} onTheme={appearance.setTheme} onReducedMotion={appearance.setReducedMotion}/></div>
           : <DriverAccount user={user} state={state} vehicles={vehicles} documents={documents}/>
         }
       </div>

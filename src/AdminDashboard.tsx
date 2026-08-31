@@ -5,6 +5,7 @@ import { listUsers, panelLabel, type Role, type User } from './lib/auth'
 import { faltantes, listDrivers, type Driver } from './lib/drivers'
 import { listTrips, watchTrips, esFinal, ESTADO_LABEL, type Trip } from './lib/trips'
 import DriversPanel from './DriversPanel'
+import { AppearanceSettings, useAppearance } from './components/AppearanceSettings'
 
 type Props = {
   user: { name: string; email: string; role: string }
@@ -14,13 +15,15 @@ type Props = {
   onLogout: () => void
 }
 
-type Section = 'Resumen' | 'Usuarios' | 'Conductores' | 'Viajes'
+type Section = 'Resumen' | 'Usuarios' | 'Conductores' | 'Viajes' | 'Mi cuenta' | 'Configuración'
 
 const sections: { label: Section; group: 'Operación' | 'Gestión' }[] = [
   { label: 'Resumen', group: 'Operación' },
   { label: 'Viajes', group: 'Operación' },
   { label: 'Conductores', group: 'Gestión' },
   { label: 'Usuarios', group: 'Gestión' },
+  { label: 'Mi cuenta', group: 'Gestión' },
+  { label: 'Configuración', group: 'Gestión' },
 ]
 
 function NavIcon({ section }: { section: Section }) {
@@ -106,6 +109,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
   const [usersError, setUsersError] = useState('')
   const [tripsError, setTripsError] = useState('')
   const [driversError, setDriversError] = useState('')
+  const appearance = useAppearance()
 
   const isSuperadmin = viewAs === 'superadmin'
   const viewingOtherPanel = viewAs !== user.role
@@ -160,7 +164,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
   const navCount = (section: Section) => section === 'Viajes' ? metrics.activeTrips : section === 'Conductores' ? pendingDrivers.length : 0
 
   return (
-    <main className="admin-shell">
+    <main className={`admin-shell ${appearance.darkMode ? 'theme-dark' : ''} ${appearance.reducedMotion ? 'reduced-motion' : ''}`}>
       <aside className="admin-sidebar">
         <div className="admin-brand">
           <img src={logoAsset} className="admin-brand-logo" alt="Ride" />
@@ -267,6 +271,8 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
             <section className="admin-card"><div className="admin-card-head"><div><h3>Monitoreo de viajes</h3><p>El listado se actualiza cuando cambia un viaje.</p></div></div><TripRows trips={trips} loading={tripsLoading} error={tripsError} /></section>
           </div>
         )}
+        {activeSection === 'Mi cuenta' && <div className="admin-content"><section className="admin-card admin-account-card"><div className="admin-card-head"><div><h3>Datos de la cuenta</h3><p>Información asociada a tu acceso administrativo.</p></div></div><dl><div><dt>Nombre</dt><dd>{user.name}</dd></div><div><dt>Correo</dt><dd>{user.email}</dd></div><div><dt>Rol</dt><dd>{profileName}</dd></div></dl></section></div>}
+        {activeSection === 'Configuración' && <div className="admin-content settings-page"><section className="overview-heading"><small>PREFERENCIAS</small><h2>Configuración</h2><p>Personaliza todos los paneles de Ride.</p></section><AppearanceSettings theme={appearance.theme} reducedMotion={appearance.reducedMotion} onTheme={appearance.setTheme} onReducedMotion={appearance.setReducedMotion}/></div>}
       </section>
     </main>
   )

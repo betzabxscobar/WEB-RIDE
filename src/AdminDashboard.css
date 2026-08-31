@@ -300,6 +300,8 @@
   padding-top: 48px;
 }
 
+.admin-account-card dl{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0}.admin-account-card dl div{padding:15px;border-radius:10px;background:#f4f7f8}.admin-account-card dt{font-size:9px;color:#71818a}.admin-account-card dd{margin:5px 0 0;font-size:11px;font-weight:700}.admin-shell.reduced-motion *{animation:none!important;transition:none!important}.admin-shell.theme-dark{background:#081c28;color:#e8f2f6}.admin-shell.theme-dark .admin-main>header,.admin-shell.theme-dark .admin-card,.admin-shell.theme-dark .metric-strip article,.admin-shell.theme-dark .settings-card{background:#102a38;color:#e8f2f6;border-color:#294452}.admin-shell.theme-dark .theme-options button,.admin-shell.theme-dark .theme-options button>b,.admin-shell.theme-dark .admin-account-card dl div{background:#153341;color:#e8f2f6;border-color:#294452}@media(max-width:700px){.admin-account-card dl{grid-template-columns:1fr}}
+
 .admin-content {
   width: min(100%, 1420px);
   margin: 0 auto;
