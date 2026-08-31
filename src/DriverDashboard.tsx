@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import RideMap from './components/RideMap'
 import logoTipo from './assets/LogoTipo.png'
 import { panelLabel, type Role, type User } from './lib/auth'
+import { routeBetween, type RoadRoute } from './lib/routing'
 import {
   activateVehicle,
   driverBlockReason,
@@ -165,12 +166,25 @@ function canWorkText(state: DriverState): string { return state.approved && stat
 
 function DriverTrips({ active, requests, history, position, busy, canWork, available, onAccept, onAdvance, onFinish, onCancel }: { active: Trip | null; requests: Trip[]; history: Trip[]; position: TripPosition | null; busy: boolean; canWork: boolean; available: boolean; onAccept: (trip: Trip) => void; onAdvance: (trip: Trip) => void; onFinish: (trip: Trip) => void; onCancel: (trip: Trip) => void }) {
   const next: Partial<Record<Trip['estado'], string>> = { ACEPTADO: 'Voy en camino', CONDUCTOR_EN_CAMINO: 'Llegué al punto', CONDUCTOR_EN_ORIGEN: 'Iniciar viaje' }
-  if (active) return <div className="driver-page"><section className="driver-section-head"><span>VIAJE EN CURSO</span><h2>{ESTADO_LABEL[active.estado]}</h2></section><RideMap origin={active.origenLat != null ? { lat: active.origenLat, lng: active.origenLng!, label: active.origenTexto } : null} destination={active.destinoLat != null ? { id: active.id, nombre: active.destinoTexto, direccion: '', lat: active.destinoLat, lng: active.destinoLng! } : null} driver={position} className="driver-trip-map"/><section className="active-driver-trip"><div className="active-driver-title"><div><small>PASAJERO</small><h3>{active.pasajeroNombre}</h3>{active.pasajeroTelefono && <a href={`tel:${active.pasajeroTelefono}`}>{active.pasajeroTelefono}</a>}</div><strong>{money(active.tarifaFinal ?? active.tarifaEstimada)}</strong></div><DriverRoute trip={active}/><div className="driver-trip-actions">{next[active.estado] && <button className="primary" disabled={busy} onClick={() => onAdvance(active)}>{next[active.estado]}</button>}{active.estado === 'EN_CURSO' && <button className="finish" disabled={busy} onClick={() => onFinish(active)}>Finalizar viaje</button>}{!['EN_CURSO','FINALIZADO','CANCELADO','SIN_CONDUCTOR'].includes(active.estado) && <button className="danger" disabled={busy} onClick={() => onCancel(active)}>Cancelar viaje</button>}</div></section></div>
+  if (active) return <div className="driver-page"><section className="driver-section-head"><span>VIAJE EN CURSO</span><h2>{ESTADO_LABEL[active.estado]}</h2></section><DriverActiveMap trip={active} position={position}/><section className="active-driver-trip"><div className="active-driver-title"><div><small>PASAJERO</small><h3>{active.pasajeroNombre}</h3>{active.pasajeroTelefono && <a href={`tel:${active.pasajeroTelefono}`}>{active.pasajeroTelefono}</a>}</div><strong>{money(active.tarifaFinal ?? active.tarifaEstimada)}</strong></div><DriverRoute trip={active}/><div className="driver-trip-actions">{next[active.estado] && <button className="primary" disabled={busy} onClick={() => onAdvance(active)}>{next[active.estado]}</button>}{active.estado === 'EN_CURSO' && <button className="finish" disabled={busy} onClick={() => onFinish(active)}>Finalizar viaje</button>}{!['EN_CURSO','FINALIZADO','CANCELADO','SIN_CONDUCTOR'].includes(active.estado) && <button className="danger" disabled={busy} onClick={() => onCancel(active)}>Cancelar viaje</button>}</div></section></div>
   return <div className="driver-page"><section className="driver-section-head"><span>SOLICITUDES REALES</span><h2>{available && canWork ? 'Viajes cerca de ti' : 'No estás recibiendo solicitudes'}</h2><p>{available && canWork ? 'La lista cambia automáticamente cuando un pasajero pide un viaje.' : 'Debes tener la cuenta aprobada, un vehículo activo y estar en línea.'}</p></section>{requests.length ? <div className="driver-request-list">{requests.map((trip) => <article key={trip.id}><div><small>{trip.pasajeroNombre}</small><strong>{money(trip.tarifaEstimada)}</strong></div><DriverRoute trip={trip}/><button disabled={busy} onClick={() => onAccept(trip)}>Aceptar ruta</button></article>)}</div> : <div className="driver-empty"><span>⌁</span><h3>{available && canWork ? 'Buscando pasajeros' : 'Sin solicitudes'}</h3><p>{available && canWork ? 'Te avisaremos apenas aparezca un viaje dentro de tu zona.' : 'Vuelve al inicio para revisar tu disponibilidad.'}</p></div>}<section className="driver-section-head history"><span>HISTORIAL</span><h2>Viajes anteriores</h2></section><div className="driver-history">{history.filter(esFinalTrip).map((trip) => <article key={trip.id}><DriverRoute trip={trip}/><span>{ESTADO_LABEL[trip.estado]}</span><strong>{money(trip.tarifaFinal ?? trip.tarifaEstimada)}</strong></article>)}</div></div>
 }
 
 function esFinalTrip(trip: Trip) { return esFinal(trip.estado) }
 function DriverRoute({ trip }: { trip: Trip }) { return <div className="driver-route"><div><i/><span><small>ORIGEN</small><strong>{trip.origenTexto}</strong></span></div><b/><div><i/><span><small>DESTINO</small><strong>{trip.destinoTexto}</strong></span></div></div> }
+
+function DriverActiveMap({ trip, position }: { trip: Trip; position: TripPosition | null }) {
+  const [route, setRoute] = useState<RoadRoute | null>(null)
+  const origin = useMemo(() => trip.origenLat != null && trip.origenLng != null ? { lat: trip.origenLat, lng: trip.origenLng, label: trip.origenTexto } : null, [trip.origenLat, trip.origenLng, trip.origenTexto])
+  const destination = useMemo(() => trip.destinoLat != null && trip.destinoLng != null ? { id: trip.id, nombre: trip.destinoTexto, direccion: '', lat: trip.destinoLat, lng: trip.destinoLng } : null, [trip.destinoLat, trip.destinoLng, trip.destinoTexto, trip.id])
+  useEffect(() => {
+    const controller = new AbortController()
+    if (!origin || !destination) return () => controller.abort()
+    void routeBetween(origin, destination, controller.signal).then(setRoute).catch(() => setRoute(null))
+    return () => controller.abort()
+  }, [destination, origin])
+  return <RideMap origin={origin} destination={destination} driver={position} route={route} className="driver-trip-map"/>
+}
 
 function VehiclesPage({ vehicles, busy, onSave, onActivate }: { vehicles: OwnVehicle[]; busy: boolean; onSave: (input: { id?: string; plate: string; make: string; model: string; year: number; color?: string }) => void; onActivate: (id: string) => void }) {
   const [editing, setEditing] = useState<OwnVehicle | null>(null)
