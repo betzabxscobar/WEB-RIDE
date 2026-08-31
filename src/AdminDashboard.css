@@ -292,6 +292,14 @@
   color: #126f91;
 }
 
+.admin-shell:has(.admin-main > .viewing-as) .admin-sidebar {
+  top: 48px;
+}
+
+.admin-main:has(> .viewing-as) {
+  padding-top: 48px;
+}
+
 .admin-content {
   width: min(100%, 1420px);
   margin: 0 auto;
