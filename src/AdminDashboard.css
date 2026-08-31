@@ -556,6 +556,18 @@
   font-size: 10.5px;
 }
 
+.trip-amount {
+  display: grid;
+  justify-items: end;
+  white-space: nowrap;
+}
+
+.trip-amount small {
+  color: #7d8991;
+  font-size: 7px;
+  font-weight: 600;
+}
+
 .trip-row time {
   text-align: right;
 }

@@ -30,3 +30,4 @@ dist-ssr
 # Configuracion local de herramientas de desarrollo. Lleva rutas absolutas de
 # la maquina de cada quien, asi que no sirve compartirla.
 .claude/
+supabase/.temp/

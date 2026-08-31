@@ -83,7 +83,10 @@ function TripRows({ trips, loading, error, limit }: { trips: Trip[]; loading: bo
               <strong>{trip.origenTexto} → {trip.destinoTexto}</strong>
               <small>{trip.pasajeroNombre}{trip.conductorNombre ? ` · ${trip.conductorNombre}` : ' · sin chofer'}{trip.vehiculoPlaca ? ` · ${trip.vehiculoPlaca}` : ''}</small>
             </div>
-            <b>${(trip.tarifaFinal ?? trip.tarifaEstimada).toFixed(2)}</b>
+            <b className="trip-amount">
+              <small>{trip.montoCobrado > 0 ? 'Cobrado' : trip.estado === 'FINALIZADO' ? 'Pago pendiente' : 'Estimado'}</small>
+              ${trip.montoCobrado > 0 ? trip.montoCobrado.toFixed(2) : (trip.tarifaFinal ?? trip.tarifaEstimada).toFixed(2)}
+            </b>
             <time>{formatDate(trip.fechaSolicitud)}</time>
           </div>
         ))}
@@ -149,7 +152,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
     passengers: visibleUsers.filter((item) => item.role === 'passenger').length,
     drivers: visibleUsers.filter((item) => item.role === 'driver').length,
     activeTrips: trips.filter((trip) => !esFinal(trip.estado)).length,
-    billed: trips.filter((trip) => trip.estado === 'FINALIZADO').reduce((total, trip) => total + (trip.tarifaFinal ?? 0), 0),
+    collected: trips.reduce((total, trip) => total + trip.montoCobrado, 0),
     finishedTrips: trips.filter((trip) => trip.estado === 'FINALIZADO').length,
   }), [visibleUsers, trips])
 
@@ -216,7 +219,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
               <article><small>Pasajeros</small><strong>{usersLoading ? '—' : metrics.passengers}</strong></article>
               <article><small>Conductores</small><strong>{usersLoading ? '—' : metrics.drivers}</strong></article>
               <article><small>Viajes activos</small><strong>{tripsLoading ? '—' : metrics.activeTrips}</strong></article>
-              <article><small>Facturado</small><strong>{tripsLoading ? '—' : `$${metrics.billed.toFixed(2)}`}</strong></article>
+              <article><small>Cobrado</small><strong>{tripsLoading ? '—' : `$${metrics.collected.toFixed(2)}`}</strong></article>
             </section>
 
             <div className="operations-grid">
@@ -259,7 +262,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
               <article><small>Viajes totales</small><strong>{tripsLoading ? '—' : trips.length}</strong></article>
               <article><small>En curso</small><strong>{tripsLoading ? '—' : metrics.activeTrips}</strong></article>
               <article><small>Finalizados</small><strong>{tripsLoading ? '—' : metrics.finishedTrips}</strong></article>
-              <article><small>Facturado</small><strong>{tripsLoading ? '—' : `$${metrics.billed.toFixed(2)}`}</strong></article>
+              <article><small>Cobrado</small><strong>{tripsLoading ? '—' : `$${metrics.collected.toFixed(2)}`}</strong></article>
             </section>
             <section className="admin-card"><div className="admin-card-head"><div><h3>Monitoreo de viajes</h3><p>El listado se actualiza cuando cambia un viaje.</p></div></div><TripRows trips={trips} loading={tripsLoading} error={tripsError} /></section>
           </div>
