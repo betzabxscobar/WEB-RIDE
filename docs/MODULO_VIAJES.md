@@ -2,21 +2,20 @@
 
 Ciclo completo pasajero ↔ chofer, más el monitoreo en el panel web.
 
-## Sin mapa: qué se puede y qué no
+## Direcciones y mapa
 
-Un Uber real necesita tres cosas que Supabase no ofrece y que exigirían un
-proveedor externo, descartado por decisión del proyecto:
+**Actualizado el 2026-08-26.** El catálogo de 15 lugares quedó sustituido por
+búsqueda de direcciones de todo el mundo (Photon) y mapa visual (teselas de
+OpenStreetMap). Detalle en [`MAPAS_Y_DIRECCIONES.md`](MAPAS_Y_DIRECCIONES.md).
 
-| Falta | Por qué | Qué se hace en su lugar |
-|---|---|---|
-| Mapa visual | Los tiles vienen de Google, Mapbox u OpenStreetMap | Origen y destino en texto, con coordenadas reales detrás |
-| Geocodificación | Convertir «Av. 9 de Octubre» en coordenadas es un servicio | Direcciones verificadas en `direcciones_guardadas` y catálogo administrado `lugares` |
-| Ruta por calles | Requiere un motor de rutas | Distancia en línea recta × factor urbano |
+Lo único que sigue sin resolverse es la **ruta por calles**: la distancia se
+calcula en línea recta y `factor_trayecto_urbano()` (1.35) la ajusta. Una ruta
+real exigiría un motor de rutas.
 
-Lo que **sí** se hace con Supabase: calcular distancias (Postgres), cotizar por
-tarifa vigente, transmitir el estado en vivo (Realtime) y todo el ciclo de
-estados, pagos y calificaciones. El GPS del teléfono es del dispositivo, no un
-servicio externo, así que el origen puede ser la ubicación real.
+Supabase mantiene las reglas del viaje, las tarifas, los pagos, las
+calificaciones, las direcciones guardadas y los cambios en tiempo real. Photon
+y OpenStreetMap aportan la búsqueda mundial y el mapa; el GPS sigue viniendo
+del dispositivo del usuario.
 
 ## Reparto de responsabilidades
 
