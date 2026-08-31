@@ -4,6 +4,8 @@ import './App.css'
 import logoTipo from './assets/LogoTipo.png'
 import AdminDashboard from './AdminDashboard'
 import PassengerDashboard from './PassengerDashboard'
+import DriverDashboard from './DriverDashboard'
+import './DriverDashboard.css'
 import { supabase } from './lib/supabase'
 import {
   changeInitialPassword,
@@ -198,6 +200,11 @@ function App() {
   if (screen === 'home' && user && activeView === 'passenger') return <>
     {viewingOtherPanel && <ViewingAsBar role={user.role} onBack={() => setView(null)} />}
     <PassengerDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onLogout={logout} />
+  </>
+
+  if (screen === 'home' && user && activeView === 'driver') return <>
+    {viewingOtherPanel && <ViewingAsBar role={user.role} onBack={() => setView(null)} />}
+    <DriverDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onLogout={logout} />
   </>
 
   if (loading && screen === 'welcome') return <div className="loading-screen"><span>Preparando Ride…</span></div>

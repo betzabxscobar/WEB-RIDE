@@ -181,6 +181,77 @@ export async function listPassengerTrips(userId: string, limite = 20): Promise<T
   return (data ?? []).map((row) => toTrip(row as Row))
 }
 
+/** Solicitudes que RLS permite ver al conductor disponible actual. */
+export async function listOpenTripRequests(limite = 30): Promise<Trip[]> {
+  const { data, error } = await supabase
+    .from('viajes_detalle')
+    .select(COLUMNAS)
+    .in('estado', ['SOLICITADO', 'BUSCANDO_CONDUCTOR'])
+    .order('fecha_solicitud', { ascending: true })
+    .limit(limite)
+  if (error) throw databaseMessage(error, 'No se pudieron cargar las solicitudes cercanas.')
+  return (data ?? []).map((row) => toTrip(row as Row))
+}
+
+export async function listDriverTrips(userId: string, limite = 30): Promise<Trip[]> {
+  const { data, error } = await supabase
+    .from('viajes_detalle')
+    .select(COLUMNAS)
+    .eq('conductor_id', userId)
+    .order('fecha_solicitud', { ascending: false })
+    .limit(limite)
+  if (error) throw databaseMessage(error, 'No se pudieron cargar tus viajes.')
+  return (data ?? []).map((row) => toTrip(row as Row))
+}
+
+export async function acceptTrip(tripId: string): Promise<void> {
+  const { error } = await supabase.rpc('aceptar_viaje', { p_viaje_id: tripId })
+  if (error) throw databaseMessage(error, 'No se pudo aceptar el viaje.')
+}
+
+export async function advanceTrip(tripId: string): Promise<TripStatus> {
+  const { data, error } = await supabase.rpc('avanzar_viaje', { p_viaje_id: tripId })
+  if (error) throw databaseMessage(error, 'No se pudo avanzar el viaje.')
+  return String(data) as TripStatus
+}
+
+export async function finishTrip(tripId: string): Promise<number> {
+  const { data, error } = await supabase.rpc('finalizar_viaje', { p_viaje_id: tripId })
+  if (error) throw databaseMessage(error, 'No se pudo finalizar el viaje.')
+  return Number(data)
+}
+
+export async function reportDriverPosition(lat: number, lng: number, tripId?: string): Promise<void> {
+  let cell7: string | null = null
+  let cell9: string | null = null
+  try {
+    cell7 = latLngToCell(lat, lng, 7)
+    cell9 = latLngToCell(lat, lng, 9)
+  } catch {
+    // PostGIS conserva las coordenadas aunque H3 no esté disponible.
+  }
+  const { error } = await supabase.rpc('reportar_posicion', {
+    p_lat: lat,
+    p_lng: lng,
+    p_viaje_id: tripId ?? null,
+    p_celda_h3_7: cell7,
+    p_celda_h3_9: cell9,
+  })
+  if (error) throw databaseMessage(error, 'No se pudo actualizar tu ubicación.')
+}
+
+export async function rateParticipant(tripId: string, userId: string, ratedUserId: string, score: number, comment: string): Promise<void> {
+  const { error } = await supabase.from('calificaciones').insert({
+    viaje_id: tripId,
+    calificador_id: userId,
+    calificado_id: ratedUserId,
+    puntuacion: score,
+    comentario: comment.trim() || null,
+  })
+  if (error?.message.toLowerCase().includes('duplicate')) throw new Error('Ya calificaste este viaje.')
+  if (error) throw databaseMessage(error, 'No se pudo guardar la calificación.')
+}
+
 export async function listPlaces(userId: string): Promise<Place[]> {
   const [catalog, saved] = await Promise.all([
     supabase
