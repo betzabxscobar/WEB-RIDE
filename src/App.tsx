@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import './App.css'
 import logoTipo from './assets/LogoTipo.png'
+import rideLogo from './assets/Ride.png'
 import AdminDashboard from './AdminDashboard'
 import PassengerDashboard from './PassengerDashboard'
 import DriverDashboard from './DriverDashboard'
@@ -207,7 +208,13 @@ function App() {
     <DriverDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onLogout={logout} />
   </>
 
-  if (loading && screen === 'welcome') return <div className="loading-screen"><span>Preparando Ride…</span></div>
+  if (loading && screen === 'welcome') return <div className="loading-screen">
+    <div className="loading-brand" aria-label="Ride loading">
+      <img src={rideLogo} className="loading-ride" alt="Ride icon" />
+      <img src={logoTipo} className="loading-logo" alt="Ride" />
+    </div>
+    <div className="loading-spinner" aria-label="Cargando" />
+  </div>
 
   if (screen === 'home' && user) return <main className="user-home">
     {viewingOtherPanel && <ViewingAsBar role={user.role} onBack={() => setView(null)} />}

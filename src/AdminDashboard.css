@@ -1,186 +1,143 @@
 .admin-shell {
-  --sidebar-width: 248px;
   min-height: 100vh;
-  display: grid;
-  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
-  background: #f5f7f9;
+  background: linear-gradient(180deg, #dfeaf0 0%, #dfe5e9 100%);
   color: #13212c;
 }
 
-.admin-sidebar {
-  position: fixed;
-  inset: 0 auto 0 0;
-  width: var(--sidebar-width);
-  padding: 22px 14px 16px;
-  display: flex;
-  flex-direction: column;
-  background: #0c202b;
-  border-right: 1px solid #1d3541;
-  color: #d9e4e9;
-}
-
-.admin-brand {
+.uber-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: flex;
   align-items: center;
-  gap: 11px;
-  min-height: 48px;
-  padding: 0 10px 22px;
-  border-bottom: 1px solid #1d3541;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 28px;
+  background: #2a9ad0;
+  box-shadow: none;
 }
 
-.admin-brand img.admin-brand-logo {
-  width: 31px;
-  height: 35px;
-  object-fit: contain;
-}
-
-.admin-brand > div,
-.admin-profile > div,
-.sidebar-profile > div,
-.user-row > div,
-.queue-row > div {
-  min-width: 0;
-  display: grid;
-}
-
-.admin-brand strong {
-  font: 700 16px Sora, sans-serif;
-  color: #fff;
-}
-
-.admin-brand small {
-  margin-top: 2px;
-  color: #7f98a5;
-  font-size: 10px;
-}
-
-.admin-sidebar nav {
-  display: grid;
+.uber-topbar-left {
+  display: flex;
+  align-items: center;
   gap: 18px;
-  padding: 22px 0;
+  min-width: 0;
+  flex: 1;
+  justify-content: center;
 }
 
-.nav-group {
-  display: grid;
-  gap: 4px;
-}
-
-.nav-group > small {
-  padding: 0 10px 6px;
-  color: #718a96;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 1.1px;
-  text-transform: uppercase;
-}
-
-.nav-group button {
-  position: relative;
-  width: 100%;
-  min-height: 39px;
-  display: grid;
-  grid-template-columns: 20px 1fr auto;
+.uber-brand {
+  display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: #9eb1ba;
-  text-align: left;
+  justify-content: flex-start;
+  gap: 2px;
+  margin-right: 0;
+  padding-right: 12px;
+  border-right: 3px solid rgba(4, 44, 68, 0.95);
+  height: 52px;
+}
+
+.uber-brand-logo {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  display: block;
+}
+
+.uber-brand-logotipo {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  display: block;
+}
+
+.uber-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.uber-navigation button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.9);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transition: all 0.2s ease;
 }
 
-.nav-group button::before {
-  content: '';
-  position: absolute;
-  left: -14px;
-  width: 3px;
-  height: 22px;
-  border-radius: 0 2px 2px 0;
-  background: transparent;
-}
-
-.nav-group button:hover {
-  background: #132d39;
-  color: #e8f1f4;
-}
-
-.nav-group button.active {
-  background: #163541;
+.uber-navigation button:hover {
+  background: rgba(255,255,255,0.12);
   color: #fff;
 }
 
-.nav-group button.active::before {
-  background: #53c4e8;
+.uber-navigation button.active {
+  background: #dff7ff;
+  border-color: rgba(255,255,255,0.6);
+  color: #0b5372;
 }
 
-.nav-group svg {
-  width: 18px;
-  height: 18px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.7;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.nav-group button b {
-  min-width: 21px;
-  padding: 2px 6px;
-  border: 1px solid #2d4b57;
-  border-radius: 9px;
-  color: #b9d0d8;
+.uber-navigation button b {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(11, 95, 132, 0.12);
+  color: inherit;
   font-size: 9px;
-  text-align: center;
 }
 
-.sidebar-bottom {
-  margin-top: auto;
-  padding-top: 14px;
-  border-top: 1px solid #1d3541;
+.uber-topbar-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
 }
 
-.panel-switcher.sidebar {
-  display: grid;
-  gap: 6px;
-  margin: 0 4px 12px;
+.panel-switcher.topbar {
+  display: flex;
+  align-items: center;
 }
 
-.panel-switcher.sidebar > span {
-  color: #718a96;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: .8px;
-  text-transform: uppercase;
-}
-
-.panel-switcher.sidebar select {
-  width: 100%;
-  margin: 0;
-  padding: 8px 9px;
-  border: 1px solid #294550;
-  border-radius: 6px;
-  background: #102a35;
-  color: #d9e4e9;
+.panel-switcher.topbar select {
+  width: 140px;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  padding: 9px 12px;
   font-size: 11px;
 }
 
-.panel-switcher.sidebar select option {
+.panel-switcher.topbar select option {
   background: #fff;
   color: #13212c;
 }
 
-.sidebar-profile {
-  display: grid;
-  grid-template-columns: 32px 1fr;
+.uber-profile {
+  display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 10px 8px;
+  gap: 12px;
+  color: #fff;
+  padding-left: 14px;
+  border-left: 3px solid rgba(13, 61, 89, 0.95);
+  height: 52px;
 }
 
-.sidebar-profile > span,
+.uber-profile > span,
 .admin-profile > span,
 .user-row > span,
 .queue-row > span {
@@ -191,49 +148,59 @@
   font-weight: 800;
 }
 
-.sidebar-profile > span {
-  width: 32px;
-  height: 32px;
+.uber-profile > span {
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   font-size: 9px;
 }
 
-.sidebar-profile strong {
-  overflow: hidden;
-  color: #e8f1f4;
+.uber-profile > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.uber-profile strong {
+  color: #ffffff;
   font-size: 10.5px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.1;
 }
 
-.sidebar-profile small {
-  margin-top: 2px;
-  color: #718a96;
+.uber-profile small {
+  color: #000000;
   font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-.admin-logout {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 9px 10px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: #8fa5af;
-  text-align: left;
+.admin-profile small {
+  color: #000000;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.uber-logout {
+  width: auto;
+  padding: 10px 14px;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  background: #dff7ff;
+  color: #0b5372;
   font-size: 11px;
+  font-weight: 700;
 }
 
-.admin-logout:hover {
-  background: #132d39;
-  color: #fff;
+.uber-logout:hover {
+  background: #cfeeff;
 }
 
 .admin-main {
-  grid-column: 2;
   min-width: 0;
+  background: #f3f5f6;
 }
 
 .admin-main > header {
@@ -242,8 +209,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fff;
-  border-bottom: 1px solid #dfe5e8;
+  background: rgba(255,255,255,0.82);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid #dfe7eb;
 }
 
 .admin-main header h1 {
@@ -277,8 +245,11 @@
 
 .admin-profile small {
   margin-top: 2px;
-  color: #7e8d95;
+  color: #000000;
   font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .admin-main .viewing-as {
