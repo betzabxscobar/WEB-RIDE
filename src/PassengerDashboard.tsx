@@ -2,6 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import './PassengerDashboard.css'
 import logoTipo from './assets/LogoTipo.png'
+import seguroImg from './assets/seguro.png'
+import sostenibleImg from './assets/sostenible.png'
+import confiableImg from './assets/confiable.png'
 import RideMap from './components/RideMap'
 import { AppearanceSettings } from './components/AppearanceSettings'
 import { Home as HomeIcon, CarFront as RideRequestIcon, List as ListIcon, Bell as BellIcon, MapPin as MapPinIcon, DollarSign as DollarSignIcon, HelpCircle as HelpCircleIcon, User as UserIcon, Settings as SettingsIcon, CheckCircle2, AlertCircle, ArrowRight, Search, LogOut, Menu as MenuIcon } from 'lucide-react'
@@ -586,7 +589,33 @@ function LoadingPanel() {
 function HomePage({ user, activeTrip, trips, onRequest, onTrips, onCancel, onTrack }: { user: User; activeTrip: Trip | null; trips: Trip[]; onRequest: () => void; onTrips: () => void; onCancel: (trip: Trip) => void; onTrack: (trip: Trip) => void }) {
   const recent = trips.filter((trip) => esFinal(trip.estado)).slice(0, 3)
   return <div className="passenger-page home-page">
+
     <section className="passenger-welcome"><div><span>{activeTrip ? 'VIAJE ACTIVO' : 'LISTO PARA SALIR'}</span><h2>{activeTrip ? STATUS_HINT[activeTrip.estado] : '¿A dónde vamos hoy?'}</h2><p>{activeTrip ? `Destino: ${activeTrip.destinoTexto}` : 'Elige tu punto de partida y destino. Ride calcula la tarifa antes de confirmar.'}</p></div>{activeTrip ? <button onClick={() => onTrack(activeTrip)}>Ver seguimiento</button> : <button onClick={onRequest}>Pedir un viaje <ArrowRight size={16} aria-hidden /></button>}</section>
+
+    {/* Tres tarjetas de características: Seguro / Sostenible / Confiable */}
+    <section className="home-features">
+      <article className="feature-card feature-seguro">
+        <img src={seguroImg} alt="Seguro" />
+        <div>
+          <h4>Seguro</h4>
+          <p>Tecnología que te cuida</p>
+        </div>
+      </article>
+      <article className="feature-card">
+        <img src={sostenibleImg} alt="Sostenible" />
+        <div>
+          <h4>Sostenible</h4>
+          <p>Menos emisiones, más futuro</p>
+        </div>
+      </article>
+      <article className="feature-card">
+        <img src={confiableImg} alt="Confiable" />
+        <div>
+          <h4>Confiable</h4>
+          <p>Personas reales, viajes memorables</p>
+        </div>
+      </article>
+    </section>
     {activeTrip ? <ActiveTrip trip={activeTrip} onCancel={onCancel}/> : <section className="start-ride-card"><div className="route-mark"><i/><span/><b/></div><div><small>NUEVA SOLICITUD</small><h3>Tu viaje empieza con dos puntos</h3><p>Usa tu ubicación actual o elige una dirección en Ecuador.</p></div><button onClick={onRequest}>Definir ruta</button></section>}
     <section className="passenger-section-head"><div><span>ACTIVIDAD</span><h2>Viajes recientes</h2></div>{trips.length > 0 && <button onClick={onTrips}>Ver todos <ArrowRight size={16} aria-hidden /></button>}</section>
     {recent.length === 0 ? <EmptyState title="Aún no tienes viajes" text={`Cuando pidas el primero, ${user.name.split(' ')[0]}, podrás consultarlo aquí.`} action="Pedir mi primer viaje" onAction={onRequest}/> : <div className="recent-trip-list">{recent.map((trip) => <TripRow key={trip.id} trip={trip}/>)}</div>}
