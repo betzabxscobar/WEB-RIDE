@@ -37,6 +37,11 @@ export type Trip = {
   destinoLat: number | null
   destinoLng: number | null
   tarifaNombre: string
+  origenReferencia: string | null
+  destinoReferencia: string | null
+  categoria: string | null
+  categoriaNombre: string | null
+  categoriaIcono: string | null
   montoCobrado: number
   pagoEstado: 'pendiente' | 'completado' | 'fallido' | null
 }
@@ -63,6 +68,16 @@ export type Quote = {
   conductor: number
   comision: number
   aplicoMinima: boolean
+  categoria?: string
+}
+
+export type VehicleCategoryQuote = Quote & {
+  categoria: string
+  categoriaNombre: string
+  descripcion: string
+  pasajeros: number
+  icono: string
+  orden: number
 }
 
 export type TripPosition = {
@@ -76,7 +91,9 @@ const COLUMNAS = `
   fecha_solicitud, tarifa_nombre, pasajero_nombre, pasajero_telefono,
   conductor_nombre, conductor_telefono, conductor_calificacion,
   vehiculo_placa, vehiculo_marca, vehiculo_modelo, vehiculo_color,
-  origen_lat, origen_lng, origen_texto, destino_lat, destino_lng, destino_texto,
+  origen_lat, origen_lng, origen_texto, origen_referencia,
+  destino_lat, destino_lng, destino_texto, destino_referencia,
+  categoria, categoria_nombre, categoria_icono,
   monto_cobrado, pago_estado
 `
 
@@ -143,6 +160,11 @@ function toTrip(row: Row): Trip {
     destinoLat: row.destino_lat == null ? null : Number(row.destino_lat),
     destinoLng: row.destino_lng == null ? null : Number(row.destino_lng),
     tarifaNombre: (row.tarifa_nombre as string) ?? 'Tarifa',
+    origenReferencia: (row.origen_referencia as string) ?? null,
+    destinoReferencia: (row.destino_referencia as string) ?? null,
+    categoria: (row.categoria as string) ?? null,
+    categoriaNombre: (row.categoria_nombre as string) ?? null,
+    categoriaIcono: (row.categoria_icono as string) ?? null,
     montoCobrado: Number(row.monto_cobrado ?? 0),
     pagoEstado: (row.pago_estado as Trip['pagoEstado']) ?? null,
   }
@@ -324,7 +346,25 @@ export async function quoteTrip(origin: Coordinates, destination: Place, roadKm?
   }
 }
 
-export async function requestTrip(origin: Coordinates, destination: Place, quote: Quote): Promise<string> {
+export async function quoteTripCategories(origin: Coordinates, destination: Place, roadKm?: number): Promise<VehicleCategoryQuote[]> {
+  const { data, error } = await supabase.rpc('cotizar_categorias', {
+    p_origen_lat: origin.lat, p_origen_lng: origin.lng,
+    p_destino_lat: destination.lat, p_destino_lng: destination.lng,
+    p_distancia_km: roadKm ?? null,
+  })
+  if (error) throw databaseMessage(error, 'No se pudieron calcular las opciones de vehículo.')
+  return ((data ?? []) as Row[]).map((row) => ({
+    tarifaId: row.tarifa_id as string,
+    tarifaNombre: row.tarifa_nombre as string,
+    km: Number(row.distancia_km), minutos: Number(row.minutos_estimados), total: Number(row.total),
+    conductor: Number(row.gana_conductor), comision: Number(row.comision_app), aplicoMinima: Boolean(row.aplico_minima),
+    categoria: row.categoria as string, categoriaNombre: row.nombre as string,
+    descripcion: (row.descripcion as string) ?? '', pasajeros: Number(row.pasajeros ?? 4),
+    icono: (row.icono as string) ?? 'auto', orden: Number(row.orden ?? 0),
+  })).sort((a, b) => a.orden - b.orden)
+}
+
+export async function requestTrip(origin: Coordinates, destination: Place, quote: Quote, originReference?: string): Promise<string> {
   let originCell: string | null = null
   let diffusionCells: string[] | null = null
   try {
@@ -344,6 +384,9 @@ export async function requestTrip(origin: Coordinates, destination: Place, quote
     p_origen_celda_h3_7: originCell,
     p_celdas_difusion: diffusionCells,
     p_distancia_km: quote.km,
+    p_origen_referencia: originReference?.trim() || null,
+    p_destino_referencia: null,
+    p_categoria: quote.categoria ?? 'estandar',
   })
   if (error) throw databaseMessage(error, 'No se pudo solicitar el viaje.')
   return String(data)
