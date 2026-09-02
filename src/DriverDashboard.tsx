@@ -53,6 +53,7 @@ function money(value: number): string { return new Intl.NumberFormat('es-EC', { 
 function initials(name: string): string { return name.split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() }
 
 export default function DriverDashboard({ user, views, activeView, onSwitchView, onLogout }: Props) {
+  const [selectedView, setSelectedView] = useState<Role>(activeView)
   const [page, setPage] = useState<Page>('inicio')
   const [state, setState] = useState<DriverState>(EMPTY_STATE)
   const [trips, setTrips] = useState<Trip[]>([])
@@ -145,10 +146,19 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
         <DriverNav active={page === 'configuracion'} icon={<SettingsIcon size={18} />} label="Configuración" onClick={() => go('configuracion')}/>
       </nav>
       <div className="driver-profile"><span>{initials(user.name)}</span><div><strong>{user.name}</strong><small>{state.available ? 'En línea' : 'Fuera de línea'}</small></div></div>
+      {views.length > 1 && (
+        <label className="panel-switcher sidebar">
+          <span>Panel actual</span>
+          <select value={selectedView} onChange={(event) => setSelectedView(event.target.value as Role)}>
+            {views.map((view) => <option key={view} value={view}>{panelLabel(view)}</option>)}
+          </select>
+          <button type="button" onClick={() => onSwitchView(selectedView)}>Ir</button>
+        </label>
+      )}
       <button className="driver-logout" onClick={onLogout}>Cerrar sesión</button>
     </aside>
     <section className="driver-workspace">
-      <header className="driver-topbar"><div><span>PANEL DE CONDUCTOR</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'viajes' ? 'Tus viajes' : page === 'vehiculos' ? 'Tus vehículos' : page === 'documentos' ? 'Tus documentos' : page === 'soporte' ? 'Soporte' : 'Tu cuenta'}</h1></div><div className="driver-top-actions">{views.length > 1 && <label><span>Vista</span><select value={activeView} onChange={(event) => onSwitchView(event.target.value as Role)}>{views.map((view) => <option key={view} value={view}>{panelLabel(view)}</option>)}</select></label>}<button className="driver-avatar" onClick={() => go('cuenta')}>{initials(user.name)}</button></div></header>
+      <header className="driver-topbar"><div><span>PANEL DE CONDUCTOR</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'viajes' ? 'Tus viajes' : page === 'vehiculos' ? 'Tus vehículos' : page === 'documentos' ? 'Tus documentos' : page === 'soporte' ? 'Soporte' : 'Tu cuenta'}</h1></div><div className="driver-top-actions">{views.length > 1 && <label className="driver-view-select"><span>Vista</span><select value={selectedView} onChange={(event) => setSelectedView(event.target.value as Role)}>{views.map((view) => <option key={view} value={view}>{panelLabel(view)}</option>)}</select><button onClick={() => onSwitchView(selectedView)}>Ir</button></label>}<button className="driver-avatar" onClick={() => go('cuenta')}>{initials(user.name)}</button></div></header>
       <div className="driver-content">
         {notice && <div className="driver-feedback success">✓ {notice}</div>}{error && <div className="driver-feedback failure">! {error}<button onClick={() => setError('')}>Cerrar</button></div>}
         {loading ? <div className="driver-loading">Actualizando tu información…</div> : page === 'inicio' ? <DriverHome state={state} active={activeTrip} requests={requests} position={position} busy={busy} onAvailability={toggleAvailability} onTrips={() => go('viajes')} onProfile={() => go('documentos')} onReport={() => reportPosition(activeTrip?.id)}/>

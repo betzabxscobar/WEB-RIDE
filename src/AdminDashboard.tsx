@@ -6,7 +6,7 @@ import { faltantes, listDrivers, type Driver } from './lib/drivers'
 import { listTrips, watchTrips, esFinal, ESTADO_LABEL, type Trip } from './lib/trips'
 import DriversPanel from './DriversPanel'
 import { AppearanceSettings, useAppearance } from './components/AppearanceSettings'
-import { Home as HomeIcon, Map as MapIcon, Users as UsersIcon, User as UserIcon } from 'lucide-react'
+import { Home as HomeIcon, Map as MapIcon, Users as UsersIcon, User as UserIcon, Menu as MenuIcon } from 'lucide-react'
 
 type Props = {
   user: { name: string; email: string; role: string }
@@ -100,6 +100,7 @@ function TripRows({ trips, loading, error, limit }: { trips: Trip[]; loading: bo
 }
 
 export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLogout }: Props) {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [activeSection, setActiveSection] = useState<Section>('Resumen')
   const [users, setUsers] = useState<User[]>([])
   const [trips, setTrips] = useState<Trip[]>([])
@@ -165,8 +166,8 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
   const navCount = (section: Section) => section === 'Viajes' ? metrics.activeTrips : section === 'Conductores' ? pendingDrivers.length : 0
 
   return (
-    <main className={`admin-shell ${appearance.darkMode ? 'theme-dark' : ''} ${appearance.reducedMotion ? 'reduced-motion' : ''}`}>
-      <aside className="admin-sidebar">
+    <main className={`admin-shell ${appearance.darkMode ? 'theme-dark' : ''} ${appearance.reducedMotion ? 'reduced-motion' : ''} ${sidebarOpen ? 'sidebar-open' : ''}`}>
+      <aside id="admin-sidebar" className="admin-sidebar" aria-hidden={!sidebarOpen}>
         <div className="admin-brand">
           <img src={logoAsset} className="admin-brand-logo" alt="Ride" />
           <div><strong>Ride</strong><small>Centro de operaciones</small></div>
@@ -177,7 +178,12 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
             <div className="nav-group" key={group}>
               <small>{group}</small>
               {sections.filter((section) => section.group === group).map(({ label }) => (
-                <button key={label} className={activeSection === label ? 'active' : ''} aria-current={activeSection === label ? 'page' : undefined} onClick={() => setActiveSection(label)}>
+                <button
+                  key={label}
+                  className={activeSection === label ? 'active' : ''}
+                  aria-current={activeSection === label ? 'page' : undefined}
+                  onClick={() => { setActiveSection(label); setSidebarOpen(false) }}
+                >
                   <NavIcon section={label} /><span>{label}</span>{navCount(label) > 0 && <b>{navCount(label)}</b>}
                 </button>
               ))}
@@ -194,6 +200,13 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
               </select>
             </label>
           )}
+          {/* Selector rápido en el header para cambiar vista con botón */}
+          {views.length > 1 && (
+            <div className="panel-quick-header">
+              <select onChange={(e) => onSwitchView(e.target.value as Role)} defaultValue={viewAs}>{views.map((v) => <option key={v} value={v}>{panelLabel(v)}</option>)}</select>
+              <button onClick={() => onSwitchView(viewAs)}>Ir</button>
+            </div>
+          )}
           <div className="sidebar-profile">
             <span>{initials(user.name)}</span>
             <div><strong>{user.name}</strong><small>{profileName}</small></div>
@@ -201,6 +214,10 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
           <button className="admin-logout" onClick={onLogout}><span aria-hidden="true">↪</span>Cerrar sesión</button>
         </div>
       </aside>
+
+      {sidebarOpen && (
+        <div className="admin-overlay" onClick={() => setSidebarOpen(false)} aria-hidden={!sidebarOpen} />
+      )}
 
       <section className="admin-main">
         {viewingOtherPanel && (
@@ -210,6 +227,9 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
           </div>
         )}
         <header>
+          <button aria-controls="admin-sidebar" aria-expanded={sidebarOpen} aria-label="Alternar menú" className="hamburger-button" onClick={() => setSidebarOpen((v) => !v)}>
+            <MenuIcon size={18} />
+          </button>
           <div><small>{accessName}</small><h1>{activeSection}</h1></div>
           <div className="admin-profile"><span>{initials(user.name)}</span><div><strong>{user.name}</strong><small>{profileName}</small></div></div>
         </header>

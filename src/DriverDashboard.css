@@ -20,3 +20,14 @@
 .vehicle-form label,.driver-account-grid dt,.document-list small,.driver-history article>span{font-size:10px}
 .driver-shell.theme-dark{--d-bg:#081c28;--d-muted:#c1d2da;--d-line:#385766}
 .driver-shell.theme-dark .driver-status-card,.driver-shell.theme-dark .active-driver-trip,.driver-shell.theme-dark .driver-request-list article,.driver-shell.theme-dark .vehicle-list article,.driver-shell.theme-dark .vehicle-form,.driver-shell.theme-dark .document-list article,.driver-shell.theme-dark .driver-account-grid>section,.driver-shell.theme-dark .driver-account-grid>aside,.driver-shell.theme-dark .driver-summary article{box-shadow:0 14px 38px rgba(0,0,0,.16)}
+
+/* Sidebar panel switcher (parity with admin) */
+.panel-switcher.sidebar{display:grid;gap:6px;margin:10px 4px}
+.panel-switcher.sidebar>span{color:var(--d-muted);font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase}
+.panel-switcher.sidebar select{width:100%;margin:0;padding:8px 9px;border:1px solid rgba(255,255,255,.06);border-radius:6px;background:transparent;color:#fff;font-size:11px}
+.panel-switcher.sidebar button{margin-top:6px;padding:7px 10px;border-radius:8px;border:0;background:#53c4e8;color:#082638;font-weight:800}
+
+/* View selector with action button in topbar (parity with admin) */
+.driver-view-select{display:flex;align-items:center;gap:8px}
+.driver-view-select select{padding:7px 9px;border-radius:6px;border:1px solid var(--d-line);background:#fff}
+.driver-view-select button{margin-left:6px;padding:7px 10px;border-radius:8px;border:0;background:#53c4e8;color:#082638;font-weight:800}

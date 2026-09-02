@@ -2,7 +2,7 @@
   --sidebar-width: 248px;
   min-height: 100vh;
   display: grid;
-  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   background: #f5f7f9;
   color: #13212c;
 }
@@ -10,6 +10,7 @@
 .admin-sidebar {
   position: fixed;
   inset: 0 auto 0 0;
+  left: 0;
   width: var(--sidebar-width);
   padding: 22px 14px 16px;
   display: flex;
@@ -17,7 +18,35 @@
   background: #0c202b;
   border-right: 1px solid #1d3541;
   color: #d9e4e9;
+  transform: translateX(-100%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
+
+/* Start collapsed off-canvas; controlled via .admin-shell.sidebar-open */
+.admin-sidebar{transition:transform .32s cubic-bezier(.22,1,.36,1),opacity .24s ease,visibility .24s ease}
+.admin-main{transition:margin-left .32s cubic-bezier(.22,1,.36,1)}
+.admin-shell.sidebar-open .admin-sidebar{transform:none;opacity:1;visibility:visible;pointer-events:auto}
+.admin-shell.sidebar-open .admin-main{margin-left:var(--sidebar-width);width:calc(100% - var(--sidebar-width))}
+
+/* Overlay shown when sidebar is open on small/medium screens */
+.admin-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3,10,14,0.32);
+  z-index: 30;
+  transition: opacity .2s ease;
+}
+
+/* Hamburger button used to toggle admin sidebar */
+.admin-main > header{position:sticky;top:0;z-index:15}
+
+/* Match passenger hamburger button exactly */
+.hamburger-button{border:0;background:transparent;padding:5px;display:flex;align-items:center;justify-content:center;color:var(--p-blue,#42bfe8);box-shadow:none;border-radius:0;position:absolute;left:18px;top:62%;transform:translateY(-50%);z-index:40;transition:transform .32s cubic-bezier(.22,1,.36,1),opacity .16s ease}
+.hamburger-button:focus{outline:0;box-shadow:none}
+.hamburger-button:hover{opacity:0.95}
+.admin-shell.sidebar-open .hamburger-button{transform:translateY(-50%) translateX(12px)}
 
 .admin-brand {
   display: flex;
@@ -27,6 +56,10 @@
   padding: 0 10px 22px;
   border-bottom: 1px solid #1d3541;
 }
+
+/* Labels hidden until sidebar is opened (parity with passenger) */
+.admin-sidebar .admin-brand b, .admin-sidebar .nav-group button span, .admin-sidebar .sidebar-profile div, .admin-sidebar .admin-logout span { opacity: 0; transition: opacity .12s ease; }
+.admin-shell.sidebar-open .admin-sidebar .admin-brand b, .admin-shell.sidebar-open .admin-sidebar .nav-group button span, .admin-shell.sidebar-open .admin-sidebar .sidebar-profile div, .admin-shell.sidebar-open .admin-sidebar .admin-logout span { opacity: 1; }
 
 .admin-brand img.admin-brand-logo {
   width: 31px;
@@ -167,6 +200,11 @@
   font-size: 11px;
 }
 
+/* Quick selector in header/sidebar for immediate view change */
+.panel-quick-header{display:flex;gap:8px;align-items:center;margin-top:10px}
+.panel-quick-header select{padding:7px 9px;border-radius:6px;border:1px solid #294550;background:#102a35;color:#d9e4e9}
+.panel-quick-header button{padding:7px 10px;border-radius:6px;background:#53c4e8;color:#082638;border:0;font-weight:800}
+
 .panel-switcher.sidebar select option {
   background: #fff;
   color: #13212c;
@@ -232,13 +270,13 @@
 }
 
 .admin-main {
-  grid-column: 2;
+  grid-column: 1;
   min-width: 0;
 }
 
 .admin-main > header {
-  height: 72px;
-  padding: 0 32px;
+  height: 92px;
+  padding: 0 clamp(24px,4vw,58px);
   display: flex;
   align-items: center;
   justify-content: space-between;
