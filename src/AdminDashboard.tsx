@@ -6,6 +6,7 @@ import { faltantes, listDrivers, type Driver } from './lib/drivers'
 import { listTrips, watchTrips, esFinal, ESTADO_LABEL, type Trip } from './lib/trips'
 import DriversPanel from './DriversPanel'
 import { AppearanceSettings, useAppearance } from './components/AppearanceSettings'
+import { Home as HomeIcon, Map as MapIcon, Users as UsersIcon, User as UserIcon } from 'lucide-react'
 
 type Props = {
   user: { name: string; email: string; role: string }
@@ -27,10 +28,10 @@ const sections: { label: Section; group: 'Operación' | 'Gestión' }[] = [
 ]
 
 function NavIcon({ section }: { section: Section }) {
-  if (section === 'Resumen') return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h6V4H4v9Zm0 7h6v-4H4v4Zm10 0h6v-9h-6v9Zm0-16v4h6V4h-6Z" /></svg>
-  if (section === 'Viajes') return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 18.5h14M7 15l2.3-6h5.4L17 15M8 15h8v3.5H8V15Zm1.2-6L10 6h4l.8 3M9.5 16.7h.01m4.99 0h.01" /></svg>
-  if (section === 'Conductores') return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8c.7-4 3-6 7-6s6.3 2 7 6" /></svg>
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm7-1a3 3 0 1 0 0-6M3 20c.5-4 2.3-6 5.5-6s5 2 5.5 6m1-6c3.3 0 5.3 2 6 6" /></svg>
+  if (section === 'Resumen') return <HomeIcon size={18} aria-hidden />
+  if (section === 'Viajes') return <MapIcon size={18} aria-hidden />
+  if (section === 'Conductores') return <UsersIcon size={18} aria-hidden />
+  return <UserIcon size={18} aria-hidden />
 }
 
 function roleLabel(role: string) {

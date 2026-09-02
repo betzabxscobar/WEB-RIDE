@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom'
 import './PassengerDashboard.css'
 import logoTipo from './assets/LogoTipo.png'
 import RideMap from './components/RideMap'
+import { AppearanceSettings } from './components/AppearanceSettings'
+import { Home as HomeIcon, CarFront as RideRequestIcon, List as ListIcon, Bell as BellIcon, MapPin as MapPinIcon, DollarSign as DollarSignIcon, HelpCircle as HelpCircleIcon, User as UserIcon, Settings as SettingsIcon, CheckCircle2, AlertCircle, ArrowRight, Search, LogOut } from 'lucide-react'
 import { SupportPage, TripChat } from './components/RideExtras'
 import { panelLabel, type Role, type User } from './lib/auth'
 import { reverseGeocode, searchPlaces } from './lib/geocoding'
@@ -490,24 +492,25 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
   }
 
   return <main className={`passenger-shell ${darkMode ? 'theme-dark' : 'theme-light'} ${reducedMotion ? 'reduced-motion' : ''}`}>
+    <div className="passenger-sidebar-trigger" aria-hidden="true"/>
     <aside className="passenger-sidebar">
       <div className="passenger-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
       <nav aria-label="Panel del pasajero">
-        <NavButton active={page === 'inicio'} icon="⌂" label="Inicio" onClick={() => go('inicio')}/>
-        <NavButton active={page === 'pedir'} icon="↗" label="Pedir viaje" onClick={() => go('pedir')}/>
-        <NavButton active={page === 'viajes'} icon="≡" label="Mis viajes" onClick={() => go('viajes')}/>
-        <NavButton active={page === 'avisos'} icon="♢" label="Avisos" onClick={openNotifications}/>
-        <NavButton active={page === 'direcciones'} icon="⌖" label="Direcciones" onClick={() => go('direcciones')}/>
-        <NavButton active={page === 'pagos'} icon="$" label="Pagos" onClick={() => go('pagos')}/>
-        <NavButton active={page === 'soporte'} icon="?" label="Soporte" onClick={() => go('soporte')}/>
-        <NavButton active={page === 'cuenta'} icon="○" label="Mi cuenta" onClick={() => go('cuenta')}/>
-        <NavButton active={page === 'configuracion'} icon="⚙" label="Configuración" onClick={() => go('configuracion')}/>
+        <NavButton active={page === 'inicio'} icon={<HomeIcon size={16} />} label="Inicio" onClick={() => go('inicio')}/>
+        <NavButton active={page === 'pedir'} icon={<RideRequestIcon size={16} />} label="Pedir viaje" onClick={() => go('pedir')}/>
+        <NavButton active={page === 'viajes'} icon={<ListIcon size={16} />} label="Mis viajes" onClick={() => go('viajes')}/>
+        <NavButton active={page === 'avisos'} icon={<BellIcon size={16} />} label="Avisos" onClick={openNotifications}/>
+        <NavButton active={page === 'direcciones'} icon={<MapPinIcon size={16} />} label="Direcciones" onClick={() => go('direcciones')}/>
+        <NavButton active={page === 'pagos'} icon={<DollarSignIcon size={16} />} label="Pagos" onClick={() => go('pagos')}/>
+        <NavButton active={page === 'soporte'} icon={<HelpCircleIcon size={16} />} label="Soporte" onClick={() => go('soporte')}/>
+        <NavButton active={page === 'cuenta'} icon={<UserIcon size={16} />} label="Mi cuenta" onClick={() => go('cuenta')}/>
+        <NavButton active={page === 'configuracion'} icon={<SettingsIcon size={16} />} label="Configuración" onClick={() => go('configuracion')}/>
       </nav>
       <div className="passenger-profile">
         <span>{initials(user.name)}</span>
         <div><strong>{user.name}</strong><small>Pasajero</small></div>
       </div>
-      <button className="passenger-logout" onClick={onLogout}>Cerrar sesión</button>
+      <button className="passenger-logout" onClick={onLogout}><LogOut size={17} aria-hidden /><span>Cerrar sesión</span></button>
     </aside>
 
     <section className="passenger-workspace">
@@ -516,14 +519,14 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
         <div><span className="passenger-kicker">PANEL DE PASAJERO</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'pedir' ? 'Pide un viaje' : page === 'seguimiento' ? 'Seguimiento del viaje' : page === 'viajes' ? 'Tus viajes' : page === 'avisos' ? 'Tus avisos' : page === 'direcciones' ? 'Tus direcciones' : page === 'pagos' ? 'Tus pagos' : page === 'soporte' ? 'Soporte' : page === 'configuracion' ? 'Configuración' : 'Tu cuenta'}</h1></div>
         <div className="passenger-top-actions">
           {views.length > 1 && <label className="passenger-view-select"><span>Vista</span><select value={activeView} onChange={(event) => onSwitchView(event.target.value as Role)}>{views.map((view) => <option value={view} key={view}>{panelLabel(view)}</option>)}</select></label>}
-          <button className="notification-button" onClick={openNotifications} aria-label={unread ? `${unread} avisos sin leer` : 'Abrir avisos'}>♢{unread > 0 && <b>{unread > 9 ? '9+' : unread}</b>}</button>
+          <button className="notification-button" onClick={openNotifications} aria-label={unread ? `${unread} avisos sin leer` : 'Abrir avisos'}><BellIcon size={19} aria-hidden />{unread > 0 && <b>{unread > 9 ? '9+' : unread}</b>}</button>
           <button className="passenger-avatar" onClick={() => go('cuenta')} aria-label="Abrir mi cuenta">{initials(user.name)}</button>
         </div>
       </header>
 
       <div className="passenger-content">
-        {notice && <div className="passenger-feedback success"><span>✓</span>{notice}</div>}
-        {error && <div className="passenger-feedback failure"><span>!</span>{error}<button onClick={() => setError('')}>Cerrar</button></div>}
+        {notice && <div className="passenger-feedback success"><CheckCircle2 size={18} aria-hidden />{notice}</div>}
+        {error && <div className="passenger-feedback failure"><AlertCircle size={18} aria-hidden />{error}<button onClick={() => setError('')}>Cerrar</button></div>}
         {loading ? <LoadingPanel/> : page === 'inicio' ? <HomePage user={user} activeTrip={activeTrip} trips={trips} onRequest={() => go('pedir')} onTrips={() => go('viajes')} onCancel={setCanceling} onTrack={openTracking}/>
           : page === 'pedir' ? <RequestPage places={places} origin={origin} destination={destination} originPlaceId={originPlaceId} destinationId={destinationId} quote={quote} categoryQuotes={categoryQuotes} selectedCategory={selectedCategory} pickupReference={pickupReference} route={roadRoute} quoting={quoting} locating={locating} busy={busy} activeTrip={activeTrip} onUseLocation={useLocation} onOrigin={selectOrigin} onOriginPoint={selectOriginPoint} onDestination={selectDestination} onDestinationPoint={selectDestinationPoint} onCategory={chooseCategory} onReference={setPickupReference} onConfirm={confirmRequest} onActive={() => activeTrip && openTracking(activeTrip)}/>
           : page === 'seguimiento' ? <TrackingPage trip={trackingTrip} position={tripPosition} onCancel={setCanceling} onChat={setChatTrip} onBack={() => go('inicio')}/>
@@ -539,11 +542,11 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
     </section>
 
     <nav className="passenger-mobile-nav" aria-label="Navegación móvil">
-      <NavButton active={page === 'inicio'} icon="⌂" label="Inicio" onClick={() => go('inicio')}/>
-      <NavButton active={page === 'pedir'} icon="↗" label="Pedir" onClick={() => go('pedir')}/>
-      <NavButton active={page === 'viajes'} icon="≡" label="Viajes" onClick={() => go('viajes')}/>
-      <NavButton active={page === 'avisos'} icon="♢" label="Avisos" onClick={openNotifications}/>
-      <NavButton active={page === 'cuenta'} icon="○" label="Cuenta" onClick={() => go('cuenta')}/>
+      <NavButton active={page === 'inicio'} icon={<HomeIcon size={16} />} label="Inicio" onClick={() => go('inicio')}/>
+      <NavButton active={page === 'pedir'} icon={<RideRequestIcon size={16} />} label="Pedir" onClick={() => go('pedir')}/>
+      <NavButton active={page === 'viajes'} icon={<ListIcon size={16} />} label="Viajes" onClick={() => go('viajes')}/>
+      <NavButton active={page === 'avisos'} icon={<BellIcon size={16} />} label="Avisos" onClick={openNotifications}/>
+      <NavButton active={page === 'cuenta'} icon={<UserIcon size={16} />} label="Cuenta" onClick={() => go('cuenta')}/>
     </nav>
     {chatTrip && <TripChat trip={chatTrip} userId={user.id} onClose={() => setChatTrip(null)}/>}
 
@@ -552,8 +555,8 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
   </main>
 }
 
-function NavButton({ active, icon, label, onClick }: { active: boolean; icon: string; label: string; onClick: () => void }) {
-  return <button className={active ? 'active' : ''} onClick={onClick}><span>{icon}</span>{label}</button>
+function NavButton({ active, icon, label, onClick }: { active: boolean; icon: import('react').ReactNode; label: string; onClick: () => void }) {
+  return <button className={active ? 'active' : ''} onClick={onClick}><span>{icon}</span><span className="passenger-nav-label">{label}</span></button>
 }
 
 function LoadingPanel() {
@@ -563,15 +566,15 @@ function LoadingPanel() {
 function HomePage({ user, activeTrip, trips, onRequest, onTrips, onCancel, onTrack }: { user: User; activeTrip: Trip | null; trips: Trip[]; onRequest: () => void; onTrips: () => void; onCancel: (trip: Trip) => void; onTrack: (trip: Trip) => void }) {
   const recent = trips.filter((trip) => esFinal(trip.estado)).slice(0, 3)
   return <div className="passenger-page home-page">
-    <section className="passenger-welcome"><div><span>{activeTrip ? 'VIAJE ACTIVO' : 'LISTO PARA SALIR'}</span><h2>{activeTrip ? STATUS_HINT[activeTrip.estado] : '¿A dónde vamos hoy?'}</h2><p>{activeTrip ? `Destino: ${activeTrip.destinoTexto}` : 'Elige tu punto de partida y destino. Ride calcula la tarifa antes de confirmar.'}</p></div>{activeTrip ? <button onClick={() => onTrack(activeTrip)}>Ver seguimiento</button> : <button onClick={onRequest}>Pedir un viaje <b>→</b></button>}</section>
+    <section className="passenger-welcome"><div><span>{activeTrip ? 'VIAJE ACTIVO' : 'LISTO PARA SALIR'}</span><h2>{activeTrip ? STATUS_HINT[activeTrip.estado] : '¿A dónde vamos hoy?'}</h2><p>{activeTrip ? `Destino: ${activeTrip.destinoTexto}` : 'Elige tu punto de partida y destino. Ride calcula la tarifa antes de confirmar.'}</p></div>{activeTrip ? <button onClick={() => onTrack(activeTrip)}>Ver seguimiento</button> : <button onClick={onRequest}>Pedir un viaje <ArrowRight size={16} aria-hidden /></button>}</section>
     {activeTrip ? <ActiveTrip trip={activeTrip} onCancel={onCancel}/> : <section className="start-ride-card"><div className="route-mark"><i/><span/><b/></div><div><small>NUEVA SOLICITUD</small><h3>Tu viaje empieza con dos puntos</h3><p>Usa tu ubicación actual o elige una dirección en Ecuador.</p></div><button onClick={onRequest}>Definir ruta</button></section>}
-    <section className="passenger-section-head"><div><span>ACTIVIDAD</span><h2>Viajes recientes</h2></div>{trips.length > 0 && <button onClick={onTrips}>Ver todos →</button>}</section>
+    <section className="passenger-section-head"><div><span>ACTIVIDAD</span><h2>Viajes recientes</h2></div>{trips.length > 0 && <button onClick={onTrips}>Ver todos <ArrowRight size={16} aria-hidden /></button>}</section>
     {recent.length === 0 ? <EmptyState title="Aún no tienes viajes" text={`Cuando pidas el primero, ${user.name.split(' ')[0]}, podrás consultarlo aquí.`} action="Pedir mi primer viaje" onAction={onRequest}/> : <div className="recent-trip-list">{recent.map((trip) => <TripRow key={trip.id} trip={trip}/>)}</div>}
   </div>
 }
 
 function ActiveTrip({ trip, onCancel }: { trip: Trip; onCancel: (trip: Trip) => void }) {
-  return <section className="active-trip" id="active-trip"><div className="active-trip-head"><div><span className={`trip-status ${trip.estado.toLowerCase()}`}>{ESTADO_LABEL[trip.estado]}</span><h2>{STATUS_HINT[trip.estado]}</h2></div><strong>{money(trip.tarifaFinal ?? trip.tarifaEstimada)}</strong></div><div className="trip-progress"><span style={{ width: `${progresoViaje(trip.estado)}%` }}/></div><div className="active-trip-grid"><Route trip={trip}/><div className="driver-card">{trip.conductorId ? <><span className="driver-avatar">{initials(trip.conductorNombre ?? 'Conductor')}</span><div><small>TU CONDUCTOR</small><strong>{trip.conductorNombre}</strong><p>{vehicle(trip)}</p>{trip.conductorCalificacion != null && <em>★ {trip.conductorCalificacion.toFixed(1)}</em>}</div></> : <><span className="searching-driver">⌁</span><div><small>CONDUCTOR</small><strong>Buscando disponibilidad</strong><p>La asignación aparecerá aquí automáticamente.</p></div></>}</div></div>{puedeCancelar(trip.estado) && <button className="cancel-trip" onClick={() => onCancel(trip)}>Cancelar viaje</button>}</section>
+  return <section className="active-trip" id="active-trip"><div className="active-trip-head"><div><span className={`trip-status ${trip.estado.toLowerCase()}`}>{ESTADO_LABEL[trip.estado]}</span><h2>{STATUS_HINT[trip.estado]}</h2></div><strong>{money(trip.tarifaFinal ?? trip.tarifaEstimada)}</strong></div><div className="trip-progress"><span style={{ width: `${progresoViaje(trip.estado)}%` }}/></div><div className="active-trip-grid"><Route trip={trip}/><div className="driver-card">{trip.conductorId ? <><span className="driver-avatar">{initials(trip.conductorNombre ?? 'Conductor')}</span><div><small>TU CONDUCTOR</small><strong>{trip.conductorNombre}</strong><p>{vehicle(trip)}</p>{trip.conductorCalificacion != null && <em>★ {trip.conductorCalificacion.toFixed(1)}</em>}</div></> : <><span className="searching-driver"><Search size={22} aria-hidden /></span><div><small>CONDUCTOR</small><strong>Buscando disponibilidad</strong><p>La asignación aparecerá aquí automáticamente.</p></div></>}</div></div>{puedeCancelar(trip.estado) && <button className="cancel-trip" onClick={() => onCancel(trip)}>Cancelar viaje</button>}</section>
 }
 
 function TrackingPage({ trip, position, onCancel, onChat, onBack }: { trip: Trip | null; position: TripPosition | null; onCancel: (trip: Trip) => void; onChat: (trip: Trip) => void; onBack: () => void }) {
@@ -669,12 +672,7 @@ function AccountPage({ user, trips, addresses, methods, onAddresses, onPayments,
 }
 
 function SettingsPage({ theme, reducedMotion, onTheme, onReducedMotion }: { theme: ThemePreference; reducedMotion: boolean; onTheme: (theme: ThemePreference) => void; onReducedMotion: (enabled: boolean) => void }) {
-  const themes: { value: ThemePreference; icon: string; title: string; text: string }[] = [
-    { value: 'system', icon: '◐', title: 'Usar el sistema', text: 'Cambia automáticamente con tu dispositivo.' },
-    { value: 'light', icon: '☀', title: 'Modo claro', text: 'Fondo luminoso y alto contraste.' },
-    { value: 'dark', icon: '☾', title: 'Modo oscuro', text: 'Reduce el brillo en ambientes con poca luz.' },
-  ]
-  return <div className="passenger-page settings-page"><section className="passenger-section-head"><div><span>PREFERENCIAS</span><h2>Configuración</h2><p>Personaliza cómo se ve y se comporta Ride en este navegador.</p></div></section><section className="settings-card"><div className="settings-card-head"><span>◐</span><div><h3>Apariencia</h3><p>Elige el tema visual que prefieras.</p></div></div><div className="theme-options">{themes.map((item) => <button key={item.value} className={theme === item.value ? 'selected' : ''} onClick={() => onTheme(item.value)} aria-pressed={theme === item.value}><b>{item.icon}</b><span><strong>{item.title}</strong><small>{item.text}</small></span><i>{theme === item.value ? '✓' : ''}</i></button>)}</div></section><section className="settings-card"><div className="settings-card-head"><span>◇</span><div><h3>Accesibilidad</h3><p>Ajustes para una experiencia más cómoda.</p></div></div><label className="settings-toggle"><span><strong>Reducir movimiento</strong><small>Desactiva transiciones y animaciones decorativas.</small></span><input type="checkbox" checked={reducedMotion} onChange={(event) => onReducedMotion(event.target.checked)}/><i/></label></section><small className="settings-storage">Estas preferencias se guardan solamente en este navegador.</small></div>
+  return <div className="passenger-page settings-page"><section className="passenger-section-head"><div><span>PREFERENCIAS</span><h2>Configuración</h2><p>Personaliza cómo se ve y se comporta Ride en este navegador.</p></div></section><AppearanceSettings theme={theme} reducedMotion={reducedMotion} onTheme={onTheme} onReducedMotion={onReducedMotion}/></div>
 }
 
 function Route({ trip }: { trip: Trip }) {

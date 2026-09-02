@@ -1,4 +1,5 @@
 .passenger-shell{--p-ink:#071b2b;--p-navy:#082638;--p-blue:#42bfe8;--p-mint:#54ccb8;--p-paper:#fff;--p-bg:#f3f7f9;--p-line:#dce7ec;--p-muted:#718392;min-height:100vh;background:var(--p-bg);color:var(--p-ink);display:grid;grid-template-columns:250px 1fr}
+.passenger-sidebar-trigger{display:none}
 .passenger-sidebar{position:sticky;top:0;height:100vh;padding:28px 22px 24px;background:linear-gradient(180deg,#061d2c,#092d40);color:#fff;display:flex;flex-direction:column;z-index:20}
 .passenger-brand,.passenger-mobile-brand{display:flex;align-items:center;gap:10px;font:800 25px Sora,sans-serif}.passenger-brand img,.passenger-mobile-brand img{width:36px;height:42px;object-fit:contain}.passenger-sidebar nav{display:grid;gap:6px;margin-top:55px}.passenger-sidebar nav button,.passenger-mobile-nav button{border:0;background:transparent;color:#a9c0cc;border-radius:11px;padding:12px 13px;display:flex;align-items:center;gap:12px;text-align:left;font-weight:700;font-size:12px;transition:.2s}.passenger-sidebar nav button span{width:24px;font-size:20px;font-weight:400;text-align:center}.passenger-sidebar nav button:hover{background:rgba(255,255,255,.06);color:#fff}.passenger-sidebar nav button.active{color:#fff;background:rgba(91,204,235,.14);box-shadow:inset 3px 0 #67d1ed}.passenger-profile{display:flex;align-items:center;gap:10px;margin-top:auto;padding:16px 4px;border-top:1px solid rgba(255,255,255,.1)}.passenger-profile>span,.passenger-avatar,.account-avatar{display:grid;place-items:center;border-radius:50%;background:linear-gradient(145deg,#9be6f3,#51c1e7);color:#073049;font-weight:800}.passenger-profile>span{width:36px;height:36px;font-size:11px}.passenger-profile div{min-width:0;display:grid}.passenger-profile strong{font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.passenger-profile small{color:#91aab7;font-size:9px}.passenger-logout{border:1px solid rgba(255,255,255,.16);border-radius:10px;background:transparent;color:#b7cbd5;padding:10px;font-size:11px;font-weight:700}.passenger-logout:hover{border-color:#6bcde8;color:#fff}
 .passenger-workspace{min-width:0}.passenger-topbar{height:92px;padding:0 clamp(24px,4vw,58px);display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.86);border-bottom:1px solid var(--p-line);backdrop-filter:blur(15px);position:sticky;top:0;z-index:15}.passenger-topbar h1{font:800 24px Sora,sans-serif;letter-spacing:-.7px;margin:3px 0 0}.passenger-kicker,.passenger-section-head span,.passenger-welcome span,.start-ride-card small,.account-summary>span{color:#1689ad;font-size:9px;font-weight:800;letter-spacing:1.5px}.passenger-top-actions{display:flex;align-items:center;gap:12px}.passenger-view-select{display:flex;align-items:center;gap:8px;color:var(--p-muted);font-size:10px;font-weight:700}.passenger-view-select select{border:1px solid var(--p-line);border-radius:9px;background:#fff;color:var(--p-ink);padding:8px 10px;font-size:11px;font-weight:700}.passenger-avatar{width:39px;height:39px;border:0;font-size:11px}.passenger-mobile-brand,.passenger-mobile-nav{display:none}.passenger-content{max-width:1260px;margin:auto;padding:34px clamp(24px,4vw,58px) 65px}.passenger-page{animation:passenger-enter .35s cubic-bezier(.22,1,.36,1)}
@@ -68,3 +69,35 @@
 .support-layout{display:grid;grid-template-columns:minmax(280px,390px) 1fr;gap:22px}.support-form,.support-list article{border:1px solid var(--passenger-line,#d8e3e8);border-radius:20px;background:var(--passenger-card,#fff);padding:20px}.support-form{display:grid;gap:14px}.support-form label{display:grid;gap:7px;font-weight:700}.support-form textarea{min-height:120px;resize:vertical}.support-form>button{min-height:46px}.support-list{display:grid;align-content:start;gap:12px}.support-list>p{text-align:center;opacity:.65}.support-list article header{display:flex;justify-content:space-between}.support-list article header span{text-transform:uppercase;color:#0da9d8;font-size:11px;font-weight:800}.support-list article header b{text-transform:capitalize;font-size:12px}.support-list article h3{margin:10px 0 6px}.support-list article p{opacity:.76}.support-list blockquote{margin:14px 0 0;padding:13px;border-left:3px solid #0da9d8;background:#0da9d810}.support-list blockquote small{display:block;color:#0da9d8;font-weight:800;margin-bottom:5px}
 .theme-dark .ride-map-marker>b{background:#102f3e;color:#f5fbff}.theme-dark .ride-chat-messages article{background:#173949}.theme-dark .ride-chat-messages article.mine{background:#087fa8}
 @media(max-width:800px){.support-layout{grid-template-columns:1fr}.ride-dialog-backdrop{padding:0}.ride-chat{width:100%;height:100%;border-radius:0}.vehicle-categories button{grid-template-columns:30px 1fr auto}}
+
+/* En escritorio la barra queda como una franja de iconos y se amplía al pasar el cursor. */
+@media (min-width:761px) {
+  .passenger-shell { grid-template-columns:minmax(0, 1fr); }
+  .passenger-workspace { grid-column:1; width:100%; box-sizing:border-box; transition:margin-left .24s ease, width .24s ease; }
+  .passenger-shell:has(.passenger-sidebar-trigger:hover) .passenger-workspace,
+  .passenger-shell:has(.passenger-sidebar:hover) .passenger-workspace { margin-left:250px; width:calc(100% - 250px); }
+  .passenger-sidebar { left:-250px; top:0; bottom:0; width:250px; height:auto; padding:28px 22px 24px; overflow-x:hidden; overflow-y:auto; transition:left .24s ease; }
+  .passenger-sidebar-trigger { display:block; position:fixed; inset:0 auto 0 0; z-index:21; width:14px; }
+  .passenger-sidebar-trigger:hover + .passenger-sidebar,
+  .passenger-sidebar:hover { left:0; }
+  .passenger-sidebar .passenger-brand b,
+  .passenger-sidebar .passenger-nav-label,
+  .passenger-sidebar .passenger-profile div,
+  .passenger-sidebar .passenger-logout span { opacity:0; white-space:nowrap; transition:opacity .12s ease; }
+  .passenger-sidebar:hover .passenger-brand b,
+  .passenger-sidebar:hover .passenger-nav-label,
+  .passenger-sidebar:hover .passenger-profile div,
+  .passenger-sidebar:hover .passenger-logout span { opacity:1; transition-delay:0s; }
+  .passenger-sidebar-trigger:hover + .passenger-sidebar .passenger-brand b,
+  .passenger-sidebar-trigger:hover + .passenger-sidebar .passenger-nav-label,
+  .passenger-sidebar-trigger:hover + .passenger-sidebar .passenger-profile div,
+  .passenger-sidebar-trigger:hover + .passenger-sidebar .passenger-logout span { opacity:1; transition-delay:0s; }
+  .passenger-sidebar nav button .passenger-nav-label { width:auto; font-size:12px; font-weight:700; text-align:left; }
+  .passenger-sidebar .passenger-brand { gap:10px; justify-content:flex-start; }
+  .passenger-sidebar:hover .passenger-brand { gap:10px; justify-content:flex-start; }
+  .passenger-sidebar nav button { justify-content:flex-start; padding-inline:13px; }
+  .passenger-sidebar .passenger-profile { justify-content:flex-start; padding-inline:4px; }
+  .passenger-sidebar .passenger-logout { display:flex; justify-content:flex-start; align-items:center; gap:8px; white-space:nowrap; }
+  .passenger-sidebar nav button:hover { background:rgba(91,204,235,.14); color:#9be6f3; box-shadow:none; }
+  .passenger-sidebar nav button.active { background:transparent; color:#9be6f3; box-shadow:none; }
+}

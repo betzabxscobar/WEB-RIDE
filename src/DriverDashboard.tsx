@@ -4,6 +4,8 @@ import { SupportPage, TripChat } from './components/RideExtras'
 import logoTipo from './assets/LogoTipo.png'
 import { panelLabel, type Role, type User } from './lib/auth'
 import { AppearanceSettings, useAppearance } from './components/AppearanceSettings'
+import { type ReactNode } from 'react'
+import { Home as HomeIcon, MapPin as MapPinIcon, Truck as TruckIcon, FileText as FileTextIcon, HelpCircle as HelpCircleIcon, User as UserIcon, Settings as SettingsIcon } from 'lucide-react'
 import { routeBetween, type RoadRoute } from './lib/routing'
 import {
   activateVehicle,
@@ -134,13 +136,13 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
     <aside className="driver-sidebar">
       <div className="driver-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
       <nav aria-label="Panel del conductor">
-        <DriverNav active={page === 'inicio'} icon="⌂" label="Inicio" onClick={() => go('inicio')}/>
-        <DriverNav active={page === 'viajes'} icon="↗" label="Viajes" onClick={() => go('viajes')}/>
-        <DriverNav active={page === 'vehiculos'} icon="▰" label="Vehículos" onClick={() => go('vehiculos')}/>
-        <DriverNav active={page === 'documentos'} icon="▤" label="Documentos" onClick={() => go('documentos')}/>
-        <DriverNav active={page === 'soporte'} icon="?" label="Soporte" onClick={() => go('soporte')}/>
-        <DriverNav active={page === 'cuenta'} icon="○" label="Mi cuenta" onClick={() => go('cuenta')}/>
-        <DriverNav active={page === 'configuracion'} icon="⚙" label="Configuración" onClick={() => go('configuracion')}/>
+        <DriverNav active={page === 'inicio'} icon={<HomeIcon size={18} />} label="Inicio" onClick={() => go('inicio')}/>
+        <DriverNav active={page === 'viajes'} icon={<MapPinIcon size={18} />} label="Viajes" onClick={() => go('viajes')}/>
+        <DriverNav active={page === 'vehiculos'} icon={<TruckIcon size={18} />} label="Vehículos" onClick={() => go('vehiculos')}/>
+        <DriverNav active={page === 'documentos'} icon={<FileTextIcon size={18} />} label="Documentos" onClick={() => go('documentos')}/>
+        <DriverNav active={page === 'soporte'} icon={<HelpCircleIcon size={18} />} label="Soporte" onClick={() => go('soporte')}/>
+        <DriverNav active={page === 'cuenta'} icon={<UserIcon size={18} />} label="Mi cuenta" onClick={() => go('cuenta')}/>
+        <DriverNav active={page === 'configuracion'} icon={<SettingsIcon size={18} />} label="Configuración" onClick={() => go('configuracion')}/>
       </nav>
       <div className="driver-profile"><span>{initials(user.name)}</span><div><strong>{user.name}</strong><small>{state.available ? 'En línea' : 'Fuera de línea'}</small></div></div>
       <button className="driver-logout" onClick={onLogout}>Cerrar sesión</button>
@@ -159,13 +161,13 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
         }
       </div>
     </section>
-    <nav className="driver-mobile-nav"><DriverNav active={page === 'inicio'} icon="⌂" label="Inicio" onClick={() => go('inicio')}/><DriverNav active={page === 'viajes'} icon="↗" label="Viajes" onClick={() => go('viajes')}/><DriverNav active={page === 'vehiculos'} icon="▰" label="Autos" onClick={() => go('vehiculos')}/><DriverNav active={page === 'documentos'} icon="▤" label="Docs" onClick={() => go('documentos')}/><DriverNav active={page === 'cuenta'} icon="○" label="Cuenta" onClick={() => go('cuenta')}/></nav>
+    <nav className="driver-mobile-nav"><DriverNav active={page === 'inicio'} icon={<HomeIcon size={18} />} label="Inicio" onClick={() => go('inicio')}/><DriverNav active={page === 'viajes'} icon={<MapPinIcon size={18} />} label="Viajes" onClick={() => go('viajes')}/><DriverNav active={page === 'vehiculos'} icon={<TruckIcon size={18} />} label="Autos" onClick={() => go('vehiculos')}/><DriverNav active={page === 'documentos'} icon={<FileTextIcon size={18} />} label="Docs" onClick={() => go('documentos')}/><DriverNav active={page === 'cuenta'} icon={<UserIcon size={18} />} label="Cuenta" onClick={() => go('cuenta')}/></nav>
     {ratingTrip && <div className="driver-dialog-backdrop"><section className="driver-dialog"><button onClick={() => setRatingTrip(null)}>×</button><h2>¿Cómo estuvo el pasajero?</h2><p>Califica a {ratingTrip.pasajeroNombre}.</p><div className="driver-rating">{[1,2,3,4,5].map((score) => <button key={score} className={score <= ratingScore ? 'selected' : ''} onClick={() => setRatingScore(score)}>★</button>)}</div><textarea maxLength={300} value={ratingComment} onChange={(event) => setRatingComment(event.target.value)} placeholder="Comentario opcional"/><button className="primary" disabled={busy} onClick={submitRating}>Enviar calificación</button></section></div>}
     {chatTrip && <TripChat trip={chatTrip} userId={user.id} onClose={() => setChatTrip(null)}/>}
   </main>
 }
 
-function DriverNav({ active, icon, label, onClick }: { active: boolean; icon: string; label: string; onClick: () => void }) { return <button className={active ? 'active' : ''} onClick={onClick}><span>{icon}</span>{label}</button> }
+function DriverNav({ active, icon, label, onClick }: { active: boolean; icon: ReactNode; label: string; onClick: () => void }) { return <button className={active ? 'active' : ''} onClick={onClick}><span>{icon}</span>{label}</button> }
 
 function DriverHome({ state, active, requests, position, busy, onAvailability, onTrips, onProfile, onReport }: { state: DriverState; active: Trip | null; requests: Trip[]; position: TripPosition | null; busy: boolean; onAvailability: (value: boolean) => void; onTrips: () => void; onProfile: () => void; onReport: () => void }) {
   return <div className="driver-page"><section className={`driver-status-card ${state.available ? 'online' : ''}`}><div><span className="status-dot"/><div><small>ESTADO DE JORNADA</small><h2>{state.available ? 'Estás disponible' : 'Estás fuera de línea'}</h2><p>{state.available ? 'Ride está enviando tu posición y buscando solicitudes cercanas.' : canWorkText(state)}</p></div></div><label className="availability-switch"><input type="checkbox" checked={state.available} disabled={busy || !state.approved || !state.hasActiveVehicle} onChange={(event) => onAvailability(event.target.checked)}/><span/></label></section>{!state.approved || !state.hasActiveVehicle ? <section className="driver-block"><span>!</span><div><h3>Completa tu perfil para conducir</h3><p>{driverBlockReason(state)}</p></div><button onClick={onProfile}>Revisar requisitos</button></section> : null}<div className="driver-map-wrap"><RideMap origin={position ? { ...position, label: 'Mi ubicación' } : null} className="driver-home-map"/><div className="driver-map-card"><small>UBICACIÓN REAL</small><strong>{position ? 'Posición actualizada' : 'Permiso pendiente'}</strong><p>{position ? `${position.lat.toFixed(5)}, ${position.lng.toFixed(5)}` : 'Ponte en línea para compartir tu ubicación.'}</p><button onClick={onReport}>Actualizar ubicación</button></div></div><section className="driver-summary"><article><small>VIAJE ACTIVO</small><strong>{active ? ESTADO_LABEL[active.estado] : 'Ninguno'}</strong><p>{active?.destinoTexto ?? 'Disponible para una nueva ruta'}</p></article><article><small>SOLICITUDES CERCA</small><strong>{requests.length}</strong><p>Actualizadas en tiempo real</p></article><button onClick={onTrips}>{active ? 'Continuar viaje' : 'Ver solicitudes'} →</button></section></div>
