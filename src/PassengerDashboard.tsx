@@ -260,7 +260,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
     setQuote(null); setDestinationId(place.id); setDestinationPoint(place)
   }
 
-  const useLocation = () => {
+  const getUserLocation = () => {
     if (!navigator.geolocation) {
       setError('Tu navegador no permite obtener la ubicación. Elige un punto de la lista.')
       return
@@ -470,10 +470,26 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
       <button className="passenger-logout" onClick={onLogout}>Cerrar sesión</button>
     </aside>
 
-    <section className="passenger-workspace">
+    {page === 'inicio' ? <HomePage
+      user={user}
+      activeTrip={activeTrip}
+      tripPosition={tripPosition}
+      locating={locating}
+      notice={notice}
+      error={error}
+      views={views}
+      activeView={activeView}
+      onSwitchView={onSwitchView}
+      onAccount={() => go('cuenta')}
+      onRequest={() => go('pedir')}
+      onUseLocation={() => { getUserLocation(); go('pedir') }}
+      onTrack={openTracking}
+      onCancel={setCanceling}
+      onDismissError={() => setError('')}
+    /> : <section className="passenger-workspace">
       <header className="passenger-topbar">
         <div className="passenger-mobile-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
-        <div><span className="passenger-kicker">PANEL DE PASAJERO</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'pedir' ? 'Pide un viaje' : page === 'seguimiento' ? 'Seguimiento del viaje' : page === 'viajes' ? 'Tus viajes' : page === 'avisos' ? 'Tus avisos' : page === 'direcciones' ? 'Tus direcciones' : page === 'pagos' ? 'Tus pagos' : 'Tu cuenta'}</h1></div>
+        <div><span className="passenger-kicker">PANEL DE PASAJERO</span><h1>{page === 'pedir' ? 'Pide un viaje' : page === 'seguimiento' ? 'Seguimiento del viaje' : page === 'viajes' ? 'Tus viajes' : page === 'avisos' ? 'Tus avisos' : page === 'direcciones' ? 'Tus direcciones' : page === 'pagos' ? 'Tus pagos' : 'Tu cuenta'}</h1></div>
         <div className="passenger-top-actions">
           {views.length > 1 && <label className="passenger-view-select"><span>Vista</span><select value={activeView} onChange={(event) => onSwitchView(event.target.value as Role)}>{views.map((view) => <option value={view} key={view}>{panelLabel(view)}</option>)}</select></label>}
           <button className="notification-button" onClick={openNotifications} aria-label={unread ? `${unread} avisos sin leer` : 'Abrir avisos'}>♢{unread > 0 && <b>{unread > 9 ? '9+' : unread}</b>}</button>
@@ -484,8 +500,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
       <div className="passenger-content">
         {notice && <div className="passenger-feedback success"><span>✓</span>{notice}</div>}
         {error && <div className="passenger-feedback failure"><span>!</span>{error}<button onClick={() => setError('')}>Cerrar</button></div>}
-        {loading ? <LoadingPanel/> : page === 'inicio' ? <HomePage user={user} activeTrip={activeTrip} trips={trips} onRequest={() => go('pedir')} onTrips={() => go('viajes')} onCancel={setCanceling} onTrack={openTracking}/>
-          : page === 'pedir' ? <RequestPage places={places} origin={origin} destination={destination} originPlaceId={originPlaceId} destinationId={destinationId} quote={quote} route={roadRoute} quoting={quoting} locating={locating} busy={busy} activeTrip={activeTrip} onUseLocation={useLocation} onOrigin={selectOrigin} onOriginPoint={selectOriginPoint} onDestination={selectDestination} onDestinationPoint={selectDestinationPoint} onConfirm={confirmRequest} onActive={() => activeTrip && openTracking(activeTrip)}/>
+        {loading ? <LoadingPanel/> : page === 'pedir' ? <RequestPage places={places} origin={origin} destination={destination} originPlaceId={originPlaceId} destinationId={destinationId} quote={quote} route={roadRoute} quoting={quoting} locating={locating} busy={busy} activeTrip={activeTrip} onUseLocation={getUserLocation} onOrigin={selectOrigin} onOriginPoint={selectOriginPoint} onDestination={selectDestination} onDestinationPoint={selectDestinationPoint} onConfirm={confirmRequest} onActive={() => activeTrip && openTracking(activeTrip)}/>
           : page === 'seguimiento' ? <TrackingPage trip={trackingTrip} position={tripPosition} onCancel={setCanceling} onBack={() => go('inicio')}/>
           : page === 'viajes' ? <TripsPage trips={trips} busy={busy} onCancel={setCanceling} onRate={openRating} onTrack={openTracking}/>
           : page === 'avisos' ? <NotificationsPage notifications={notifications}/>
@@ -494,7 +509,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
           : <AccountPage user={user} trips={trips} addresses={addresses} methods={paymentMethods} onAddresses={() => go('direcciones')} onPayments={() => go('pagos')}/>
         }
       </div>
-    </section>
+    </section>}
 
     <nav className="passenger-mobile-nav" aria-label="Navegación móvil">
       <NavButton active={page === 'inicio'} icon="⌂" label="Inicio" onClick={() => go('inicio')}/>
@@ -517,14 +532,58 @@ function LoadingPanel() {
   return <div className="passenger-loading"><i/><span>Actualizando tu información…</span></div>
 }
 
-function HomePage({ user, activeTrip, trips, onRequest, onTrips, onCancel, onTrack }: { user: User; activeTrip: Trip | null; trips: Trip[]; onRequest: () => void; onTrips: () => void; onCancel: (trip: Trip) => void; onTrack: (trip: Trip) => void }) {
-  const recent = trips.filter((trip) => esFinal(trip.estado)).slice(0, 3)
-  return <div className="passenger-page home-page">
-    <section className="passenger-welcome"><div><span>{activeTrip ? 'VIAJE ACTIVO' : 'LISTO PARA SALIR'}</span><h2>{activeTrip ? STATUS_HINT[activeTrip.estado] : '¿A dónde vamos hoy?'}</h2><p>{activeTrip ? `Destino: ${activeTrip.destinoTexto}` : 'Elige tu punto de partida y destino. Ride calcula la tarifa antes de confirmar.'}</p></div>{activeTrip ? <button onClick={() => onTrack(activeTrip)}>Ver seguimiento</button> : <button onClick={onRequest}>Pedir un viaje <b>→</b></button>}</section>
-    {activeTrip ? <ActiveTrip trip={activeTrip} onCancel={onCancel}/> : <section className="start-ride-card"><div className="route-mark"><i/><span/><b/></div><div><small>NUEVA SOLICITUD</small><h3>Tu viaje empieza con dos puntos</h3><p>Usa tu ubicación actual o elige una dirección en Ecuador.</p></div><button onClick={onRequest}>Definir ruta</button></section>}
-    <section className="passenger-section-head"><div><span>ACTIVIDAD</span><h2>Viajes recientes</h2></div>{trips.length > 0 && <button onClick={onTrips}>Ver todos →</button>}</section>
-    {recent.length === 0 ? <EmptyState title="Aún no tienes viajes" text={`Cuando pidas el primero, ${user.name.split(' ')[0]}, podrás consultarlo aquí.`} action="Pedir mi primer viaje" onAction={onRequest}/> : <div className="recent-trip-list">{recent.map((trip) => <TripRow key={trip.id} trip={trip}/>)}</div>}
-  </div>
+function HomePage({ user, activeTrip, tripPosition, locating, notice, error, views, activeView, onSwitchView, onAccount, onRequest, onUseLocation, onTrack, onCancel, onDismissError }: {
+  user: User
+  activeTrip: Trip | null
+  tripPosition: TripPosition | null
+  locating: boolean
+  notice: string
+  error: string
+  views: Role[]
+  activeView: Role
+  onSwitchView: (view: Role) => void
+  onAccount: () => void
+  onRequest: () => void
+  onUseLocation: () => void
+  onTrack: (trip: Trip) => void
+  onCancel: (trip: Trip) => void
+  onDismissError: () => void
+}) {
+  const [device, setDevice] = useState<Coordinates | null>(null)
+  useEffect(() => {
+    if (!navigator.geolocation) return
+    navigator.geolocation.getCurrentPosition(
+      (position) => setDevice({ lat: position.coords.latitude, lng: position.coords.longitude, label: 'Mi ubicación actual' }),
+      () => {},
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+    )
+  }, [])
+  return <section className="passenger-map-screen">
+    {activeTrip ? <TripTrackingMap trip={activeTrip} position={tripPosition}/> : <RideMap origin={device} dark labels={false} className="home-map" locateTo={device}/>}
+    <div className="map-float-top">
+      <button className="map-float-avatar" onClick={onAccount} aria-label="Abrir mi cuenta">{initials(user.name)}</button>
+      <div className="map-float-right">
+        {views.length > 1 && <label className="map-float-select"><select value={activeView} onChange={(event) => onSwitchView(event.target.value as Role)}>{views.map((view) => <option value={view} key={view}>{panelLabel(view)}</option>)}</select></label>}
+      </div>
+    </div>
+    <div className="map-sheet">
+      <span className="map-sheet-handle"/>
+      {notice && <div className="passenger-feedback success"><span>✓</span>{notice}</div>}
+      {error && <div className="passenger-feedback failure"><span>!</span>{error}<button onClick={onDismissError}>Cerrar</button></div>}
+      {activeTrip ? <>
+        <ActiveTrip trip={activeTrip} onCancel={onCancel}/>
+        <button className="sheet-cta" onClick={() => onTrack(activeTrip)}>Ver seguimiento del viaje</button>
+      </> : <>
+        <h2>¡Hola, {user.name.split(' ')[0]}! 👋</h2>
+        <p>¿A dónde vamos hoy?</p>
+        <div className="sheet-card">
+          <button className="sheet-row" onClick={onRequest}><span className="sheet-row-icon pin">◎</span>¿A dónde quieres llegar?<b>›</b></button>
+          <button className="sheet-row" disabled={locating} onClick={onUseLocation}><span className="sheet-row-icon gps">⌖</span>{locating ? 'Obteniendo tu ubicación…' : 'Usar mi ubicación como punto de partida'}<b>›</b></button>
+        </div>
+        <button className="sheet-cta" onClick={onRequest}>🚖 Pedir un viaje</button>
+      </>}
+    </div>
+  </section>
 }
 
 function ActiveTrip({ trip, onCancel }: { trip: Trip; onCancel: (trip: Trip) => void }) {
