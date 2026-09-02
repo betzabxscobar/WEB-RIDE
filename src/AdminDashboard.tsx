@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import './AdminDashboard.css'
 import rideLogoAsset from './assets/Ride.png'
 import logoTipoAsset from './assets/LogoTipo.png'
+import volanteAsset from './assets/volante.png'
+import mapaViajeAsset from './assets/mapa-de-viaje.png'
+import monedaDolarAsset from './assets/moneda-de-dolar.png'
 import { listUsers, panelLabel, type Role, type User } from './lib/auth'
 import { faltantes, listDrivers, type Driver } from './lib/drivers'
 import { listTrips, watchTrips, esFinal, ESTADO_LABEL, type Trip } from './lib/trips'
@@ -50,6 +53,20 @@ function initials(name: string) {
 function formatDate(value: string) {
   if (!value) return 'Sin fecha'
   return new Intl.DateTimeFormat('es-EC', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(value))
+}
+
+function MetricIcon({ type }: { type: 'passengers' | 'drivers' | 'trips' | 'money' }) {
+  const common = { viewBox: '0 0 24 24', fill: 'currentColor' }
+
+  if (type === 'passengers') return (
+    <svg {...common} aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8c.7-3.6 3.3-5.5 7-5.5s6.3 1.9 7 5.5" /></svg>
+  )
+
+  if (type === 'drivers') return <img src={volanteAsset} alt="" aria-hidden="true" className="metric-image" />
+
+  if (type === 'trips') return <img src={mapaViajeAsset} alt="" aria-hidden="true" className="metric-image" />
+
+  return <img src={monedaDolarAsset} alt="" aria-hidden="true" className="metric-image" />
 }
 
 function UserRows({ users, loading, error, limit }: { users: User[]; loading: boolean; error: string; limit?: number }) {
@@ -162,14 +179,14 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
 
   return (
     <main className="admin-shell">
-      <header className="uber-topbar">
-        <div className="uber-topbar-left">
-          <div className="uber-brand">
-            <img src={logoTipoAsset} className="uber-brand-logotipo" alt="Logo tipo Ride" />
-            <img src={rideLogoAsset} className="uber-brand-logo" alt="Ride" />
+      <header className="topbar">
+        <div className="topbar-left">
+          <div className="brand">
+            <img src={logoTipoAsset} className="brand-logotipo" alt="Logo tipo Ride" />
+            <img src={rideLogoAsset} className="brand-logo" alt="Ride" />
           </div>
 
-          <nav className="uber-navigation" aria-label="Navegación principal">
+          <nav className="navigation" aria-label="Navegación principal">
             {sections.map(({ label }) => (
               <button
                 key={label}
@@ -186,7 +203,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
           </nav>
         </div>
 
-        <div className="uber-topbar-right">
+        <div className="topbar-right">
           {views.length > 1 && (
             <label className="panel-switcher topbar">
               <select value={viewAs} onChange={(event) => onSwitchView(event.target.value as Role)}>
@@ -195,12 +212,12 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
             </label>
           )}
 
-          <div className="admin-profile uber-profile">
+          <div className="admin-profile profile">
             <span>{initials(user.name)}</span>
             <div><strong>{user.name}</strong><small>{profileName}</small></div>
           </div>
 
-          <button className="admin-logout uber-logout" onClick={onLogout}>Cerrar sesión</button>
+          <button className="admin-logout logout" onClick={onLogout}>Cerrar sesión</button>
         </div>
       </header>
 
@@ -222,10 +239,34 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
             </section>
 
             <section className="metric-strip" aria-label="Indicadores de la operación">
-              <article><small>Pasajeros</small><strong>{usersLoading ? '—' : metrics.passengers}</strong></article>
-              <article><small>Conductores</small><strong>{usersLoading ? '—' : metrics.drivers}</strong></article>
-              <article><small>Viajes activos</small><strong>{tripsLoading ? '—' : metrics.activeTrips}</strong></article>
-              <article><small>Cobrado</small><strong>{tripsLoading ? '—' : `$${metrics.collected.toFixed(2)}`}</strong></article>
+              <article>
+                <div className="metric-icon passengers"><MetricIcon type="passengers" /></div>
+                <div className="metric-content">
+                  <small>Pasajeros</small>
+                  <strong>{usersLoading ? '—' : metrics.passengers}</strong>
+                </div>
+              </article>
+              <article>
+                <div className="metric-icon drivers"><MetricIcon type="drivers" /></div>
+                <div className="metric-content">
+                  <small>Conductores</small>
+                  <strong>{usersLoading ? '—' : metrics.drivers}</strong>
+                </div>
+              </article>
+              <article>
+                <div className="metric-icon trips"><MetricIcon type="trips" /></div>
+                <div className="metric-content">
+                  <small>Viajes activos</small>
+                  <strong>{tripsLoading ? '—' : metrics.activeTrips}</strong>
+                </div>
+              </article>
+              <article>
+                <div className="metric-icon money"><MetricIcon type="money" /></div>
+                <div className="metric-content">
+                  <small>Cobrado</small>
+                  <strong>{tripsLoading ? '—' : `$${metrics.collected.toFixed(2)}`}</strong>
+                </div>
+              </article>
             </section>
 
             <div className="operations-grid">
@@ -265,10 +306,34 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
         {activeSection === 'Viajes' && (
           <div className="admin-content">
             <section className="metric-strip" aria-label="Indicadores de viajes">
-              <article><small>Viajes totales</small><strong>{tripsLoading ? '—' : trips.length}</strong></article>
-              <article><small>En curso</small><strong>{tripsLoading ? '—' : metrics.activeTrips}</strong></article>
-              <article><small>Finalizados</small><strong>{tripsLoading ? '—' : metrics.finishedTrips}</strong></article>
-              <article><small>Cobrado</small><strong>{tripsLoading ? '—' : `$${metrics.collected.toFixed(2)}`}</strong></article>
+              <article>
+                <div className="metric-icon trips"><MetricIcon type="trips" /></div>
+                <div className="metric-content">
+                  <small>Viajes totales</small>
+                  <strong>{tripsLoading ? '—' : trips.length}</strong>
+                </div>
+              </article>
+              <article>
+                <div className="metric-icon trips"><MetricIcon type="trips" /></div>
+                <div className="metric-content">
+                  <small>En curso</small>
+                  <strong>{tripsLoading ? '—' : metrics.activeTrips}</strong>
+                </div>
+              </article>
+              <article>
+                <div className="metric-icon passengers"><MetricIcon type="passengers" /></div>
+                <div className="metric-content">
+                  <small>Finalizados</small>
+                  <strong>{tripsLoading ? '—' : metrics.finishedTrips}</strong>
+                </div>
+              </article>
+              <article>
+                <div className="metric-icon money"><MetricIcon type="money" /></div>
+                <div className="metric-content">
+                  <small>Cobrado</small>
+                  <strong>{tripsLoading ? '—' : `$${metrics.collected.toFixed(2)}`}</strong>
+                </div>
+              </article>
             </section>
             <section className="admin-card"><div className="admin-card-head"><div><h3>Monitoreo de viajes</h3><p>El listado se actualiza cuando cambia un viaje.</p></div></div><TripRows trips={trips} loading={tripsLoading} error={tripsError} /></section>
           </div>
