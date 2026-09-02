@@ -18,8 +18,8 @@ Son unas 2.000 veces el límite del plan. **No es cuestión de configuración ni
 pagar el plan siguiente: Supabase no es el producto para eso.** Ni siquiera
 Ecuador solo cabría cómodamente.
 
-Ninguna app de transporte guarda ese dato. Uber tampoco: todas consultan un
-geocodificador, que es quien mantiene las calles y nomenclaturas al día.
+Ninguna app de transporte guarda ese dato: todas consultan un geocodificador,
+que es quien mantiene las calles y nomenclaturas al día.
 
 ## Qué se usa
 

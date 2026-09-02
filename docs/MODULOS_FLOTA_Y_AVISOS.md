@@ -4,10 +4,10 @@ Cuatro módulos del informe, construidos sobre el motor de viajes.
 
 ## Por qué PostGIS y no H3
 
-Se evaluó H3, la rejilla hexagonal de Uber. **No es una API** —es una librería
-Apache 2.0, sin claves ni cuotas— pero **no está entre las 78 extensiones
-disponibles en Supabase**. Usarla obligaría a correrla en el cliente y repartir
-la lógica de vecindad entre Flutter y React.
+Se evaluó H3, la rejilla hexagonal de referencia para geolocalización. **No es
+una API** —es una librería Apache 2.0, sin claves ni cuotas— pero **no está entre
+las 78 extensiones disponibles en Supabase**. Usarla obligaría a correrla en el
+cliente y repartir la lógica de vecindad entre Flutter y React.
 
 PostGIS sí está disponible y resuelve la búsqueda por radio dentro de la base,
 que es donde viven el resto de las decisiones del proyecto.

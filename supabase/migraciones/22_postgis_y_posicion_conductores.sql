@@ -1,6 +1,6 @@
 -- PostGIS para la busqueda por cercania.
 --
--- Se evaluo H3 (la rejilla hexagonal de Uber), pero no esta entre las 78
+-- Se evaluo H3 (la rejilla hexagonal de referencia), pero no esta entre las 78
 -- extensiones disponibles en Supabase: habria que correrla en el cliente y
 -- repartir la logica entre Flutter y React. PostGIS ya esta aqui y resuelve la
 -- busqueda por radio dentro de la base, que es donde viven el resto de las

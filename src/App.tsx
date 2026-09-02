@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import './App.css'
 import logoTipo from './assets/LogoTipo.png'
+import rideLogo from './assets/Ride.png'
 import AdminDashboard from './AdminDashboard'
 import PassengerDashboard from './PassengerDashboard'
 import DriverDashboard from './DriverDashboard'
@@ -207,7 +208,13 @@ function App() {
     <DriverDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onLogout={logout} />
   </>
 
-  if (loading && screen === 'welcome') return <div className="loading-screen"><span>Preparando Ride…</span></div>
+  if (loading && screen === 'welcome') return <div className="loading-screen">
+    <div className="loading-brand" aria-label="Ride loading">
+      <img src={rideLogo} className="loading-ride" alt="Ride icon" />
+      <img src={logoTipo} className="loading-logo" alt="Ride" />
+    </div>
+    <div className="loading-spinner" aria-label="Cargando" />
+  </div>
 
   if (screen === 'home' && user) return <main className="user-home">
     {viewingOtherPanel && <ViewingAsBar role={user.role} onBack={() => setView(null)} />}
@@ -240,7 +247,7 @@ function PanelSwitcher({views,active,onSwitch}:{views:Role[];active:Role|null;on
 /// Aviso de que se está mirando una pantalla distinta a la del rol propio.
 function ViewingAsBar({role,onBack}:{role:Role;onBack:()=>void}) {
   const nombre = role === 'superadmin' ? 'superadministrador' : 'administrador'
-  return <div className="viewing-as"><span>◉ Viendo como {nombre}</span><button onClick={onBack}>Volver a mi panel</button></div>
+  return <div className="viewing-as"><span>Viendo como {nombre}</span><button onClick={onBack}>Volver a mi panel</button></div>
 }
 
 type AuthProps = { title:string; subtitle:string; submit:string; loading:boolean; message:string; notice:string; showPassword:boolean; setShowPassword:(value:boolean)=>void; onSubmit:(event:FormEvent<HTMLFormElement>)=>void; onBack:()=>void; footer:ReactNode; extra?:ReactNode }
