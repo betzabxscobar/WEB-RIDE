@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import RideMap from './components/RideMap'
+import { SupportPage, TripChat } from './components/RideExtras'
 import logoTipo from './assets/LogoTipo.png'
 import { panelLabel, type Role, type User } from './lib/auth'
 import { AppearanceSettings, useAppearance } from './components/AppearanceSettings'
@@ -36,7 +37,7 @@ import {
   type TripPosition,
 } from './lib/trips'
 
-type Page = 'inicio' | 'viajes' | 'vehiculos' | 'documentos' | 'cuenta' | 'configuracion'
+type Page = 'inicio' | 'viajes' | 'vehiculos' | 'documentos' | 'soporte' | 'cuenta' | 'configuracion'
 type Props = { user: User; views: Role[]; activeView: Role; onSwitchView: (view: Role) => void; onLogout: () => void }
 
 const EMPTY_STATE: DriverState = { exists: false, approved: false, approvalStatus: 'pendiente', available: false, hasActiveVehicle: false, rating: null }
@@ -62,6 +63,7 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [ratingTrip, setRatingTrip] = useState<Trip | null>(null)
+  const [chatTrip, setChatTrip] = useState<Trip | null>(null)
   const [ratingScore, setRatingScore] = useState(5)
   const [ratingComment, setRatingComment] = useState('')
   const appearance = useAppearance()
@@ -136,6 +138,7 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
         <DriverNav active={page === 'viajes'} icon="↗" label="Viajes" onClick={() => go('viajes')}/>
         <DriverNav active={page === 'vehiculos'} icon="▰" label="Vehículos" onClick={() => go('vehiculos')}/>
         <DriverNav active={page === 'documentos'} icon="▤" label="Documentos" onClick={() => go('documentos')}/>
+        <DriverNav active={page === 'soporte'} icon="?" label="Soporte" onClick={() => go('soporte')}/>
         <DriverNav active={page === 'cuenta'} icon="○" label="Mi cuenta" onClick={() => go('cuenta')}/>
         <DriverNav active={page === 'configuracion'} icon="⚙" label="Configuración" onClick={() => go('configuracion')}/>
       </nav>
@@ -143,13 +146,14 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
       <button className="driver-logout" onClick={onLogout}>Cerrar sesión</button>
     </aside>
     <section className="driver-workspace">
-      <header className="driver-topbar"><div><span>PANEL DE CONDUCTOR</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'viajes' ? 'Tus viajes' : page === 'vehiculos' ? 'Tus vehículos' : page === 'documentos' ? 'Tus documentos' : 'Tu cuenta'}</h1></div><div className="driver-top-actions">{views.length > 1 && <label><span>Vista</span><select value={activeView} onChange={(event) => onSwitchView(event.target.value as Role)}>{views.map((view) => <option key={view} value={view}>{panelLabel(view)}</option>)}</select></label>}<button className="driver-avatar" onClick={() => go('cuenta')}>{initials(user.name)}</button></div></header>
+      <header className="driver-topbar"><div><span>PANEL DE CONDUCTOR</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'viajes' ? 'Tus viajes' : page === 'vehiculos' ? 'Tus vehículos' : page === 'documentos' ? 'Tus documentos' : page === 'soporte' ? 'Soporte' : 'Tu cuenta'}</h1></div><div className="driver-top-actions">{views.length > 1 && <label><span>Vista</span><select value={activeView} onChange={(event) => onSwitchView(event.target.value as Role)}>{views.map((view) => <option key={view} value={view}>{panelLabel(view)}</option>)}</select></label>}<button className="driver-avatar" onClick={() => go('cuenta')}>{initials(user.name)}</button></div></header>
       <div className="driver-content">
         {notice && <div className="driver-feedback success">✓ {notice}</div>}{error && <div className="driver-feedback failure">! {error}<button onClick={() => setError('')}>Cerrar</button></div>}
         {loading ? <div className="driver-loading">Actualizando tu información…</div> : page === 'inicio' ? <DriverHome state={state} active={activeTrip} requests={requests} position={position} busy={busy} onAvailability={toggleAvailability} onTrips={() => go('viajes')} onProfile={() => go('documentos')} onReport={() => reportPosition(activeTrip?.id)}/>
-          : page === 'viajes' ? <DriverTrips active={activeTrip} requests={requests} history={trips} position={position} busy={busy} canWork={canWork} available={state.available} onAccept={(trip) => void action(() => acceptTrip(trip.id), 'Solicitud aceptada.')} onAdvance={(trip) => void action(() => advanceTrip(trip.id).then(() => undefined))} onFinish={finalize} onCancel={(trip) => void action(() => cancelTrip(trip.id), 'Viaje cancelado.')}/>
+          : page === 'viajes' ? <DriverTrips active={activeTrip} requests={requests} history={trips} position={position} busy={busy} canWork={canWork} available={state.available} onAccept={(trip) => void action(() => acceptTrip(trip.id), 'Solicitud aceptada.')} onAdvance={(trip) => void action(() => advanceTrip(trip.id).then(() => undefined))} onFinish={finalize} onCancel={(trip) => void action(() => cancelTrip(trip.id), 'Viaje cancelado.')} onChat={setChatTrip}/>
           : page === 'vehiculos' ? <VehiclesPage vehicles={vehicles} busy={busy} onSave={(input) => void action(() => saveVehicle(input).then(() => undefined), 'Vehículo guardado.')} onActivate={(id) => void action(() => activateVehicle(id), 'Vehículo activado.')}/>
           : page === 'documentos' ? <DocumentsPage documents={documents} busy={busy} onUpload={(type, file) => void action(() => uploadDriverDocument(user.id, type, file), 'Documento enviado para revisión.')} onOpen={async (path) => { try { window.open(await ownDocumentUrl(path), '_blank', 'noopener,noreferrer') } catch (cause) { setError(cause instanceof Error ? cause.message : 'No se pudo abrir el documento.') } }}/>
+          : page === 'soporte' ? <SupportPage userId={user.id} trips={trips}/>
           : page === 'configuracion' ? <div className="driver-page settings-page"><section className="driver-section-head"><span>PREFERENCIAS</span><h2>Configuración</h2><p>Personaliza todos los paneles de Ride.</p></section><AppearanceSettings theme={appearance.theme} reducedMotion={appearance.reducedMotion} onTheme={appearance.setTheme} onReducedMotion={appearance.setReducedMotion}/></div>
           : <DriverAccount user={user} state={state} vehicles={vehicles} documents={documents}/>
         }
@@ -157,6 +161,7 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
     </section>
     <nav className="driver-mobile-nav"><DriverNav active={page === 'inicio'} icon="⌂" label="Inicio" onClick={() => go('inicio')}/><DriverNav active={page === 'viajes'} icon="↗" label="Viajes" onClick={() => go('viajes')}/><DriverNav active={page === 'vehiculos'} icon="▰" label="Autos" onClick={() => go('vehiculos')}/><DriverNav active={page === 'documentos'} icon="▤" label="Docs" onClick={() => go('documentos')}/><DriverNav active={page === 'cuenta'} icon="○" label="Cuenta" onClick={() => go('cuenta')}/></nav>
     {ratingTrip && <div className="driver-dialog-backdrop"><section className="driver-dialog"><button onClick={() => setRatingTrip(null)}>×</button><h2>¿Cómo estuvo el pasajero?</h2><p>Califica a {ratingTrip.pasajeroNombre}.</p><div className="driver-rating">{[1,2,3,4,5].map((score) => <button key={score} className={score <= ratingScore ? 'selected' : ''} onClick={() => setRatingScore(score)}>★</button>)}</div><textarea maxLength={300} value={ratingComment} onChange={(event) => setRatingComment(event.target.value)} placeholder="Comentario opcional"/><button className="primary" disabled={busy} onClick={submitRating}>Enviar calificación</button></section></div>}
+    {chatTrip && <TripChat trip={chatTrip} userId={user.id} onClose={() => setChatTrip(null)}/>}
   </main>
 }
 
@@ -168,9 +173,9 @@ function DriverHome({ state, active, requests, position, busy, onAvailability, o
 
 function canWorkText(state: DriverState): string { return state.approved && state.hasActiveVehicle ? 'Ponte en línea para recibir solicitudes cercanas.' : driverBlockReason(state) }
 
-function DriverTrips({ active, requests, history, position, busy, canWork, available, onAccept, onAdvance, onFinish, onCancel }: { active: Trip | null; requests: Trip[]; history: Trip[]; position: TripPosition | null; busy: boolean; canWork: boolean; available: boolean; onAccept: (trip: Trip) => void; onAdvance: (trip: Trip) => void; onFinish: (trip: Trip) => void; onCancel: (trip: Trip) => void }) {
+function DriverTrips({ active, requests, history, position, busy, canWork, available, onAccept, onAdvance, onFinish, onCancel, onChat }: { active: Trip | null; requests: Trip[]; history: Trip[]; position: TripPosition | null; busy: boolean; canWork: boolean; available: boolean; onAccept: (trip: Trip) => void; onAdvance: (trip: Trip) => void; onFinish: (trip: Trip) => void; onCancel: (trip: Trip) => void; onChat: (trip: Trip) => void }) {
   const next: Partial<Record<Trip['estado'], string>> = { ACEPTADO: 'Voy en camino', CONDUCTOR_EN_CAMINO: 'Llegué al punto', CONDUCTOR_EN_ORIGEN: 'Iniciar viaje' }
-  if (active) return <div className="driver-page"><section className="driver-section-head"><span>VIAJE EN CURSO</span><h2>{ESTADO_LABEL[active.estado]}</h2></section><DriverActiveMap trip={active} position={position}/><section className="active-driver-trip"><div className="active-driver-title"><div><small>PASAJERO</small><h3>{active.pasajeroNombre}</h3>{active.pasajeroTelefono && <a href={`tel:${active.pasajeroTelefono}`}>{active.pasajeroTelefono}</a>}</div><strong>{money(active.tarifaFinal ?? active.tarifaEstimada)}</strong></div><DriverRoute trip={active}/><div className="driver-trip-actions">{next[active.estado] && <button className="primary" disabled={busy} onClick={() => onAdvance(active)}>{next[active.estado]}</button>}{active.estado === 'EN_CURSO' && <button className="finish" disabled={busy} onClick={() => onFinish(active)}>Finalizar viaje</button>}{!['EN_CURSO','FINALIZADO','CANCELADO','SIN_CONDUCTOR'].includes(active.estado) && <button className="danger" disabled={busy} onClick={() => onCancel(active)}>Cancelar viaje</button>}</div></section></div>
+  if (active) return <div className="driver-page"><section className="driver-section-head"><span>VIAJE EN CURSO</span><h2>{ESTADO_LABEL[active.estado]}{active.categoriaNombre ? ` · ${active.categoriaNombre}` : ''}</h2></section><DriverActiveMap trip={active} position={position}/><section className="active-driver-trip"><div className="active-driver-title"><div><small>PASAJERO</small><h3>{active.pasajeroNombre}</h3>{active.pasajeroTelefono && <a href={`tel:${active.pasajeroTelefono}`}>{active.pasajeroTelefono}</a>}</div><strong>{money(active.tarifaFinal ?? active.tarifaEstimada)}</strong></div><DriverRoute trip={active}/>{active.origenReferencia && <div className="pickup-note"><small>REFERENCIA DE RECOGIDA</small><strong>{active.origenReferencia}</strong></div>}<div className="driver-trip-actions"><button disabled={busy} onClick={() => onChat(active)}>Chat</button>{next[active.estado] && <button className="primary" disabled={busy} onClick={() => onAdvance(active)}>{next[active.estado]}</button>}{active.estado === 'EN_CURSO' && <button className="finish" disabled={busy} onClick={() => onFinish(active)}>Finalizar viaje</button>}{!['EN_CURSO','FINALIZADO','CANCELADO','SIN_CONDUCTOR'].includes(active.estado) && <button className="danger" disabled={busy} onClick={() => onCancel(active)}>Cancelar viaje</button>}</div></section></div>
   return <div className="driver-page"><section className="driver-section-head"><span>SOLICITUDES REALES</span><h2>{available && canWork ? 'Viajes cerca de ti' : 'No estás recibiendo solicitudes'}</h2><p>{available && canWork ? 'La lista cambia automáticamente cuando un pasajero pide un viaje.' : 'Debes tener la cuenta aprobada, un vehículo activo y estar en línea.'}</p></section>{requests.length ? <div className="driver-request-list">{requests.map((trip) => <article key={trip.id}><div><small>{trip.pasajeroNombre}</small><strong>{money(trip.tarifaEstimada)}</strong></div><DriverRoute trip={trip}/><button disabled={busy} onClick={() => onAccept(trip)}>Aceptar ruta</button></article>)}</div> : <div className="driver-empty"><span>⌁</span><h3>{available && canWork ? 'Buscando pasajeros' : 'Sin solicitudes'}</h3><p>{available && canWork ? 'Te avisaremos apenas aparezca un viaje dentro de tu zona.' : 'Vuelve al inicio para revisar tu disponibilidad.'}</p></div>}<section className="driver-section-head history"><span>HISTORIAL</span><h2>Viajes anteriores</h2></section><div className="driver-history">{history.filter(esFinalTrip).map((trip) => <article key={trip.id}><DriverRoute trip={trip}/><span>{ESTADO_LABEL[trip.estado]}</span><strong>{money(trip.tarifaFinal ?? trip.tarifaEstimada)}</strong></article>)}</div></div>
 }
 
