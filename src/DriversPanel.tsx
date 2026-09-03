@@ -7,10 +7,9 @@ import {
   documentUrl,
   puedeAprobarse,
   faltantes,
-  TIPOS_DOC,
   DOC_LABEL,
   type Driver,
-  type DocType,
+  type DriverDoc,
 } from './lib/drivers'
 
 /** Revisión de choferes: documentos, vehículos y aprobación. */
@@ -54,6 +53,11 @@ export default function DriversPanel() {
     }
   }
 
+  const pedirMotivo = (titulo: string) => {
+    const motivo = window.prompt(`${titulo}\nEscribe el motivo para que el conductor sepa qué corregir:`)?.trim()
+    return motivo && motivo.length >= 3 ? motivo : null
+  }
+
   const pendientes = drivers.filter((d) => d.estado === 'pendiente')
   const visibleDrivers = useMemo(() => {
     const text = query.trim().toLocaleLowerCase('es-EC')
@@ -80,7 +84,7 @@ export default function DriversPanel() {
         <div className="admin-card-head">
           <div>
             <h3>Conductores</h3>
-            <p>Revisa los documentos antes de aprobar. Sin los tres aprobados y un vehículo, la base no deja aprobar la cuenta.</p>
+            <p>Revisa identidad, licencia y los documentos vigentes de cada vehículo. La base decide si la cuenta está completa.</p>
           </div>
         </div>
 
@@ -102,7 +106,7 @@ export default function DriversPanel() {
                   <small>{driver.email}{driver.telefono ? ` · ${driver.telefono}` : ''}</small>
                 </div>
                 <span className="driver-count">
-                  {driver.documentos.filter((d) => d.estado === 'aprobado').length}/3 docs
+                  {driver.documentos.filter((d) => d.estado === 'aprobado').length}/{driver.documentos.length} docs
                   {' · '}
                   {driver.vehiculos.length} {driver.vehiculos.length === 1 ? 'auto' : 'autos'}
                 </span>
@@ -111,47 +115,12 @@ export default function DriversPanel() {
 
               {expandido && (
                 <div className="driver-detail">
-                  <div className="driver-docs">
-                    {TIPOS_DOC.map((tipo: DocType) => {
-                      const doc = driver.documentos.find((d) => d.tipo === tipo)
-                      return (
-                        <div className="doc-item" key={tipo}>
-                          <span className={`doc-state ${doc?.estado ?? 'falta'}`}>
-                            {DOC_LABEL[tipo]}
-                          </span>
-                          {doc ? (
-                            <>
-                              <button className="link-button" onClick={() => verDocumento(doc.ruta)}>Ver archivo</button>
-                              {doc.estado !== 'aprobado' && (
-                                <button
-                                  className="doc-ok"
-                                  disabled={busy === driver.id}
-                                  onClick={() => accion(driver.id, () => reviewDocument(doc.id, true))}
-                                >Aprobar</button>
-                              )}
-                              {doc.estado !== 'rechazado' && (
-                                <button
-                                  className="doc-no"
-                                  disabled={busy === driver.id}
-                                  onClick={() => accion(driver.id, () => reviewDocument(doc.id, false))}
-                                >Rechazar</button>
-                              )}
-                            </>
-                          ) : (
-                            <small>Sin subir</small>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
+                  <section className="driver-identity-review"><strong>Identidad y licencia</strong><span>Cédula: {driver.cedula || 'sin registrar'}</span><span>Dactilar: {driver.codigoDactilar || 'sin registrar'}</span><span>Licencia: {driver.licenciaTipo ? `${driver.licenciaTipo} · vence ${driver.licenciaCaducaEl || 'sin fecha'}` : 'sin registrar'}</span></section>
+                  <div className="driver-docs">{driver.documentos.filter((doc) => !doc.vehiculoId).map((doc) => <DriverDocumentRow key={doc.id} doc={doc} busy={busy === driver.id} onOpen={verDocumento} onApprove={() => accion(driver.id, () => reviewDocument(doc.id, true))} onReject={() => { const motivo = pedirMotivo(`Rechazar ${DOC_LABEL[doc.tipo]}`); if (motivo) void accion(driver.id, () => reviewDocument(doc.id, false, motivo)) }}/>)}</div>
 
                   {driver.vehiculos.length > 0 && (
                     <div className="driver-cars">
-                      {driver.vehiculos.map((v) => (
-                        <span className={`car-chip ${v.activo ? 'activo' : ''}`} key={v.id}>
-                          {v.marca} {v.modelo} · {v.placa}{v.activo ? ' · en servicio' : ''}
-                        </span>
-                      ))}
+                      {driver.vehiculos.map((v) => <section className="driver-vehicle-review" key={v.id}><span className={`car-chip ${v.activo ? 'activo' : ''}`}>{v.marca} {v.modelo} · {v.placa} · {v.categoria}{v.activo ? ' · en servicio' : ''}</span><div className="driver-docs">{driver.documentos.filter((doc) => doc.vehiculoId === v.id).map((doc) => <DriverDocumentRow key={doc.id} doc={doc} busy={busy === driver.id} onOpen={verDocumento} onApprove={() => accion(driver.id, () => reviewDocument(doc.id, true))} onReject={() => { const motivo = pedirMotivo(`Rechazar ${DOC_LABEL[doc.tipo]}`); if (motivo) void accion(driver.id, () => reviewDocument(doc.id, false, motivo)) }}/>)}</div></section>)}
                     </div>
                   )}
 
@@ -174,7 +143,7 @@ export default function DriversPanel() {
                       <button
                         className="driver-reject"
                         disabled={busy === driver.id}
-                        onClick={() => accion(driver.id, () => reviewDriver(driver.id, false))}
+                        onClick={() => { const motivo = pedirMotivo('Rechazar conductor'); if (motivo) void accion(driver.id, () => reviewDriver(driver.id, false, motivo)) }}
                       >Rechazar</button>
                     )}
                   </div>
@@ -186,4 +155,9 @@ export default function DriversPanel() {
       </section>
     </div>
   )
+}
+
+function DriverDocumentRow({ doc, busy, onOpen, onApprove, onReject }: { doc: DriverDoc; busy: boolean; onOpen: (path: string) => void; onApprove: () => void; onReject: () => void }) {
+  const expired = doc.caducaEl ? new Date(doc.caducaEl) < new Date() : false
+  return <div className="doc-item"><span className={`doc-state ${doc.estado}`}>{DOC_LABEL[doc.tipo]}</span><small>{doc.numero ? `N.º ${doc.numero}` : ''}{doc.caducaEl ? ` · vence ${doc.caducaEl}` : ''}{expired ? ' · CADUCADO' : ''}{doc.motivoRechazo ? ` · ${doc.motivoRechazo}` : ''}</small><button className="link-button" onClick={() => onOpen(doc.ruta)}>Ver archivo</button>{doc.estado !== 'aprobado' && <button className="doc-ok" disabled={busy} onClick={onApprove}>Aprobar</button>}{doc.estado !== 'rechazado' && <button className="doc-no" disabled={busy} onClick={onReject}>Rechazar</button>}</div>
 }

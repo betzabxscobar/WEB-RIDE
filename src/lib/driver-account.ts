@@ -17,16 +17,30 @@ export type OwnVehicle = {
   year: number
   color: string | null
   active: boolean
+  category: 'moto' | 'estandar' | 'confort' | 'xl'
 }
 
-export type DocumentType = 'licencia' | 'SOAT' | 'matricula'
+export type DocumentType = 'cedula' | 'licencia' | 'foto_perfil' | 'matricula' | 'SPPAT' | 'revision_tecnica' | 'foto_vehiculo'
 export type OwnDocument = {
   id: string
   type: DocumentType
   status: 'pendiente' | 'aprobado' | 'rechazado'
   path: string
   uploadedAt: string
+  vehicleId: string | null
+  number: string | null
+  expiresAt: string | null
+  rejectionReason: string | null
 }
+
+export type DriverIdentity = {
+  cedula: string
+  fingerprintCode: string
+  licenseType: string
+  licenseExpiresAt: string
+}
+
+export type DriverEarnings = { trips: number; gross: number; earned: number; commission: number }
 
 function failure(error: { message: string } | null, fallback: string): Error {
   if (!error) return new Error(fallback)
@@ -63,18 +77,25 @@ export async function getDriverState(userId: string): Promise<DriverState> {
   }
 }
 
+/** La app crea de forma idempotente el perfil de conductor del superadmin. */
+export async function prepareSuperadminDriver(): Promise<void> {
+  const { error } = await supabase.rpc('preparar_chofer_superadmin')
+  // Es un apoyo de interfaz: el servidor vuelve a comprobar el rol real.
+  if (error) return
+}
+
 export async function setDriverAvailability(userId: string, available: boolean): Promise<void> {
   const { error } = await supabase.from('conductores').update({ disponible: available }).eq('id', userId)
   if (error) throw failure(error, 'No se pudo cambiar tu disponibilidad.')
 }
 
 export async function listOwnVehicles(userId: string): Promise<OwnVehicle[]> {
-  const { data, error } = await supabase.from('vehiculos').select('id, placa, marca, modelo, anio, color, activo').eq('conductor_id', userId).order('activo', { ascending: false }).order('created_at')
+  const { data, error } = await supabase.from('vehiculos').select('id, placa, marca, modelo, anio, color, activo, categoria').eq('conductor_id', userId).order('activo', { ascending: false }).order('created_at')
   if (error) throw failure(error, 'No se pudieron cargar tus vehículos.')
-  return (data ?? []).map((row) => ({ id: row.id, plate: row.placa, make: row.marca, model: row.modelo, year: Number(row.anio), color: row.color, active: row.activo }))
+  return (data ?? []).map((row) => ({ id: row.id, plate: row.placa, make: row.marca, model: row.modelo, year: Number(row.anio), color: row.color, active: row.activo, category: row.categoria ?? 'estandar' }))
 }
 
-export async function saveVehicle(input: { id?: string; plate: string; make: string; model: string; year: number; color?: string }): Promise<string> {
+export async function saveVehicle(input: { id?: string; plate: string; make: string; model: string; year: number; color?: string; category: OwnVehicle['category'] }): Promise<string> {
   const { data, error } = await supabase.rpc('registrar_vehiculo', {
     p_placa: input.plate,
     p_marca: input.make,
@@ -82,6 +103,7 @@ export async function saveVehicle(input: { id?: string; plate: string; make: str
     p_anio: input.year,
     p_color: input.color?.trim() || null,
     p_vehiculo_id: input.id ?? null,
+    p_categoria: input.category,
   })
   if (error) throw failure(error, 'No se pudo guardar el vehículo.')
   return String(data)
@@ -93,20 +115,48 @@ export async function activateVehicle(vehicleId: string): Promise<void> {
 }
 
 export async function listOwnDocuments(userId: string): Promise<OwnDocument[]> {
-  const { data, error } = await supabase.from('documentos_conductor').select('id, tipo_documento, estado, url_archivo, fecha_subida').eq('conductor_id', userId)
+  const { data, error } = await supabase.from('documentos_conductor').select('id, tipo_documento, estado, url_archivo, fecha_subida, vehiculo_id, numero, caduca_el, motivo_rechazo').eq('conductor_id', userId)
   if (error) throw failure(error, 'No se pudieron cargar tus documentos.')
-  return (data ?? []).map((row) => ({ id: row.id, type: row.tipo_documento, status: row.estado, path: row.url_archivo, uploadedAt: row.fecha_subida }))
+  return (data ?? []).map((row) => ({ id: row.id, type: row.tipo_documento, status: row.estado, path: row.url_archivo, uploadedAt: row.fecha_subida, vehicleId: row.vehiculo_id, number: row.numero, expiresAt: row.caduca_el, rejectionReason: row.motivo_rechazo }))
 }
 
-export async function uploadDriverDocument(userId: string, type: DocumentType, file: File): Promise<void> {
+export async function uploadDriverDocument(userId: string, type: DocumentType, file: File, options: { vehicleId?: string; number?: string; expiresAt?: string } = {}): Promise<void> {
   if (file.size > 5 * 1024 * 1024) throw new Error('El archivo pesa más de 5 MB.')
   if (!['image/jpeg', 'image/png', 'image/webp', 'application/pdf'].includes(file.type)) throw new Error('Sube una imagen JPG, PNG, WebP o un PDF.')
   const extension = file.name.split('.').pop()?.toLowerCase() || (file.type === 'application/pdf' ? 'pdf' : 'jpg')
-  const path = `${userId}/${type}.${extension}`
+  const path = options.vehicleId ? `${userId}/${options.vehicleId}/${type}.${extension}` : `${userId}/${type}.${extension}`
   const { error: uploadError } = await supabase.storage.from('documentos').upload(path, file, { upsert: true, contentType: file.type })
   if (uploadError) throw failure(uploadError, 'No se pudo subir el archivo.')
-  const { error } = await supabase.rpc('registrar_documento', { p_tipo: type, p_url: path })
+  const { error } = await supabase.rpc('registrar_documento', { p_tipo: type, p_url: path, p_vehiculo_id: options.vehicleId ?? null, p_numero: options.number?.trim() || null, p_caduca_el: options.expiresAt || null })
   if (error) throw failure(error, 'No se pudo registrar el documento.')
+}
+
+export async function getDriverIdentity(userId: string): Promise<DriverIdentity> {
+  const { data, error } = await supabase.from('conductores').select('cedula, codigo_dactilar, licencia_tipo, licencia_caduca_el').eq('id', userId).maybeSingle()
+  if (error) throw failure(error, 'No se pudo cargar tu identidad de conductor.')
+  return { cedula: data?.cedula ?? '', fingerprintCode: data?.codigo_dactilar ?? '', licenseType: data?.licencia_tipo ?? '', licenseExpiresAt: data?.licencia_caduca_el ?? '' }
+}
+
+export async function saveDriverIdentity(input: DriverIdentity): Promise<void> {
+  const { error } = await supabase.rpc('registrar_identidad_chofer', {
+    p_cedula: input.cedula.trim(), p_codigo_dactilar: input.fingerprintCode.trim().toUpperCase(),
+    p_licencia_tipo: input.licenseType, p_licencia_caduca_el: input.licenseExpiresAt,
+  })
+  if (error) throw failure(error, 'No se pudo guardar tu identidad y licencia.')
+}
+
+export async function getMissingDriverRequirements(): Promise<string[]> {
+  const { data, error } = await supabase.rpc('papeles_que_faltan_chofer')
+  if (error) throw failure(error, 'No se pudieron comprobar tus requisitos.')
+  return Array.isArray(data) ? data.map(String) : []
+}
+
+export async function getDriverEarnings(): Promise<Record<string, DriverEarnings>> {
+  const { data, error } = await supabase.rpc('ganancias_conductor')
+  if (error) throw failure(error, 'No se pudieron cargar tus ganancias.')
+  return Object.fromEntries(((data ?? []) as Array<Record<string, unknown>>).map((row) => [String(row.periodo), {
+    trips: Number(row.viajes ?? 0), gross: Number(row.bruto ?? 0), earned: Number(row.ganado ?? 0), commission: Number(row.comision ?? 0),
+  }]))
 }
 
 export async function ownDocumentUrl(path: string): Promise<string> {

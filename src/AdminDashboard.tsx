@@ -293,13 +293,6 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onUs
               </select>
             </label>
           )}
-          {/* Selector rápido en el header para cambiar vista con botón */}
-          {views.length > 1 && (
-            <div className="panel-quick-header">
-              <select onChange={(e) => onSwitchView(e.target.value as Role)} defaultValue={viewAs}>{views.map((v) => <option key={v} value={v}>{panelLabel(v)}</option>)}</select>
-              <button onClick={() => onSwitchView(viewAs)}>Ir</button>
-            </div>
-          )}
           <div className="sidebar-profile">
             <span>{initials(user.name)}</span>
             <div><strong>{user.name}</strong><small>{profileName}</small></div>
