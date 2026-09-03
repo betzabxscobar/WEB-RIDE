@@ -49,6 +49,13 @@
 .hamburger-button:hover{opacity:0.95}
 .admin-shell.sidebar-open .hamburger-button{transform:translateY(-50%) translateX(12px)}
 
+/* El botón forma parte del encabezado para no cubrir el título en tabletas. */
+.admin-main > header{gap:14px}
+.admin-main > header .hamburger-button{position:static;flex:0 0 44px;width:44px;height:44px;margin-left:calc(18px - clamp(24px,4vw,58px));padding:0;border-radius:12px;transform:none;color:#1689ad;transition:background-color .2s ease,color .2s ease}
+.admin-main > header .hamburger-button:hover,.admin-shell.sidebar-open .admin-main > header .hamburger-button{background:#e8f7fb;color:#086f90;opacity:1;transform:none}
+.admin-main > header .hamburger-button:focus-visible{outline:3px solid rgba(66,191,232,.35);outline-offset:2px}
+.admin-main > header > div:nth-child(2){min-width:0;margin-right:auto}
+
 .admin-brand {
   display: flex;
   align-items: center;
@@ -898,6 +905,7 @@
 }
 
 @media (max-width: 620px) {
+  .admin-main > header .hamburger-button { margin-left: 0; }
   .admin-main > header {
     height: 64px;
     padding: 0 18px;
@@ -994,3 +1002,13 @@
 }
 
 .admin-shell.theme-dark .nav-group button.active{background:#16495b;box-shadow:none;color:#a9e8f5}
+
+/* El brillo de desplazamiento se aplica exclusivamente a las letras del menú. */
+.admin-sidebar .nav-group button:hover{background:transparent;color:#00f5ff}
+.admin-sidebar .nav-group button:hover>svg,.admin-sidebar .nav-group button:hover>span{color:#00f5ff}
+.admin-sidebar .admin-logout{border:1px solid #72dff2;background:#bceffc;color:#063346;transition:background-color .2s ease,color .2s ease,border-color .2s ease}
+.admin-sidebar .admin-logout:hover{border-color:#000;background:#00cbe6;color:#001d29;box-shadow:inset 0 0 0 1px #000}
+.admin-shell.theme-dark .admin-sidebar .admin-logout{border-color:#46cbe4;background:#123f50;color:#bff8ff}
+.admin-shell.theme-dark .admin-sidebar .admin-logout:hover{border-color:#000;background:#00aeca;color:#001b25;box-shadow:inset 0 0 0 1px #000}
+.admin-sidebar .nav-group button.active,.admin-shell.theme-dark .nav-group button.active{background:transparent;box-shadow:none;color:#00f5ff}
+.admin-sidebar .nav-group button.active>svg,.admin-sidebar .nav-group button.active>span{color:#00f5ff}

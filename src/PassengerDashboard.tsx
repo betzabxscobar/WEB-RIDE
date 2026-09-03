@@ -528,17 +528,13 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
 
     <section className="passenger-workspace">
       <header className="passenger-topbar">
+        <button type="button" aria-controls="passenger-sidebar" aria-expanded={sidebarOpen} aria-label="Alternar menú" className="hamburger-button" onClick={() => setSidebarOpen((v) => !v)}>
+          <MenuIcon size={20} aria-hidden />
+        </button>
         <div className="passenger-mobile-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <button aria-controls="passenger-sidebar" aria-expanded={sidebarOpen} aria-label="Alternar menú" className="hamburger-button" onClick={() => setSidebarOpen((v) => !v)}>
-              <MenuIcon size={18} />
-            </button>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span className="passenger-kicker">PANEL DE PASAJERO</span>
-              <h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'pedir' ? 'Pide un viaje' : page === 'seguimiento' ? 'Seguimiento del viaje' : page === 'viajes' ? 'Tus viajes' : page === 'avisos' ? 'Tus avisos' : page === 'direcciones' ? 'Tus direcciones' : page === 'pagos' ? 'Tus pagos' : page === 'soporte' ? 'Soporte' : page === 'configuracion' ? 'Configuración' : 'Tu cuenta'}</h1>
-            </div>
-          </div>
+        <div className="passenger-title">
+          <span className="passenger-kicker">PANEL DE PASAJERO</span>
+          <h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'pedir' ? 'Pide un viaje' : page === 'seguimiento' ? 'Seguimiento del viaje' : page === 'viajes' ? 'Tus viajes' : page === 'avisos' ? 'Tus avisos' : page === 'direcciones' ? 'Tus direcciones' : page === 'pagos' ? 'Tus pagos' : page === 'soporte' ? 'Soporte' : page === 'configuracion' ? 'Configuración' : 'Tu cuenta'}</h1>
         </div>
         <div className="passenger-top-actions">
           {views.length > 1 && <label className="passenger-view-select"><span>Vista</span><select value={activeView} onChange={(event) => onSwitchView(event.target.value as Role)}>{views.map((view) => <option value={view} key={view}>{panelLabel(view)}</option>)}</select></label>}
@@ -601,14 +597,14 @@ function HomePage({ user, activeTrip, trips, onRequest, onTrips, onCancel, onTra
           <p>Tecnología que te cuida</p>
         </div>
       </article>
-      <article className="feature-card">
+      <article className="feature-card feature-sostenible">
         <img src={sostenibleImg} alt="Sostenible" />
         <div>
           <h4>Sostenible</h4>
           <p>Menos emisiones, más futuro</p>
         </div>
       </article>
-      <article className="feature-card">
+      <article className="feature-card feature-confiable">
         <img src={confiableImg} alt="Confiable" />
         <div>
           <h4>Confiable</h4>
@@ -616,7 +612,7 @@ function HomePage({ user, activeTrip, trips, onRequest, onTrips, onCancel, onTra
         </div>
       </article>
     </section>
-    {activeTrip ? <ActiveTrip trip={activeTrip} onCancel={onCancel}/> : <section className="start-ride-card"><div className="route-mark"><i/><span/><b/></div><div><small>NUEVA SOLICITUD</small><h3>Tu viaje empieza con dos puntos</h3><p>Usa tu ubicación actual o elige una dirección en Ecuador.</p></div><button onClick={onRequest}>Definir ruta</button></section>}
+    {activeTrip ? <ActiveTrip trip={activeTrip} onCancel={onCancel}/> : <section className="start-ride-card"><div className="route-mark"><i/><span/><b/></div><div><small>NUEVA SOLICITUD</small><h3>Tu viaje empieza con dos puntos</h3><p>Usa tu ubicación actual o elige una dirección en Ecuador.</p></div><button className="define-route-button" onClick={onRequest}>Definir ruta</button></section>}
     <section className="passenger-section-head"><div><span>ACTIVIDAD</span><h2>Viajes recientes</h2></div>{trips.length > 0 && <button onClick={onTrips}>Ver todos <ArrowRight size={16} aria-hidden /></button>}</section>
     {recent.length === 0 ? <EmptyState title="Aún no tienes viajes" text={`Cuando pidas el primero, ${user.name.split(' ')[0]}, podrás consultarlo aquí.`} action="Pedir mi primer viaje" onAction={onRequest}/> : <div className="recent-trip-list">{recent.map((trip) => <TripRow key={trip.id} trip={trip}/>)}</div>}
   </div>
