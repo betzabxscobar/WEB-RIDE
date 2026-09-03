@@ -6,7 +6,7 @@ import { faltantes, listDrivers, type Driver } from './lib/drivers'
 import { listTrips, watchTrips, esFinal, ESTADO_LABEL, type Trip } from './lib/trips'
 import DriversPanel from './DriversPanel'
 import { AppearanceSettings, useAppearance } from './components/AppearanceSettings'
-import { Home as HomeIcon, Map as MapIcon, Users as UsersIcon, User as UserIcon, Settings as SettingsIcon, LogOut as LogOutIcon, Menu as MenuIcon, MapPin as MapPinIcon, Navigation as NavigationIcon, Search as SearchIcon, SlidersHorizontal as FilterIcon, CalendarDays as CalendarIcon, ArrowDownUp as SortIcon, Route as RouteIcon, CircleDollarSign as DollarIcon, CarFront as CarIcon, CheckCircle2 as CheckIcon, Activity as ActivityIcon, MoreVertical as MoreIcon } from 'lucide-react'
+import { Home as HomeIcon, Map as MapIcon, Users as UsersIcon, User as UserIcon, Settings as SettingsIcon, LogOut as LogOutIcon, Menu as MenuIcon, MapPin as MapPinIcon, Navigation as NavigationIcon, Search as SearchIcon, SlidersHorizontal as FilterIcon, CalendarDays as CalendarIcon, ArrowDownUp as SortIcon, Route as RouteIcon, CircleDollarSign as DollarIcon, CarFront as CarIcon, CheckCircle2 as CheckIcon, CircleX as CancelIcon, Activity as ActivityIcon, MoreVertical as MoreIcon, ShieldCheck as ShieldIcon } from 'lucide-react'
 
 type Props = {
   user: { name: string; email: string; role: string }
@@ -117,7 +117,7 @@ function TripRows({ trips, loading, error, limit }: { trips: Trip[]; loading: bo
     {!loading && !error && rows.length > 0 && <div className="trips-table">
       {rows.map((trip) => (
         <article className="trip-row" key={trip.id}>
-          <em className={`trip-state ${esFinal(trip.estado) ? trip.estado.toLowerCase() : 'activo'}`}>{ESTADO_LABEL[trip.estado]}</em>
+          <em className={`trip-state ${esFinal(trip.estado) ? trip.estado.toLowerCase() : 'activo'}`}>{trip.estado === 'FINALIZADO' && <CheckIcon size={11} aria-hidden />}{trip.estado === 'CANCELADO' && <CancelIcon size={11} aria-hidden />}{ESTADO_LABEL[trip.estado]}</em>
           <div className="trip-route"><div className="route-point origin"><MapPinIcon size={15} aria-hidden /><span><small>Origen</small><strong>{trip.origenTexto}</strong></span></div><span className="route-line" aria-hidden /><div className="route-point destination"><NavigationIcon size={15} aria-hidden /><span><small>Destino</small><strong>{trip.destinoTexto}</strong></span></div></div>
           <div className="trip-persons"><span><UserIcon size={14} aria-hidden /><b>{trip.pasajeroNombre}</b></span><span><CarIcon size={14} aria-hidden /><b>{trip.conductorNombre || 'Sin conductor'}{trip.vehiculoPlaca ? ` · ${trip.vehiculoPlaca}` : ''}</b></span></div>
           <b className={`trip-amount ${paymentClass(trip)}`}><small>{paymentLabel(trip)}</small>${trip.montoCobrado > 0 ? trip.montoCobrado.toFixed(2) : (trip.tarifaFinal ?? trip.tarifaEstimada).toFixed(2)}</b>
@@ -144,6 +144,8 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
   const [tripStatus, setTripStatus] = useState('')
   const [tripDate, setTripDate] = useState('')
   const [tripSort, setTripSort] = useState<'date-desc' | 'date-asc' | 'status' | 'value-desc'>('date-desc')
+  const [userQuery, setUserQuery] = useState('')
+  const [userRole, setUserRole] = useState('')
   const appearance = useAppearance()
 
   const isSuperadmin = viewAs === 'superadmin'
@@ -186,6 +188,13 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
     () => (isSuperadmin ? users : users.filter((item) => item.role !== 'superadmin')),
     [users, isSuperadmin],
   )
+  const filteredUsers = useMemo(() => {
+    const query = userQuery.trim().toLocaleLowerCase('es-EC')
+    return visibleUsers.filter((account) => {
+      const searchable = `${account.name} ${account.email} ${account.phone}`.toLocaleLowerCase('es-EC')
+      return (!query || searchable.includes(query)) && (!userRole || account.role === userRole)
+    })
+  }, [visibleUsers, userQuery, userRole])
 
   const metrics = useMemo(() => ({
     passengers: visibleUsers.filter((item) => item.role === 'passenger').length,
@@ -322,7 +331,19 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
         )}
 
         {activeSection === 'Usuarios' && (
-          <div className="admin-content"><section className="admin-card user-table"><div className="admin-card-head"><div><h3>Usuarios registrados</h3><p>Perfiles visibles para tu nivel de acceso.</p></div></div><UserRows users={visibleUsers} loading={usersLoading} error={usersError} /></section></div>
+          <div className="admin-content">
+            <section className="admin-metrics user-metrics" aria-label="Indicadores de usuarios">
+              <article><span className="user-metric-icon passenger"><UserIcon size={18} aria-hidden /></span><div><small>Pasajeros</small><strong>{usersLoading ? '—' : metrics.passengers}</strong></div></article>
+              <article><span className="user-metric-icon driver"><CarIcon size={18} aria-hidden /></span><div><small>Conductores</small><strong>{usersLoading ? '—' : metrics.drivers}</strong></div></article>
+              <article><span className="user-metric-icon admin"><ShieldIcon size={18} aria-hidden /></span><div><small>Administradores</small><strong>{usersLoading ? '—' : visibleUsers.filter((account) => account.role === 'admin' || account.role === 'superadmin').length}</strong></div></article>
+            </section>
+            <section className="admin-card users-monitoring">
+              <div className="admin-card-head"><div><h3>Usuarios registrados</h3><p>Perfiles visibles para tu nivel de acceso.</p></div><span className="user-result-count">{filteredUsers.length} {filteredUsers.length === 1 ? 'usuario' : 'usuarios'}</span></div>
+              <div className="user-filters" aria-label="Filtros de usuarios"><label className="user-search"><SearchIcon size={16} aria-hidden /><input value={userQuery} onChange={(event) => setUserQuery(event.target.value)} placeholder="Buscar por nombre, correo o teléfono" aria-label="Buscar usuario" /></label><label><FilterIcon size={15} aria-hidden /><select value={userRole} onChange={(event) => setUserRole(event.target.value)} aria-label="Filtrar por rol"><option value="">Todos los roles</option><option value="passenger">Pasajeros</option><option value="driver">Conductores</option><option value="admin">Administradores</option>{isSuperadmin && <option value="superadmin">Superadministradores</option>}</select></label></div>
+              {!usersLoading && !usersError && visibleUsers.length > 0 && filteredUsers.length === 0 && <p className="admin-empty">No se encontraron usuarios con estos filtros.</p>}
+              <UserRows users={filteredUsers} loading={usersLoading} error={usersError} />
+            </section>
+          </div>
         )}
 
         {activeSection === 'Conductores' && <DriversPanel />}

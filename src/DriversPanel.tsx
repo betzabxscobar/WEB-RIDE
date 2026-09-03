@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { CheckCircle2 as CheckIcon, CircleX as RejectIcon, PenLine as ReviewIcon, Radio as OnlineIcon, Search as SearchIcon, SlidersHorizontal as FilterIcon, UserRound as DriverIcon } from 'lucide-react'
 import {
   listDrivers,
   reviewDocument,
@@ -19,6 +20,8 @@ export default function DriversPanel() {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState('')
   const [abierto, setAbierto] = useState<string | null>(null)
+  const [query, setQuery] = useState('')
+  const [status, setStatus] = useState('')
 
   const cargar = () => {
     listDrivers()
@@ -52,21 +55,28 @@ export default function DriversPanel() {
   }
 
   const pendientes = drivers.filter((d) => d.estado === 'pendiente')
+  const visibleDrivers = useMemo(() => {
+    const text = query.trim().toLocaleLowerCase('es-EC')
+    return drivers.filter((driver) => {
+      const searchable = `${driver.nombre} ${driver.email} ${driver.telefono ?? ''}`.toLocaleLowerCase('es-EC')
+      return (!text || searchable.includes(text)) && (!status || driver.estado === status)
+    })
+  }, [drivers, query, status])
 
   if (loading) return <p className="admin-error">Cargando conductores…</p>
 
   return (
     <div className="admin-content">
-      <section className="admin-metrics">
-        <article><span className="metric-symbol violet">P</span><div><small>Por revisar</small><strong>{pendientes.length}</strong></div></article>
-        <article><span className="metric-symbol mint">A</span><div><small>Aprobados</small><strong>{drivers.filter((d) => d.estado === 'aprobado').length}</strong></div></article>
-        <article><span className="metric-symbol blue">L</span><div><small>En línea</small><strong>{drivers.filter((d) => d.disponible).length}</strong></div></article>
-        <article><span className="metric-symbol coral">R</span><div><small>Rechazados</small><strong>{drivers.filter((d) => d.estado === 'rechazado').length}</strong></div></article>
+      <section className="admin-metrics driver-metrics" aria-label="Indicadores de conductores">
+        <article><span className="driver-metric-icon review"><ReviewIcon size={18} aria-hidden /></span><div><small>Por revisar</small><strong>{pendientes.length}</strong></div></article>
+        <article><span className="driver-metric-icon approved"><CheckIcon size={18} aria-hidden /></span><div><small>Aprobados</small><strong>{drivers.filter((d) => d.estado === 'aprobado').length}</strong></div></article>
+        <article><span className="driver-metric-icon online"><OnlineIcon size={18} aria-hidden /></span><div><small>En línea</small><strong>{drivers.filter((d) => d.disponible).length}</strong></div></article>
+        <article><span className="driver-metric-icon rejected"><RejectIcon size={18} aria-hidden /></span><div><small>Rechazados</small><strong>{drivers.filter((d) => d.estado === 'rechazado').length}</strong></div></article>
       </section>
 
       {error && <p className="admin-error">{error}</p>}
 
-      <section className="admin-card">
+      <section className="admin-card drivers-monitoring">
         <div className="admin-card-head">
           <div>
             <h3>Conductores</h3>
@@ -74,9 +84,11 @@ export default function DriversPanel() {
           </div>
         </div>
 
+        <div className="driver-toolbar"><span className="driver-result-count">{visibleDrivers.length} {visibleDrivers.length === 1 ? 'conductor' : 'conductores'}</span><div className="driver-filters" aria-label="Filtros de conductores"><label className="driver-search"><SearchIcon size={16} aria-hidden /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar conductor" aria-label="Buscar conductor" /></label><label><FilterIcon size={15} aria-hidden /><select value={status} onChange={(event) => setStatus(event.target.value)} aria-label="Filtrar por estado"><option value="">Todos los estados</option><option value="pendiente">Pendientes</option><option value="aprobado">Aprobados</option><option value="rechazado">Rechazados</option></select></label></div></div>
         {drivers.length === 0 && <p className="admin-error">Todavía no se ha registrado ningún conductor.</p>}
+        {drivers.length > 0 && visibleDrivers.length === 0 && <p className="admin-empty">No se encontraron conductores con estos filtros.</p>}
 
-        {drivers.map((driver) => {
+        {visibleDrivers.map((driver) => {
           const expandido = abierto === driver.id
           const listo = puedeAprobarse(driver)
           const pendiente = faltantes(driver)
@@ -85,7 +97,7 @@ export default function DriversPanel() {
             <div className="driver-row" key={driver.id}>
               <div className="driver-head" onClick={() => setAbierto(expandido ? null : driver.id)}>
                 <em className={`driver-state ${driver.estado}`}>{driver.estado}</em>
-                <div className="driver-id">
+                <span className="driver-avatar"><DriverIcon size={17} aria-hidden /></span><div className="driver-id">
                   <strong>{driver.nombre}</strong>
                   <small>{driver.email}{driver.telefono ? ` · ${driver.telefono}` : ''}</small>
                 </div>
