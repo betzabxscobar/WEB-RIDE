@@ -152,6 +152,9 @@
 .passenger-sidebar nav button.active,.passenger-shell.theme-dark .passenger-sidebar nav button.active{background:transparent;box-shadow:none;color:#00f5ff}
 .passenger-sidebar nav button.active>span{color:#00f5ff}
 
+/* Pagos de DeUna: el QR conserva proporción y el enlace se ve como acción. */
+.payment-head>div{display:flex;gap:8px;flex-wrap:wrap}.deuna-qr{display:block;width:min(250px,100%);aspect-ratio:1;object-fit:contain;margin:0 auto;border:1px solid var(--p-line);border-radius:14px;background:#fff;padding:10px}.deuna-link{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border-radius:9px;text-decoration:none;font-size:10px;font-weight:800}.tracking-pay{display:block;margin:18px 0 0 auto;border:0;border-radius:11px;background:linear-gradient(135deg,#8ce0f1,#48bce4);color:#082638;padding:12px 16px;font-size:11px;font-weight:800}
+
 /* Tarjetas de valores: más jerarquía y contraste en ambos temas. */
 .feature-card{position:relative;min-height:112px;gap:16px;padding:20px;overflow:hidden;isolation:isolate;box-shadow:0 10px 28px rgba(10,30,40,.06);transition:border-color .2s ease,transform .2s ease}
 .feature-card:hover{transform:translateY(-2px);border-color:#8fdbec}

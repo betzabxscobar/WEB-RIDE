@@ -2,7 +2,7 @@ import { supabase } from './supabase'
 
 export type PaymentMethod = {
   id: string
-  type: 'efectivo' | 'tarjeta'
+  type: 'efectivo' | 'tarjeta' | 'deuna'
   detail: string | null
   preferred: boolean
   createdAt: string
@@ -35,13 +35,30 @@ export async function listPaymentMethods(userId: string): Promise<PaymentMethod[
   }))
 }
 
-export async function registerCashPayment(): Promise<void> {
+export async function registerPaymentMethod(type: 'efectivo' | 'deuna'): Promise<void> {
   const { error } = await supabase.rpc('registrar_metodo_pago', {
-    p_tipo: 'efectivo',
+    p_tipo: type,
     p_token: null,
     p_predeterminado: true,
   })
-  if (error) throw new Error('No se pudo registrar el pago en efectivo.')
+  if (error) throw new Error(`No se pudo registrar ${type === 'deuna' ? 'DeUna' : 'el pago en efectivo'}.`)
+}
+
+export const registerCashPayment = () => registerPaymentMethod('efectivo')
+export const registerDeunaPayment = () => registerPaymentMethod('deuna')
+
+export type DeunaCharge = { order: string; amount: number; qr: string | null; deepLink: string | null; alreadyPaid: boolean }
+
+/** El importe lo resuelve la función segura; la web solo envía el viaje. */
+export async function createDeunaCharge(tripId: string): Promise<DeunaCharge> {
+  const { data, error } = await supabase.functions.invoke('cobro-deuna', { body: { viaje_id: tripId } })
+  if (error) {
+    const status = (error as { context?: { status?: number } }).context?.status
+    if (status === 404 || status === 503) throw new Error('El cobro con DeUna todavía no está configurado.')
+    throw new Error('No pudimos generar el cobro con DeUna. Inténtalo nuevamente.')
+  }
+  const row = data as Record<string, unknown>
+  return { order: String(row.orden ?? ''), amount: Number(row.monto ?? 0), qr: typeof row.qr === 'string' ? row.qr : null, deepLink: typeof row.deep_link === 'string' ? row.deep_link : null, alreadyPaid: row.ya_pagado === true }
 }
 
 export async function choosePreferredPayment(id: string): Promise<void> {

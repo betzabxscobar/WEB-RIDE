@@ -2,14 +2,14 @@ import { supabase } from './supabase'
 
 export type DriverStatus = 'pendiente' | 'aprobado' | 'rechazado'
 export type DocStatus = 'pendiente' | 'aprobado' | 'rechazado'
-export type DocType = 'licencia' | 'SOAT' | 'matricula'
+export type DocType = 'cedula' | 'licencia' | 'foto_perfil' | 'matricula' | 'SPPAT' | 'revision_tecnica' | 'foto_vehiculo'
 
-export const TIPOS_DOC: DocType[] = ['licencia', 'SOAT', 'matricula']
+export const TIPOS_DOC: DocType[] = ['cedula', 'licencia', 'foto_perfil', 'matricula', 'SPPAT', 'revision_tecnica', 'foto_vehiculo']
 
 export const DOC_LABEL: Record<DocType, string> = {
-  licencia: 'Licencia',
-  SOAT: 'SOAT',
+  cedula: 'Cédula', licencia: 'Licencia', foto_perfil: 'Foto personal',
   matricula: 'Matrícula',
+  SPPAT: 'SPPAT', revision_tecnica: 'Revisión técnica', foto_vehiculo: 'Foto del vehículo',
 }
 
 export type DriverDoc = {
@@ -18,6 +18,10 @@ export type DriverDoc = {
   estado: DocStatus
   ruta: string
   fecha: string
+  vehiculoId: string | null
+  numero: string | null
+  caducaEl: string | null
+  motivoRechazo: string | null
 }
 
 export type DriverVehicle = {
@@ -28,6 +32,7 @@ export type DriverVehicle = {
   anio: number
   color: string | null
   activo: boolean
+  categoria: string
 }
 
 export type Driver = {
@@ -40,24 +45,22 @@ export type Driver = {
   calificacion: number | null
   documentos: DriverDoc[]
   vehiculos: DriverVehicle[]
+  cedula: string | null
+  codigoDactilar: string | null
+  licenciaTipo: string | null
+  licenciaCaducaEl: string | null
+  papelesQueFaltan: string[]
 }
 
-/** Un chofer solo puede aprobarse con los tres documentos y un vehículo. */
+/** La lista la calcula Postgres con las mismas reglas que bloquean la aprobación. */
 export function puedeAprobarse(driver: Driver): boolean {
-  const aprobados = driver.documentos.filter((d) => d.estado === 'aprobado').length
-  return aprobados === TIPOS_DOC.length && driver.vehiculos.length > 0
+  return driver.papelesQueFaltan.length === 0
 }
 
 /** Qué le falta, para explicarlo en pantalla en vez de solo bloquear. */
 export function faltantes(driver: Driver): string[] {
-  const pendientes: string[] = []
-  for (const tipo of TIPOS_DOC) {
-    const doc = driver.documentos.find((d) => d.tipo === tipo)
-    if (!doc) pendientes.push(`${DOC_LABEL[tipo]} sin subir`)
-    else if (doc.estado !== 'aprobado') pendientes.push(`${DOC_LABEL[tipo]} sin aprobar`)
-  }
-  if (driver.vehiculos.length === 0) pendientes.push('Sin vehículo registrado')
-  return pendientes
+  const labels: Record<string, string> = { identidad: 'Identidad incompleta', licencia_vigente: 'Licencia vencida o sin registrar', vehiculo_completo: 'Ningún vehículo tiene todos sus documentos vigentes' }
+  return driver.papelesQueFaltan.map((item) => labels[item] ?? `${DOC_LABEL[item as DocType] ?? item} pendiente`)
 }
 
 type Row = Record<string, unknown>
@@ -70,34 +73,37 @@ type Row = Record<string, unknown>
  */
 export async function listDrivers(): Promise<Driver[]> {
   const { data, error } = await supabase
-    .from('conductores')
-    .select(`
-      id, estado_aprobacion, disponible, calificacion_promedio,
-      profiles!inner ( full_name, email, phone ),
-      documentos_conductor ( id, tipo_documento, estado, url_archivo, fecha_subida ),
-      vehiculos ( id, placa, marca, modelo, anio, color, activo )
-    `)
-    .order('created_at', { ascending: false })
+    .from('conductores_revision')
+    .select('*')
+    .order('fecha_registro', { ascending: true })
 
   if (error) throw new Error('No se pudieron cargar los conductores.')
 
   return (data ?? []).map((row: Row) => {
-    const perfil = (row.profiles ?? {}) as Row
     return {
       id: row.id as string,
-      nombre: (perfil.full_name as string) || (perfil.email as string) || 'Sin nombre',
-      email: (perfil.email as string) ?? '',
-      telefono: (perfil.phone as string) ?? null,
+      nombre: (row.nombre as string) || (row.email as string) || 'Sin nombre',
+      email: (row.email as string) ?? '',
+      telefono: (row.telefono as string) ?? null,
       estado: row.estado_aprobacion as DriverStatus,
       disponible: row.disponible as boolean,
       calificacion:
         row.calificacion_promedio == null ? null : Number(row.calificacion_promedio),
-      documentos: ((row.documentos_conductor ?? []) as Row[]).map((d) => ({
+      cedula: (row.cedula as string) ?? null,
+      codigoDactilar: (row.codigo_dactilar as string) ?? null,
+      licenciaTipo: (row.licencia_tipo as string) ?? null,
+      licenciaCaducaEl: (row.licencia_caduca_el as string) ?? null,
+      papelesQueFaltan: ((row.papeles_que_faltan ?? []) as unknown[]).map(String),
+      documentos: ((row.documentos ?? []) as Row[]).map((d) => ({
         id: d.id as string,
         tipo: d.tipo_documento as DocType,
         estado: d.estado as DocStatus,
         ruta: d.url_archivo as string,
         fecha: d.fecha_subida as string,
+        vehiculoId: (d.vehiculo_id as string) ?? null,
+        numero: (d.numero as string) ?? null,
+        caducaEl: (d.caduca_el as string) ?? null,
+        motivoRechazo: (d.motivo_rechazo as string) ?? null,
       })),
       vehiculos: ((row.vehiculos ?? []) as Row[]).map((v) => ({
         id: v.id as string,
@@ -107,23 +113,26 @@ export async function listDrivers(): Promise<Driver[]> {
         anio: Number(v.anio),
         color: (v.color as string) ?? null,
         activo: v.activo as boolean,
+        categoria: (v.categoria as string) ?? 'estandar',
       })),
     }
   })
 }
 
-export async function reviewDocument(documentoId: string, aprobado: boolean) {
+export async function reviewDocument(documentoId: string, aprobado: boolean, motivo?: string) {
   const { error } = await supabase.rpc('revisar_documento', {
     p_documento_id: documentoId,
     p_aprobado: aprobado,
+    p_motivo: motivo?.trim() || null,
   })
   if (error) throw new Error(traducir(error.message))
 }
 
-export async function reviewDriver(conductorId: string, aprobado: boolean) {
+export async function reviewDriver(conductorId: string, aprobado: boolean, motivo?: string) {
   const { error } = await supabase.rpc('revisar_conductor', {
     p_conductor_id: conductorId,
     p_aprobado: aprobado,
+    p_motivo: motivo?.trim() || null,
   })
   if (error) throw new Error(traducir(error.message))
 }

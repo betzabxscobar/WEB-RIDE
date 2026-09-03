@@ -63,6 +63,10 @@ permite crear cuentas administrativas desde el formulario público.
 2. El sistema muestra únicamente las vistas permitidas para su rol.
 3. El usuario selecciona una vista y puede regresar a su panel original.
 
+Un superadministrador puede abrir administración, pasajero y conductor. Un
+administrador puede revisar pasajero y conductor, pero esta última vista es de
+solo lectura: los permisos reales de Supabase le impiden operar viajes.
+
 **Resultado:** cambia la interfaz mostrada, pero el rol y los permisos reales de
 la cuenta no se modifican.
 
@@ -82,10 +86,11 @@ recibe perfiles de superadministradores.
 **Actor:** administrador o superadministrador.
 
 1. El usuario entra en **Conductores** y abre una solicitud.
-2. Revisa licencia, SOAT, matrícula y vehículos registrados.
+2. Revisa identidad, licencia, documentos personales y los papeles de cada vehículo.
 3. Aprueba o rechaza cada documento.
-4. El sistema solo habilita la aprobación del conductor cuando los tres
-   documentos están aprobados y existe un vehículo registrado.
+4. El sistema solo habilita la aprobación cuando la identidad, la licencia
+   vigente y al menos un vehículo con matrícula, SPPAT, revisión técnica y foto
+   están aprobados.
 
 **Resultado:** el conductor queda aprobado o rechazado con las reglas validadas
 por la base de datos.
@@ -161,10 +166,11 @@ para que cada usuario solo pueda consultar o modificar las suyas.
 **Actor:** pasajero autenticado.
 
 1. El usuario entra en **Pagos**.
-2. Puede registrar efectivo y elegir su forma de pago principal.
+2. Puede registrar efectivo o DeUna y elegir su forma de pago principal.
 3. Consulta los cobros y reembolsos registrados en sus propios viajes.
-4. La web no permite escribir números de tarjeta; esa opción requiere una
-   pasarela que entregue un token seguro.
+4. Si terminó un viaje con DeUna como método principal, solicita al servidor el
+   QR y el enlace de pago; la web nunca envía el importe ni conoce la clave de
+   la pasarela.
 
 **Resultado:** la gestión disponible es real y no expone datos bancarios ni
 presenta una tarjeta simulada.
@@ -173,10 +179,11 @@ presenta una tarjeta simulada.
 
 **Actor:** conductor autenticado.
 
-1. El conductor registra o edita sus vehículos y deja uno activo.
-2. Sube licencia, SOAT y matrícula en imagen o PDF.
-3. Consulta el estado de cada documento y puede reemplazar uno rechazado.
-4. Los archivos se guardan en un bucket privado y se abren mediante enlaces temporales.
+1. El conductor registra su cédula, código dactilar, tipo y vigencia de licencia.
+2. Registra vehículos con su categoría y deja uno activo.
+3. Sube documentos personales y matrícula, SPPAT, revisión técnica y foto para cada vehículo.
+4. Consulta estado, caducidad y motivo de rechazo, y puede reemplazar un documento.
+5. Los archivos se guardan en un bucket privado y se abren mediante enlaces temporales.
 
 **Resultado:** la administración recibe la información necesaria para revisar
 y aprobar al conductor sin exponer públicamente sus documentos.
@@ -213,10 +220,10 @@ el pasajero, la app móvil y la administración.
   o recuperarse de las direcciones guardadas y del catálogo activo.
 - El panel de conductor permite gestionar vehículos y documentos, activar la
   disponibilidad, reportar la ubicación, aceptar solicitudes, completar el
-  ciclo del viaje y calificar al pasajero.
-- El panel administrativo muestra únicamente **Resumen**, **Usuarios**,
-  **Conductores** y **Viajes**; los módulos que todavía no funcionan no se
-  exponen en la navegación.
+  ciclo del viaje, consultar ganancias reales y calificar al pasajero.
+- El panel administrativo incluye **Resumen**, **Usuarios**, **Conductores**,
+  **Viajes**, **Mi cuenta** y **Configuración**, con el mismo sistema visual,
+  apariencia y navegación adaptable del panel de pasajero.
 - Los mapas usan OpenStreetMap y las rutas por calles se obtienen con OSRM. El
   servidor público configurado por defecto es apropiado para desarrollo, no
   para una puesta en producción.
