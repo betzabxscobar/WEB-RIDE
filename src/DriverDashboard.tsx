@@ -5,7 +5,7 @@ import logoTipo from './assets/LogoTipo.png'
 import { panelLabel, type Role, type User } from './lib/auth'
 import { AppearanceSettings, useAppearance } from './components/AppearanceSettings'
 import { type ReactNode } from 'react'
-import { Home as HomeIcon, MapPin as MapPinIcon, Truck as TruckIcon, FileText as FileTextIcon, HelpCircle as HelpCircleIcon, User as UserIcon, Settings as SettingsIcon } from 'lucide-react'
+import { Home as HomeIcon, MapPin as MapPinIcon, Truck as TruckIcon, FileText as FileTextIcon, HelpCircle as HelpCircleIcon, User as UserIcon, Settings as SettingsIcon, Menu as MenuIcon } from 'lucide-react'
 import { routeBetween, type RoadRoute } from './lib/routing'
 import {
   activateVehicle,
@@ -54,6 +54,7 @@ function initials(name: string): string { return name.split(' ').filter(Boolean)
 
 export default function DriverDashboard({ user, views, activeView, onSwitchView, onLogout }: Props) {
   const [selectedView, setSelectedView] = useState<Role>(activeView)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [page, setPage] = useState<Page>('inicio')
   const [state, setState] = useState<DriverState>(EMPTY_STATE)
   const [trips, setTrips] = useState<Trip[]>([])
@@ -130,11 +131,11 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
     }, 'Gracias. La calificación del pasajero quedó guardada.')
   }
 
-  const go = (next: Page) => { setPage(next); setError(''); setNotice('') }
+  const go = (next: Page) => { setPage(next); setSidebarOpen(false); setError(''); setNotice('') }
   const canWork = state.approved && state.hasActiveVehicle
 
-  return <main className={`driver-shell ${appearance.darkMode ? 'theme-dark' : ''} ${appearance.reducedMotion ? 'reduced-motion' : ''}`}>
-    <aside className="driver-sidebar">
+  return <main className={`driver-shell ${appearance.darkMode ? 'theme-dark' : ''} ${appearance.reducedMotion ? 'reduced-motion' : ''} ${sidebarOpen ? 'sidebar-open' : ''}`}>
+    <aside id="driver-sidebar" className="driver-sidebar" aria-hidden={!sidebarOpen}>
       <div className="driver-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
       <nav aria-label="Panel del conductor">
         <DriverNav active={page === 'inicio'} icon={<HomeIcon size={18} />} label="Inicio" onClick={() => go('inicio')}/>
@@ -158,6 +159,7 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
       <button className="driver-logout" onClick={onLogout}>Cerrar sesión</button>
     </aside>
     <section className="driver-workspace">
+      <button type="button" className="driver-hamburger" aria-controls="driver-sidebar" aria-expanded={sidebarOpen} aria-label="Alternar menú" onClick={() => setSidebarOpen((value) => !value)}><MenuIcon size={18} aria-hidden /></button>
       <header className="driver-topbar"><div><span>PANEL DE CONDUCTOR</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'viajes' ? 'Tus viajes' : page === 'vehiculos' ? 'Tus vehículos' : page === 'documentos' ? 'Tus documentos' : page === 'soporte' ? 'Soporte' : 'Tu cuenta'}</h1></div><div className="driver-top-actions">{views.length > 1 && <label className="driver-view-select"><span>Vista</span><select value={selectedView} onChange={(event) => setSelectedView(event.target.value as Role)}>{views.map((view) => <option key={view} value={view}>{panelLabel(view)}</option>)}</select><button onClick={() => onSwitchView(selectedView)}>Ir</button></label>}<button className="driver-avatar" onClick={() => go('cuenta')}>{initials(user.name)}</button></div></header>
       <div className="driver-content">
         {notice && <div className="driver-feedback success">✓ {notice}</div>}{error && <div className="driver-feedback failure">! {error}<button onClick={() => setError('')}>Cerrar</button></div>}

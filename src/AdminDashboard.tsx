@@ -6,7 +6,7 @@ import { faltantes, listDrivers, type Driver } from './lib/drivers'
 import { listTrips, watchTrips, esFinal, ESTADO_LABEL, type Trip } from './lib/trips'
 import DriversPanel from './DriversPanel'
 import { AppearanceSettings, useAppearance } from './components/AppearanceSettings'
-import { Home as HomeIcon, Map as MapIcon, Users as UsersIcon, User as UserIcon, Menu as MenuIcon } from 'lucide-react'
+import { Home as HomeIcon, Map as MapIcon, Users as UsersIcon, User as UserIcon, Settings as SettingsIcon, LogOut as LogOutIcon, Menu as MenuIcon } from 'lucide-react'
 
 type Props = {
   user: { name: string; email: string; role: string }
@@ -31,6 +31,7 @@ function NavIcon({ section }: { section: Section }) {
   if (section === 'Resumen') return <HomeIcon size={18} aria-hidden />
   if (section === 'Viajes') return <MapIcon size={18} aria-hidden />
   if (section === 'Conductores') return <UsersIcon size={18} aria-hidden />
+  if (section === 'Configuración') return <SettingsIcon size={18} aria-hidden />
   return <UserIcon size={18} aria-hidden />
 }
 
@@ -211,7 +212,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
             <span>{initials(user.name)}</span>
             <div><strong>{user.name}</strong><small>{profileName}</small></div>
           </div>
-          <button className="admin-logout" onClick={onLogout}><span aria-hidden="true">↪</span>Cerrar sesión</button>
+          <button className="admin-logout" onClick={onLogout}><LogOutIcon size={17} aria-hidden />Cerrar sesión</button>
         </div>
       </aside>
 
