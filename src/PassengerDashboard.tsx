@@ -408,7 +408,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
     go(next)
     try {
       if (typeof window !== 'undefined' && window.innerWidth <= 760) setSidebarOpen(false)
-    } catch (e) {
+    } catch {
       /* ignore */
     }
   }
