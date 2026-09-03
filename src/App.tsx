@@ -195,7 +195,7 @@ function App() {
   // La pantalla la decide la vista activa, no el rol: un administrador puede
   // estar mirando la interfaz de usuario o de chofer con su propia cuenta.
   const viewIsAdministrative = activeView === 'admin' || activeView === 'superadmin'
-  if (screen === 'home' && user && viewIsAdministrative) return <AdminDashboard user={user} viewAs={activeView as Role} views={availableViews} onSwitchView={switchView} onLogout={logout} />
+  if (screen === 'home' && user && viewIsAdministrative) return <AdminDashboard user={user} viewAs={activeView as Role} views={availableViews} onSwitchView={switchView} onUserUpdate={setUser} onLogout={logout} />
 
   if (screen === 'home' && user && activeView === 'passenger') return <>
     {viewingOtherPanel && <ViewingAsBar role={user.role} onBack={() => setView(null)} />}

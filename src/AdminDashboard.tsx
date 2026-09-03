@@ -1,18 +1,20 @@
 import { useEffect, useMemo, useState } from 'react'
+import type { FormEvent } from 'react'
 import './AdminDashboard.css'
 import logoAsset from './assets/LogoTipo.png'
-import { listUsers, panelLabel, type Role, type User } from './lib/auth'
+import { listUsers, panelLabel, requestPasswordReset, updateOwnProfile, type Role, type User } from './lib/auth'
 import { faltantes, listDrivers, type Driver } from './lib/drivers'
 import { listTrips, watchTrips, esFinal, ESTADO_LABEL, type Trip } from './lib/trips'
 import DriversPanel from './DriversPanel'
 import { AppearanceSettings, useAppearance } from './components/AppearanceSettings'
-import { Home as HomeIcon, Map as MapIcon, Users as UsersIcon, User as UserIcon, Settings as SettingsIcon, LogOut as LogOutIcon, Menu as MenuIcon, MapPin as MapPinIcon, Navigation as NavigationIcon, Search as SearchIcon, SlidersHorizontal as FilterIcon, CalendarDays as CalendarIcon, ArrowDownUp as SortIcon, Route as RouteIcon, CircleDollarSign as DollarIcon, CarFront as CarIcon, CheckCircle2 as CheckIcon, CircleX as CancelIcon, Activity as ActivityIcon, MoreVertical as MoreIcon, ShieldCheck as ShieldIcon } from 'lucide-react'
+import { Home as HomeIcon, Map as MapIcon, Users as UsersIcon, User as UserIcon, Settings as SettingsIcon, LogOut as LogOutIcon, Menu as MenuIcon, MapPin as MapPinIcon, Navigation as NavigationIcon, Search as SearchIcon, SlidersHorizontal as FilterIcon, CalendarDays as CalendarIcon, ArrowDownUp as SortIcon, Route as RouteIcon, CircleDollarSign as DollarIcon, CarFront as CarIcon, CheckCircle2 as CheckIcon, CircleX as CancelIcon, Activity as ActivityIcon, MoreVertical as MoreIcon, ShieldCheck as ShieldIcon, Mail as MailIcon, BriefcaseBusiness as RoleIcon, Pencil as PencilIcon, Camera as CameraIcon, LockKeyhole as LockIcon, X as CloseIcon } from 'lucide-react'
 
 type Props = {
-  user: { name: string; email: string; role: string }
+  user: User
   viewAs: Role
   views: Role[]
   onSwitchView: (view: Role) => void
+  onUserUpdate: (user: User) => void
   onLogout: () => void
 }
 
@@ -128,7 +130,7 @@ function TripRows({ trips, loading, error, limit }: { trips: Trip[]; loading: bo
   </>
 }
 
-export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLogout }: Props) {
+export default function AdminDashboard({ user, viewAs, views, onSwitchView, onUserUpdate, onLogout }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [activeSection, setActiveSection] = useState<Section>('Resumen')
   const [users, setUsers] = useState<User[]>([])
@@ -146,6 +148,10 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
   const [tripSort, setTripSort] = useState<'date-desc' | 'date-asc' | 'status' | 'value-desc'>('date-desc')
   const [userQuery, setUserQuery] = useState('')
   const [userRole, setUserRole] = useState('')
+  const [editingAccount, setEditingAccount] = useState(false)
+  const [accountBusy, setAccountBusy] = useState(false)
+  const [accountNotice, setAccountNotice] = useState('')
+  const [accountError, setAccountError] = useState('')
   const appearance = useAppearance()
 
   const isSuperadmin = viewAs === 'superadmin'
@@ -219,6 +225,38 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
       return direction * (new Date(a.fechaSolicitud).getTime() - new Date(b.fechaSolicitud).getTime())
     })
   }, [trips, tripQuery, tripStatus, tripDate, tripSort])
+
+  const saveAccount = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const values = Object.fromEntries(new FormData(event.currentTarget))
+    setAccountBusy(true)
+    setAccountNotice('')
+    setAccountError('')
+    try {
+      const updated = await updateOwnProfile({ name: String(values.name), phone: String(values.phone) })
+      onUserUpdate(updated)
+      setEditingAccount(false)
+      setAccountNotice('Perfil actualizado correctamente.')
+    } catch (error) {
+      setAccountError(error instanceof Error ? error.message : 'No pudimos actualizar tu perfil.')
+    } finally {
+      setAccountBusy(false)
+    }
+  }
+
+  const sendPasswordLink = async () => {
+    setAccountBusy(true)
+    setAccountNotice('')
+    setAccountError('')
+    try {
+      await requestPasswordReset(user.email)
+      setAccountNotice('Te enviamos un enlace para cambiar la contraseña.')
+    } catch (error) {
+      setAccountError(error instanceof Error ? error.message : 'No pudimos enviar el enlace.')
+    } finally {
+      setAccountBusy(false)
+    }
+  }
 
   return (
     <main className={`admin-shell ${appearance.darkMode ? 'theme-dark' : ''} ${appearance.reducedMotion ? 'reduced-motion' : ''} ${sidebarOpen ? 'sidebar-open' : ''}`}>
@@ -371,9 +409,39 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onLo
             </section>
           </div>
         )}
-        {activeSection === 'Mi cuenta' && <div className="admin-content"><section className="admin-card admin-account-card"><div className="admin-card-head"><div><h3>Datos de la cuenta</h3><p>Información asociada a tu acceso administrativo.</p></div></div><dl><div><dt>Nombre</dt><dd>{user.name}</dd></div><div><dt>Correo</dt><dd>{user.email}</dd></div><div><dt>Rol</dt><dd>{profileName}</dd></div></dl></section></div>}
+        {activeSection === 'Mi cuenta' && <div className="admin-content admin-account-page">
+          {(accountNotice || accountError) && <div className={`account-feedback ${accountError ? 'error' : 'success'}`} role="status">{accountError || accountNotice}</div>}
+          <section className="admin-card account-profile-card">
+            <div className="account-profile-hero">
+              <div className="account-avatar-wrap"><span className="account-avatar-large">{initials(user.name)}</span><button type="button" onClick={() => setEditingAccount(true)} aria-label="Cambiar datos del perfil"><CameraIcon size={17} aria-hidden /></button></div>
+              <div className="account-profile-copy"><h2>{user.name}</h2><span className="account-role-badge"><ShieldIcon size={14} aria-hidden />{profileName}</span><p><MailIcon size={17} aria-hidden />{user.email}</p></div>
+              <button className="account-outline-button" type="button" onClick={() => setEditingAccount(true)}><PencilIcon size={17} aria-hidden />Editar perfil</button>
+            </div>
+            <div className="account-personal-section">
+              <h3><UserIcon size={21} aria-hidden />Información personal</h3>
+              <dl className="account-detail-grid">
+                <div><span><UserIcon size={20} aria-hidden /></span><dt>Nombre</dt><dd>{user.name}</dd></div>
+                <div><span><MailIcon size={20} aria-hidden /></span><dt>Correo electrónico</dt><dd>{user.email}</dd></div>
+                <div className="account-role-detail"><span><RoleIcon size={20} aria-hidden /></span><dt>Rol</dt><dd>{profileName}</dd></div>
+              </dl>
+            </div>
+          </section>
+          <section className="admin-card account-security-card">
+            <header><ShieldIcon size={22} aria-hidden /><div><h3>Seguridad de la cuenta</h3><p>Gestiona la seguridad y el acceso a tu cuenta.</p></div></header>
+            <div className="account-password-row"><span><LockIcon size={20} aria-hidden /></span><div><small>Contraseña</small><strong>••••••••</strong></div><button className="account-outline-button" type="button" disabled={accountBusy} onClick={() => void sendPasswordLink()}><LockIcon size={17} aria-hidden />{accountBusy ? 'Enviando…' : 'Cambiar contraseña'}</button></div>
+          </section>
+          <button className="account-signout-button" type="button" onClick={onLogout}><LogOutIcon size={19} aria-hidden />Cerrar sesión</button>
+        </div>}
         {activeSection === 'Configuración' && <div className="admin-content settings-page"><section className="overview-heading"><small>PREFERENCIAS</small><h2>Configuración</h2><p>Personaliza todos los paneles de Ride.</p></section><AppearanceSettings theme={appearance.theme} reducedMotion={appearance.reducedMotion} onTheme={appearance.setTheme} onReducedMotion={appearance.setReducedMotion}/></div>}
       </section>
+      {editingAccount && <div className="account-dialog-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setEditingAccount(false) }}>
+        <section className="account-dialog" role="dialog" aria-modal="true" aria-labelledby="account-dialog-title">
+          <button className="account-dialog-close" type="button" onClick={() => setEditingAccount(false)} aria-label="Cerrar"><CloseIcon size={20} /></button>
+          <span className="account-dialog-icon"><PencilIcon size={21} aria-hidden /></span>
+          <h2 id="account-dialog-title">Editar perfil</h2><p>Actualiza los datos personales de tu cuenta.</p>
+          <form onSubmit={saveAccount}><label>Nombre completo<input required minLength={3} name="name" defaultValue={user.name} autoComplete="name" /></label><label>Teléfono<input name="phone" defaultValue={user.phone} autoComplete="tel" placeholder="Sin teléfono registrado" /></label>{accountError && <span className="account-form-error">{accountError}</span>}<footer><button type="button" onClick={() => setEditingAccount(false)}>Cancelar</button><button type="submit" disabled={accountBusy}>{accountBusy ? 'Guardando…' : 'Guardar cambios'}</button></footer></form>
+        </section>
+      </div>}
     </main>
   )
 }

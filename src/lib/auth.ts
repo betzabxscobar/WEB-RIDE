@@ -218,6 +218,27 @@ export async function completePasswordReset(newPassword: string): Promise<void> 
   if (error) throw new Error(translateAuthError(error.message))
 }
 
+/** Actualiza los datos editables del perfil de la sesión actual. */
+export async function updateOwnProfile(input: { name: string; phone: string }): Promise<User> {
+  const { data: sessionData } = await supabase.auth.getSession()
+  const userId = sessionData.session?.user.id
+  if (!userId) throw new Error('Tu sesión expiró. Vuelve a iniciar sesión.')
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({
+      full_name: input.name.trim(),
+      phone: input.phone.trim(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', userId)
+
+  if (error) throw new Error('No pudimos actualizar tu perfil.')
+  const user = await loadCurrentUser()
+  if (!user) throw new Error('Actualizamos tus datos, pero no pudimos recargar el perfil.')
+  return user
+}
+
 /** Usuarios visibles para el panel. RLS decide qué filas devuelve. */
 export async function listUsers(): Promise<User[]> {
   const { data, error } = await supabase
