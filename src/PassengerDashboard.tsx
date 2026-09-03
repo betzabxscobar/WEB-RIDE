@@ -2,9 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import './PassengerDashboard.css'
 import logoTipo from './assets/LogoTipo.png'
+import seguroImg from './assets/seguro.png'
+import sostenibleImg from './assets/sostenible.png'
+import confiableImg from './assets/confiable.png'
 import RideMap from './components/RideMap'
 import { AppearanceSettings } from './components/AppearanceSettings'
-import { Home as HomeIcon, CarFront as RideRequestIcon, List as ListIcon, Bell as BellIcon, MapPin as MapPinIcon, DollarSign as DollarSignIcon, HelpCircle as HelpCircleIcon, User as UserIcon, Settings as SettingsIcon, CheckCircle2, AlertCircle, ArrowRight, Search, LogOut } from 'lucide-react'
+import { Home as HomeIcon, CarFront as RideRequestIcon, List as ListIcon, Bell as BellIcon, MapPin as MapPinIcon, DollarSign as DollarSignIcon, HelpCircle as HelpCircleIcon, User as UserIcon, Settings as SettingsIcon, CheckCircle2, AlertCircle, ArrowRight, Search, LogOut, Menu as MenuIcon } from 'lucide-react'
 import { SupportPage, TripChat } from './components/RideExtras'
 import { panelLabel, type Role, type User } from './lib/auth'
 import { reverseGeocode, searchPlaces } from './lib/geocoding'
@@ -99,6 +102,7 @@ function vehicle(trip: Trip): string {
 
 function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }: Props) {
   const [page, setPage] = useState<Page>('inicio')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [trips, setTrips] = useState<Trip[]>([])
   const [places, setPlaces] = useState<Place[]>([])
   const [loading, setLoading] = useState(true)
@@ -400,6 +404,15 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
     setPage(next); setError(''); setNotice('')
   }
 
+  const navTo = (next: Page) => {
+    go(next)
+    try {
+      if (typeof window !== 'undefined' && window.innerWidth <= 760) setSidebarOpen(false)
+    } catch (e) {
+      /* ignore */
+    }
+  }
+
   const openTracking = (trip: Trip) => {
     setTrackingTripId(trip.id)
     go('seguimiento')
@@ -491,20 +504,20 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
     } finally { setBusy(false) }
   }
 
-  return <main className={`passenger-shell ${darkMode ? 'theme-dark' : 'theme-light'} ${reducedMotion ? 'reduced-motion' : ''}`}>
+  return <main className={`passenger-shell ${darkMode ? 'theme-dark' : 'theme-light'} ${reducedMotion ? 'reduced-motion' : ''} ${sidebarOpen ? 'sidebar-open' : ''}`}>
     <div className="passenger-sidebar-trigger" aria-hidden="true"/>
-    <aside className="passenger-sidebar">
+    <aside id="passenger-sidebar" className={`passenger-sidebar ${sidebarOpen ? '' : 'collapsed'}`}>
       <div className="passenger-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
       <nav aria-label="Panel del pasajero">
-        <NavButton active={page === 'inicio'} icon={<HomeIcon size={16} />} label="Inicio" onClick={() => go('inicio')}/>
-        <NavButton active={page === 'pedir'} icon={<RideRequestIcon size={16} />} label="Pedir viaje" onClick={() => go('pedir')}/>
-        <NavButton active={page === 'viajes'} icon={<ListIcon size={16} />} label="Mis viajes" onClick={() => go('viajes')}/>
-        <NavButton active={page === 'avisos'} icon={<BellIcon size={16} />} label="Avisos" onClick={openNotifications}/>
-        <NavButton active={page === 'direcciones'} icon={<MapPinIcon size={16} />} label="Direcciones" onClick={() => go('direcciones')}/>
-        <NavButton active={page === 'pagos'} icon={<DollarSignIcon size={16} />} label="Pagos" onClick={() => go('pagos')}/>
-        <NavButton active={page === 'soporte'} icon={<HelpCircleIcon size={16} />} label="Soporte" onClick={() => go('soporte')}/>
-        <NavButton active={page === 'cuenta'} icon={<UserIcon size={16} />} label="Mi cuenta" onClick={() => go('cuenta')}/>
-        <NavButton active={page === 'configuracion'} icon={<SettingsIcon size={16} />} label="Configuración" onClick={() => go('configuracion')}/>
+        <NavButton active={page === 'inicio'} icon={<HomeIcon size={16} />} label="Inicio" onClick={() => navTo('inicio')}/>
+        <NavButton active={page === 'pedir'} icon={<RideRequestIcon size={16} />} label="Pedir viaje" onClick={() => navTo('pedir')}/>
+        <NavButton active={page === 'viajes'} icon={<ListIcon size={16} />} label="Mis viajes" onClick={() => navTo('viajes')}/>
+        <NavButton active={page === 'avisos'} icon={<BellIcon size={16} />} label="Avisos" onClick={() => { openNotifications(); if (typeof window !== 'undefined' && window.innerWidth <= 760) setSidebarOpen(false) }} />
+        <NavButton active={page === 'direcciones'} icon={<MapPinIcon size={16} />} label="Direcciones" onClick={() => navTo('direcciones')}/>
+        <NavButton active={page === 'pagos'} icon={<DollarSignIcon size={16} />} label="Pagos" onClick={() => navTo('pagos')}/>
+        <NavButton active={page === 'soporte'} icon={<HelpCircleIcon size={16} />} label="Soporte" onClick={() => navTo('soporte')}/>
+        <NavButton active={page === 'cuenta'} icon={<UserIcon size={16} />} label="Mi cuenta" onClick={() => navTo('cuenta')}/>
+        <NavButton active={page === 'configuracion'} icon={<SettingsIcon size={16} />} label="Configuración" onClick={() => navTo('configuracion')}/>
       </nav>
       <div className="passenger-profile">
         <span>{initials(user.name)}</span>
@@ -515,8 +528,14 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
 
     <section className="passenger-workspace">
       <header className="passenger-topbar">
+        <button type="button" aria-controls="passenger-sidebar" aria-expanded={sidebarOpen} aria-label="Alternar menú" className="hamburger-button" onClick={() => setSidebarOpen((v) => !v)}>
+          <MenuIcon size={20} aria-hidden />
+        </button>
         <div className="passenger-mobile-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
-        <div><span className="passenger-kicker">PANEL DE PASAJERO</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'pedir' ? 'Pide un viaje' : page === 'seguimiento' ? 'Seguimiento del viaje' : page === 'viajes' ? 'Tus viajes' : page === 'avisos' ? 'Tus avisos' : page === 'direcciones' ? 'Tus direcciones' : page === 'pagos' ? 'Tus pagos' : page === 'soporte' ? 'Soporte' : page === 'configuracion' ? 'Configuración' : 'Tu cuenta'}</h1></div>
+        <div className="passenger-title">
+          <span className="passenger-kicker">PANEL DE PASAJERO</span>
+          <h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'pedir' ? 'Pide un viaje' : page === 'seguimiento' ? 'Seguimiento del viaje' : page === 'viajes' ? 'Tus viajes' : page === 'avisos' ? 'Tus avisos' : page === 'direcciones' ? 'Tus direcciones' : page === 'pagos' ? 'Tus pagos' : page === 'soporte' ? 'Soporte' : page === 'configuracion' ? 'Configuración' : 'Tu cuenta'}</h1>
+        </div>
         <div className="passenger-top-actions">
           {views.length > 1 && <label className="passenger-view-select"><span>Vista</span><select value={activeView} onChange={(event) => onSwitchView(event.target.value as Role)}>{views.map((view) => <option value={view} key={view}>{panelLabel(view)}</option>)}</select></label>}
           <button className="notification-button" onClick={openNotifications} aria-label={unread ? `${unread} avisos sin leer` : 'Abrir avisos'}><BellIcon size={19} aria-hidden />{unread > 0 && <b>{unread > 9 ? '9+' : unread}</b>}</button>
@@ -566,8 +585,34 @@ function LoadingPanel() {
 function HomePage({ user, activeTrip, trips, onRequest, onTrips, onCancel, onTrack }: { user: User; activeTrip: Trip | null; trips: Trip[]; onRequest: () => void; onTrips: () => void; onCancel: (trip: Trip) => void; onTrack: (trip: Trip) => void }) {
   const recent = trips.filter((trip) => esFinal(trip.estado)).slice(0, 3)
   return <div className="passenger-page home-page">
+
     <section className="passenger-welcome"><div><span>{activeTrip ? 'VIAJE ACTIVO' : 'LISTO PARA SALIR'}</span><h2>{activeTrip ? STATUS_HINT[activeTrip.estado] : '¿A dónde vamos hoy?'}</h2><p>{activeTrip ? `Destino: ${activeTrip.destinoTexto}` : 'Elige tu punto de partida y destino. Ride calcula la tarifa antes de confirmar.'}</p></div>{activeTrip ? <button onClick={() => onTrack(activeTrip)}>Ver seguimiento</button> : <button onClick={onRequest}>Pedir un viaje <ArrowRight size={16} aria-hidden /></button>}</section>
-    {activeTrip ? <ActiveTrip trip={activeTrip} onCancel={onCancel}/> : <section className="start-ride-card"><div className="route-mark"><i/><span/><b/></div><div><small>NUEVA SOLICITUD</small><h3>Tu viaje empieza con dos puntos</h3><p>Usa tu ubicación actual o elige una dirección en Ecuador.</p></div><button onClick={onRequest}>Definir ruta</button></section>}
+
+    {/* Tres tarjetas de características: Seguro / Sostenible / Confiable */}
+    <section className="home-features">
+      <article className="feature-card feature-seguro">
+        <img src={seguroImg} alt="Seguro" />
+        <div>
+          <h4>Seguro</h4>
+          <p>Tecnología que te cuida</p>
+        </div>
+      </article>
+      <article className="feature-card feature-sostenible">
+        <img src={sostenibleImg} alt="Sostenible" />
+        <div>
+          <h4>Sostenible</h4>
+          <p>Menos emisiones, más futuro</p>
+        </div>
+      </article>
+      <article className="feature-card feature-confiable">
+        <img src={confiableImg} alt="Confiable" />
+        <div>
+          <h4>Confiable</h4>
+          <p>Personas reales, viajes memorables</p>
+        </div>
+      </article>
+    </section>
+    {activeTrip ? <ActiveTrip trip={activeTrip} onCancel={onCancel}/> : <section className="start-ride-card"><div className="route-mark"><i/><span/><b/></div><div><small>NUEVA SOLICITUD</small><h3>Tu viaje empieza con dos puntos</h3><p>Usa tu ubicación actual o elige una dirección en Ecuador.</p></div><button className="define-route-button" onClick={onRequest}>Definir ruta</button></section>}
     <section className="passenger-section-head"><div><span>ACTIVIDAD</span><h2>Viajes recientes</h2></div>{trips.length > 0 && <button onClick={onTrips}>Ver todos <ArrowRight size={16} aria-hidden /></button>}</section>
     {recent.length === 0 ? <EmptyState title="Aún no tienes viajes" text={`Cuando pidas el primero, ${user.name.split(' ')[0]}, podrás consultarlo aquí.`} action="Pedir mi primer viaje" onAction={onRequest}/> : <div className="recent-trip-list">{recent.map((trip) => <TripRow key={trip.id} trip={trip}/>)}</div>}
   </div>
