@@ -83,33 +83,6 @@ function UserRows({ users, loading, error, limit }: { users: User[]; loading: bo
   </>
 }
 
-function LegacyTripRows({ trips, loading, error, limit }: { trips: Trip[]; loading: boolean; error: string; limit?: number }) {
-  const rows = limit == null ? trips : trips.slice(0, limit)
-  return <>
-    {error && <p className="admin-error">{error}</p>}
-    {loading && <p className="admin-empty">Cargando viajes…</p>}
-    {!loading && !error && trips.length === 0 && <p className="admin-empty">Todavía no se ha registrado ningún viaje.</p>}
-    {!loading && !error && rows.length > 0 && (
-      <div className="trips-table">
-        {rows.map((trip) => (
-          <div className="trip-row" key={trip.id}>
-            <em className={`trip-state ${esFinal(trip.estado) ? trip.estado.toLowerCase() : 'activo'}`}>{ESTADO_LABEL[trip.estado]}</em>
-            <div className="trip-route">
-              <strong>{trip.origenTexto} → {trip.destinoTexto}</strong>
-              <small>{trip.pasajeroNombre}{trip.conductorNombre ? ` · ${trip.conductorNombre}` : ' · sin chofer'}{trip.vehiculoPlaca ? ` · ${trip.vehiculoPlaca}` : ''}</small>
-            </div>
-            <b className="trip-amount">
-              <small>{trip.montoCobrado > 0 ? 'Cobrado' : trip.estado === 'FINALIZADO' ? 'Pago pendiente' : 'Estimado'}</small>
-              ${trip.montoCobrado > 0 ? trip.montoCobrado.toFixed(2) : (trip.tarifaFinal ?? trip.tarifaEstimada).toFixed(2)}
-            </b>
-            <time>{formatDate(trip.fechaSolicitud)}</time>
-          </div>
-        ))}
-      </div>
-    )}
-  </>
-}
-
 function TripRows({ trips, loading, error, limit }: { trips: Trip[]; loading: boolean; error: string; limit?: number }) {
   const rows = limit == null ? trips : trips.slice(0, limit)
   return <>
@@ -326,17 +299,17 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onUs
               <div><small>RESUMEN OPERATIVO</small><h2>Actividad actual</h2><p>Usuarios, viajes y revisiones cargados desde Supabase.</p></div>
             </section>
 
-            <section className="metric-strip" aria-label="Indicadores de la operación">
-              <article><small>Pasajeros</small><strong>{usersLoading ? '—' : metrics.passengers}</strong></article>
-              <article><small>Conductores</small><strong>{usersLoading ? '—' : metrics.drivers}</strong></article>
-              <article><small>Viajes activos</small><strong>{tripsLoading ? '—' : metrics.activeTrips}</strong></article>
-              <article><small>Cobrado</small><strong>{tripsLoading ? '—' : `$${metrics.collected.toFixed(2)}`}</strong></article>
+            <section className="metric-strip overview-metrics" aria-label="Indicadores de la operación">
+              <article><span className="overview-metric-icon passenger"><UserIcon size={25} aria-hidden /></span><div><small>Pasajeros</small><strong>{usersLoading ? '—' : metrics.passengers}</strong></div></article>
+              <article><span className="overview-metric-icon driver"><CarIcon size={25} aria-hidden /></span><div><small>Conductores</small><strong>{usersLoading ? '—' : metrics.drivers}</strong></div></article>
+              <article><span className="overview-metric-icon trips"><NavigationIcon size={25} aria-hidden /></span><div><small>Viajes activos</small><strong>{tripsLoading ? '—' : metrics.activeTrips}</strong></div></article>
+              <article><span className="overview-metric-icon collected"><DollarIcon size={25} aria-hidden /></span><div><small>Cobrado</small><strong>{tripsLoading ? '—' : `$${metrics.collected.toFixed(2)}`}</strong></div></article>
             </section>
 
             <div className="operations-grid">
               <section className="admin-card recent-trips">
                 <div className="admin-card-head"><div><h3>Viajes recientes</h3><p>Últimos movimientos registrados.</p></div><button onClick={() => setActiveSection('Viajes')}>Ver todos</button></div>
-                <LegacyTripRows trips={trips} loading={tripsLoading} error={tripsError} limit={5} />
+                <TripRows trips={trips} loading={tripsLoading} error={tripsError} limit={5} />
               </section>
 
               <section className="admin-card review-queue">
