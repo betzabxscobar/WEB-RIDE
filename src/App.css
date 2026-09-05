@@ -137,3 +137,4 @@ html[data-ride-theme="light"] .viewing-as{background:#eef8fb;color:#12384a;borde
 html[data-ride-theme="light"] .viewing-as button{color:#147f9f}
 html[data-ride-theme="dark"] .viewing-as{background:#0e2a38!important;color:#dcecf2!important;border-color:#294452!important}
 html[data-ride-theme="dark"] .viewing-as button{background:#163746!important;color:#75d5ef!important;border-color:#31505e!important}
+.viewing-as > span{display:inline-flex;align-items:center;gap:7px}

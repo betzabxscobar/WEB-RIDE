@@ -1161,6 +1161,313 @@
   color: #402719;
 }
 
+.account-avatar-large {
+  box-sizing: border-box;
+  border: 1px solid #111827;
+  background: #f1c7a5;
+  color: #402719;
+}
+
+.admin-shell.theme-dark .account-avatar-large {
+  background: #f6d4ba;
+  color: #4a2c1c;
+}
+
+.account-outline-button:not(:disabled):hover {
+  border-color: #111827;
+  background: #c9f2fb;
+  color: #06394a;
+}
+
+.admin-shell.theme-dark .account-outline-button:not(:disabled):hover {
+  border-color: #111827;
+  background: #8edff0;
+  color: #062d3a;
+}
+
+.admin-shell.theme-dark .admin-sidebar .nav-group button.active {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px #67d1ed;
+  color: #ffffff;
+}
+
+.users-monitoring .user-row > span {
+  border-radius: 50%;
+  background: #f1c7a5;
+  color: #402719;
+}
+
+.users-monitoring .user-row em.passenger {
+  padding: 5px 8px;
+  background: #e5d4fa;
+  color: #8050b5;
+  box-shadow: inset 0 0 0 1px #c9abea;
+}
+
+.admin-shell.theme-dark .users-monitoring .user-row > span {
+  background: #f6d4ba;
+  color: #4a2c1c;
+}
+
+.admin-shell.theme-dark .users-monitoring .user-row em.passenger {
+  background: #483361;
+  color: #d9b5ff;
+  box-shadow: inset 0 0 0 1px #79559e;
+}
+
+
 .admin-shell:not(.theme-dark) .recent-trips {
   background: #eaf7fb;
+}
+
+/* Sistema visual compartido: todos los indicadores siguen el resumen. */
+.trip-metrics article,
+.driver-metrics article,
+.user-metrics article {
+  min-height: 88px;
+  align-items: center;
+  gap: 13px;
+  padding: 18px !important;
+}
+
+:is(.trip-metrics, .driver-metrics, .user-metrics) article > div:last-child {
+  min-width: 0;
+  flex: 1;
+  text-align: center;
+}
+
+:is(.trip-metrics, .driver-metrics, .user-metrics) small {
+  color: #111d24;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+:is(.trip-metrics, .driver-metrics, .user-metrics) strong {
+  margin-top: 3px !important;
+  color: #55c7e7;
+  font-size: 24px !important;
+}
+
+:is(.metric-icon, .driver-metric-icon, .user-metric-icon) {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+}
+
+/* Filas y fechas: misma superficie celeste y lectura secundaria. */
+.users-monitoring .user-row,
+.drivers-monitoring .driver-row,
+.trips-monitoring .trip-row {
+  background: #f9fdff;
+  border-color: #dcecf1 !important;
+}
+
+.users-monitoring .user-row:hover,
+.drivers-monitoring .driver-head:hover,
+.trips-monitoring .trip-row:hover {
+  background: #edf9fc !important;
+  border-color: #b7dce7 !important;
+}
+
+:is(.overview-users, .users-monitoring) .user-row time,
+.trips-monitoring .trip-date,
+.trips-monitoring .trip-row-topline time {
+  color: #8e9da5;
+  font-size: 9.5px;
+  font-weight: 400;
+}
+
+/* Estados con la misma cápsula y colores semánticos en todas las tablas. */
+:is(.trip-state, .driver-state, .users-monitoring .user-row em) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 25px;
+  padding: 5px 9px;
+  border: 0;
+  border-radius: 999px;
+  font-size: 9px !important;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.trip-state.finalizado,
+.driver-state.aprobado {
+  background: #e5f7ef;
+  color: #167a5d;
+  box-shadow: none;
+}
+
+.trip-state.cancelado,
+.trip-state.sin_conductor,
+.driver-state.rechazado {
+  background: #fff0ee;
+  color: #b24740;
+  box-shadow: none;
+}
+
+.driver-state.pendiente {
+  background: #f0edff;
+  color: #6554a2;
+}
+
+.trip-amount.paid {
+  color: #167a5d;
+}
+
+.trip-amount.pending {
+  color: #a87514;
+}
+
+/* Equivalentes de contraste para el modo oscuro. */
+.admin-shell.theme-dark :is(.trip-metrics, .driver-metrics, .user-metrics) small {
+  color: #f3f8fa;
+}
+
+.admin-shell.theme-dark :is(.trip-metrics, .driver-metrics, .user-metrics) strong {
+  color: #84dcf1;
+}
+
+.admin-shell.theme-dark .users-monitoring .user-row,
+.admin-shell.theme-dark .drivers-monitoring .driver-row,
+.admin-shell.theme-dark .trips-monitoring .trip-row {
+  background: #153341 !important;
+  border-color: #385766 !important;
+}
+
+.admin-shell.theme-dark .trips-monitoring .trips-table {
+  background: #0e2532;
+}
+
+.admin-shell.theme-dark .users-monitoring .user-row:hover,
+.admin-shell.theme-dark .drivers-monitoring .driver-head:hover,
+.admin-shell.theme-dark .trips-monitoring .trip-row:hover {
+  background: #183b4a !important;
+  border-color: #4a7180 !important;
+}
+
+.admin-shell.theme-dark :is(.overview-users, .users-monitoring) .user-row time,
+.admin-shell.theme-dark .trips-monitoring :is(.trip-date, .trip-row-topline time) {
+  color: #a8bbc4;
+}
+
+.admin-shell.theme-dark .trip-state.finalizado,
+.admin-shell.theme-dark .driver-state.aprobado {
+  background: #153f36;
+  color: #72d9b5;
+}
+
+.admin-shell.theme-dark :is(.trip-state.cancelado, .trip-state.sin_conductor, .driver-state.rechazado) {
+  background: #4a2928;
+  color: #ffaaa2;
+}
+
+.admin-shell.theme-dark .driver-state.pendiente {
+  background: #3d3156;
+  color: #d2b4f4;
+}
+
+.admin-shell:not(.theme-dark) .recent-trips .admin-card-head {
+  background: #092d40;
+  border-bottom-color: #061d2c;
+}
+
+.admin-shell:not(.theme-dark) .recent-trips .admin-card-head h3 {
+  color: #f3f8fa;
+}
+
+.admin-shell:not(.theme-dark) .recent-trips .admin-card-head p {
+  color: #d9efff;
+}
+
+.admin-shell:not(.theme-dark) .recent-trips .admin-card-head button {
+  color: #ffffff;
+}
+
+.admin-shell:not(.theme-dark) .settings-shared .settings-card:first-child .settings-card-head {
+  margin: -25px -25px 19px;
+  padding: 18px 25px;
+  border-radius: 18px 18px 0 0;
+  background: #092d40;
+}
+
+.admin-shell:not(.theme-dark) .settings-shared .settings-card:first-child .settings-card-head h3 {
+  color: #f3f8fa;
+}
+
+.admin-shell:not(.theme-dark) .settings-shared .settings-card:first-child .settings-card-head p {
+  color: #b7d1da;
+}
+
+.admin-shell:not(.theme-dark) .settings-shared .settings-card:first-child .settings-card-head > span {
+  background: #164d63;
+  color: #8ee0f2;
+}
+
+.admin-shell:not(.theme-dark) .users-monitoring .admin-card-head {
+  background: #092d40;
+  border-bottom-color: #061d2c;
+}
+
+.admin-shell:not(.theme-dark) .users-monitoring .admin-card-head h3 {
+  color: #f3f8fa;
+}
+
+.admin-shell:not(.theme-dark) .users-monitoring .admin-card-head p {
+  color: #b7d1da;
+}
+
+.admin-shell:not(.theme-dark) .users-monitoring .user-result-count {
+  background: #164d63;
+  color: #d9f4fb;
+}
+
+.admin-shell:not(.theme-dark) .overview-users .admin-card-head {
+  background: #092d40;
+  border-bottom-color: #061d2c;
+}
+
+.admin-shell:not(.theme-dark) .overview-users .admin-card-head h3 {
+  color: #f3f8fa;
+}
+
+.admin-shell:not(.theme-dark) .overview-users .admin-card-head p {
+  color: #b7d1da;
+}
+
+.admin-shell:not(.theme-dark) .overview-users .admin-card-head button {
+  color: #8ee0f2;
+}
+
+.admin-shell:not(.theme-dark) .trips-monitoring .admin-card-head {
+  background: #092d40;
+  border-bottom-color: #061d2c;
+}
+
+.admin-shell:not(.theme-dark) .trips-monitoring .admin-card-head h3 {
+  color: #f3f8fa;
+}
+
+.admin-shell:not(.theme-dark) .trips-monitoring .admin-card-head p {
+  color: #b7d1da;
+}
+
+.admin-shell:not(.theme-dark) .trips-monitoring .trip-result-count {
+  background: #164d63;
+  color: #d9f4fb;
+}
+
+.admin-shell:not(.theme-dark) .drivers-monitoring .admin-card-head {
+  background: #092d40;
+  border-bottom-color: #061d2c;
+}
+
+.admin-shell:not(.theme-dark) .drivers-monitoring .admin-card-head h3 {
+  color: #f3f8fa;
+}
+
+.admin-shell:not(.theme-dark) .drivers-monitoring .admin-card-head p {
+  color: #b7d1da;
 }

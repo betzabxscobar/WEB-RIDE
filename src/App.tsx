@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
+import { Eye } from 'lucide-react'
 import './App.css'
 import logoTipo from './assets/LogoTipo.png'
 import AdminDashboard from './AdminDashboard'
@@ -240,7 +241,7 @@ function PanelSwitcher({views,active,onSwitch}:{views:Role[];active:Role|null;on
 /// Aviso de que se está mirando una pantalla distinta a la del rol propio.
 function ViewingAsBar({role,onBack}:{role:Role;onBack:()=>void}) {
   const nombre = role === 'superadmin' ? 'superadministrador' : 'administrador'
-  return <div className="viewing-as"><span>◉ Viendo como {nombre}</span><button onClick={onBack}>Volver a mi panel</button></div>
+  return <div className="viewing-as"><span><Eye size={16} aria-hidden />Viendo como {nombre}</span><button onClick={onBack}>Volver a mi panel</button></div>
 }
 
 type AuthProps = { title:string; subtitle:string; submit:string; loading:boolean; message:string; notice:string; showPassword:boolean; setShowPassword:(value:boolean)=>void; onSubmit:(event:FormEvent<HTMLFormElement>)=>void; onBack:()=>void; footer:ReactNode; extra?:ReactNode }
