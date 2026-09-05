@@ -77,7 +77,7 @@ function UserRows({ users, loading, error, limit }: { users: User[]; loading: bo
         <span>{initials(account.name)}</span>
         <div><strong>{account.name}</strong><small>{account.email}</small></div>
         <em className={roleClass(account.role)}>{roleLabel(account.role)}</em>
-        <time>{formatDate(account.createdAt)}</time>
+        <time><CalendarIcon size={13} aria-hidden />{formatDate(account.createdAt)}</time>
       </div>
     ))}
   </>
@@ -250,7 +250,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onUs
                   aria-current={activeSection === label ? 'page' : undefined}
                   onClick={() => { setActiveSection(label); setSidebarOpen(false) }}
                 >
-                  <NavIcon section={label} /><span>{label}</span>{navCount(label) > 0 && <b>{navCount(label)}</b>}
+                  <NavIcon section={label} /><span>{label}</span>{navCount(label) > 0 && <b className={label === 'Conductores' ? 'driver-notification' : undefined}>{navCount(label)}</b>}
                 </button>
               ))}
             </div>
@@ -289,7 +289,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onUs
           <button aria-controls="admin-sidebar" aria-expanded={sidebarOpen} aria-label="Alternar menú" className="hamburger-button" onClick={() => setSidebarOpen((v) => !v)}>
             <MenuIcon size={18} />
           </button>
-          <div><small>{accessName}</small><h1>{activeSection}</h1></div>
+          <div><small className="admin-panel-label">{accessName}</small><h1>{activeSection}</h1></div>
           <div className="admin-profile"><span>{initials(user.name)}</span><div><strong>{user.name}</strong><small>{profileName}</small></div></div>
         </header>
 
