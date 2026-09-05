@@ -191,3 +191,25 @@
 .start-ride-card .define-route-button:hover{border-color:#000;background:#00cbe6;color:#001d29;box-shadow:inset 0 0 0 1px #000}
 .passenger-shell.theme-dark .start-ride-card .define-route-button{border-color:#46cbe4;background:#123f50;color:#bff8ff}
 .passenger-shell.theme-dark .start-ride-card .define-route-button:hover{border-color:#000;background:#00aeca;color:#001b25;box-shadow:inset 0 0 0 1px #000}
+
+/* Lenguaje visual de Inicio aplicado a las secciones del pasajero. */
+.passenger-shell:not(.theme-dark) :is(.trip-history article,.notification-list article,.address-form,.address-list>article,.payment-methods,.payment-history,.tracking-main,.tracking-driver){border-color:#cde7ef;background:linear-gradient(145deg,#fbfeff 0%,#f0fafc 62%,#e7f5f9 100%)}
+.passenger-shell:not(.theme-dark) .notification-list article.unread{border-color:#83cde1;background:linear-gradient(145deg,#f6fdff 0%,#e5f7fc 100%)}
+.passenger-shell:not(.theme-dark) :is(.notification-mark,.address-pin:not(.favorite),.payment-method-list article>span,.tracking-position>span,.tracking-driver-profile>span){background:#e2f5fa;color:#1688aa}
+
+/* Acciones principales: misma referencia visual que "Definir ruta". */
+.passenger-shell:not(.theme-dark) :is(.passenger-primary-action,.passenger-welcome button,.passenger-empty button,.quote-card>button,.address-form>button,.payment-head button,.payment-empty button,.tracking-pay,.tracking-contact :is(a,button),.address-actions button:not(.danger),.payment-method-actions>button:not(.delete)){border:1px solid #72dff2;background:#bceffc;color:#063346;box-shadow:none;transition:background-color .2s ease,color .2s ease,border-color .2s ease,box-shadow .2s ease}
+.passenger-shell:not(.theme-dark) :is(.passenger-primary-action,.passenger-welcome button,.passenger-empty button,.quote-card>button,.address-form>button,.payment-head button,.payment-empty button,.tracking-pay,.tracking-contact :is(a,button),.address-actions button:not(.danger),.payment-method-actions>button:not(.delete)):not(:disabled):hover{border-color:#000;background:#00cbe6;color:#001d29;box-shadow:inset 0 0 0 1px #000}
+.passenger-danger-action{border:1px solid #efaaa3!important;background:#fff0ee!important;color:#a43e37!important}
+.passenger-danger-action:not(:disabled):hover{border-color:#a43e37!important;background:#f9cbc6!important;color:#702521!important}
+
+.passenger-shell.theme-dark :is(.passenger-primary-action,.passenger-welcome button,.passenger-empty button,.quote-card>button,.address-form>button,.payment-head button,.payment-empty button,.tracking-pay,.tracking-contact :is(a,button),.address-actions button:not(.danger),.payment-method-actions>button:not(.delete)){border-color:#46cbe4;background:#123f50;color:#bff8ff;box-shadow:none}
+.passenger-shell.theme-dark :is(.passenger-primary-action,.passenger-welcome button,.passenger-empty button,.quote-card>button,.address-form>button,.payment-head button,.payment-empty button,.tracking-pay,.tracking-contact :is(a,button),.address-actions button:not(.danger),.payment-method-actions>button:not(.delete)):not(:disabled):hover{border-color:#000;background:#00aeca;color:#001b25;box-shadow:inset 0 0 0 1px #000}
+
+/* Tarjetas claras con figuras decorativas para los paneles del pasajero. */
+.passenger-shell:not(.theme-dark) :is(.start-ride-card,.active-trip,.recent-trip-list .trip-row,.trip-history article,.notification-list article,.request-form,.quote-card,.address-form,.address-list>article,.payment-methods,.payment-history,.tracking-main,.tracking-driver,.account-details,.account-summary,.settings-card,.support-form,.support-list article){position:relative;overflow:hidden;border-color:#b9dfe9;background:radial-gradient(circle at 92% 12%,rgba(79,190,224,.18) 0 22px,transparent 23px),radial-gradient(circle at 7% 92%,rgba(117,211,235,.13) 0 34px,transparent 35px),#eaf8fc}
+.passenger-shell:not(.theme-dark) :is(.start-ride-card,.active-trip,.recent-trip-list .trip-row,.trip-history article,.notification-list article,.request-form,.quote-card,.address-form,.address-list>article,.payment-methods,.payment-history,.tracking-main,.tracking-driver,.account-details,.account-summary,.settings-card,.support-form,.support-list article)>*{position:relative;z-index:1}
+.passenger-shell:not(.theme-dark) :is(.payment-method-list article,.account-details dl div,.driver-card,.tracking-driver>p){border-color:#c6e4ec;background:#f6fcfe}
+
+/* Líneas de separación internas. */
+.passenger-shell:not(.theme-dark) :is(.payment-history article,.tracking-position,.settings-toggle){border-color:#111827}
