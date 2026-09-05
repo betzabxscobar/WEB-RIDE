@@ -64,3 +64,50 @@
 .driver-shell.theme-dark .driver-review-notice{background:#123b4d;border-color:#2d6274;color:#bde9f3}.driver-shell.theme-dark .earnings-hero{background:linear-gradient(135deg,#123e38,#123746);border-color:#2b7160}.driver-shell.theme-dark .earnings-grid article,.driver-shell.theme-dark .requirements-card,.driver-shell.theme-dark .identity-form,.driver-shell.theme-dark .document-group{background:#102a38;border-color:#385766;color:#f3f8fa}.driver-shell.theme-dark .requirements-card{background:#40371e;border-color:#74642f}.driver-shell.theme-dark .requirements-card ul{color:#f1dea6}.driver-shell.theme-dark .earnings-note{background:#153341;color:#bfd0d8}.driver-shell.theme-dark .driver-hamburger:hover{background:#153b4a;color:#8ee0f2}.driver-shell.theme-dark .driver-sidebar .driver-logout{background:transparent;border-color:rgba(255,255,255,.16);color:#bfd0d8}
 @media(max-width:900px){.identity-form>div{grid-template-columns:1fr 1fr}.document-actions{grid-column:1/-1}}
 @media(max-width:760px){.driver-hamburger{position:static}.driver-topbar{padding-left:18px}.identity-form>div{grid-template-columns:1fr}.earnings-hero>strong{font-size:32px}.document-actions{grid-template-columns:1fr;min-width:0}}
+.driver-summary > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 999px;
+  padding: 9px 16px;
+  border: 1px solid #72dff2;
+  background: #bceffc;
+  color: #063346;
+  box-shadow: none;
+}
+.driver-summary > button:not(:disabled):hover {
+  border-color: #000;
+  background: #00cbe6;
+  color: #001d29;
+  box-shadow: inset 0 0 0 1px #000;
+}
+.driver-shell.theme-dark .driver-summary > button {
+  border-color: #46cbe4;
+  background: #123f50;
+  color: #bff8ff;
+}
+.driver-shell.theme-dark .driver-summary > button:not(:disabled):hover {
+  border-color: #000;
+  background: #00aeca;
+  color: #001b25;
+  box-shadow: inset 0 0 0 1px #000;
+}
+
+/* Iconos en oscuro con la misma combinación del Resumen. */
+.driver-shell.theme-dark :is(.vehicle-list article>span,.driver-block>span,.driver-empty>span){background:#164758;color:#8ee0f2}
+.driver-shell.theme-dark .driver-block>span{background:#493919;color:#f0c76b}
+.driver-shell.theme-dark .driver-empty>span{width:48px;height:48px;border-radius:14px;display:grid;place-items:center}
+.driver-shell.theme-dark .settings-card-head>span{background:#164758;color:#8ee0f2}
+.driver-shell.theme-dark .accessibility-settings .settings-card-head>span{background:#3d3156;color:#d2b4f4}
+
+.driver-shell.theme-dark .driver-account-hero>span{
+  box-sizing:border-box;
+  border:1px solid #111827;
+  background:#f6d4ba;
+  color:#4a2c1c;
+}
+.driver-shell.theme-dark .driver-feedback.success{background:#153f36;color:#72d9b5;border-color:#2b7160}
+.driver-shell.theme-dark .driver-feedback.failure{background:#4a2928;color:#ffaaa2;border-color:#7a3d39}
+.driver-shell.theme-dark .driver-route>div:first-child i{border-color:#8ee0f2}
+.driver-shell.theme-dark .driver-route>div:last-child i{background:#72d9b5}

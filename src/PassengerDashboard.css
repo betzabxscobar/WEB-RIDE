@@ -213,3 +213,56 @@
 
 /* Líneas de separación internas. */
 .passenger-shell:not(.theme-dark) :is(.payment-history article,.tracking-position,.settings-toggle){border-color:#111827}
+
+/* Iconos en oscuro con la misma superficie azul del Inicio/Resumen. */
+.passenger-shell.theme-dark :is(.notification-mark,.address-pin:not(.favorite),.payment-method-list article>span,.tracking-position>span,.tracking-driver-profile>span,.passenger-empty>span,.quote-empty span,.driver-card .driver-avatar,.searching-driver,.settings-card-head>span,.quick-places button>b){background:#164758;color:#8ee0f2}
+.passenger-shell.theme-dark .accessibility-settings .settings-card-head>span{background:#3d3156;color:#d2b4f4}
+
+.passenger-shell.theme-dark .account-hero .account-avatar{
+  box-sizing:border-box;
+  border:1px solid #111827;
+  background:#f6d4ba;
+  color:#4a2c1c;
+}
+
+/* Paleta de iconos consistente en todos los paneles oscuros. */
+html[data-ride-theme="dark"] .settings-shared .theme-options button:nth-child(1)>b{background:#164758;color:#8ee0f2}
+html[data-ride-theme="dark"] .settings-shared .theme-options button:nth-child(2)>b{background:#493919;color:#f0c76b}
+html[data-ride-theme="dark"] .settings-shared .theme-options button:nth-child(3)>b{background:#3d3156;color:#d2b4f4}
+.passenger-shell.theme-dark .notification-button{background:#164758;color:#8ee0f2;border-color:#2f6071}
+.passenger-shell.theme-dark .location-button{background:#164758;color:#8ee0f2;border-color:#2f6071}
+.passenger-shell.theme-dark .passenger-feedback.success>span{background:#153f36;color:#72d9b5}
+.passenger-shell.theme-dark .passenger-feedback.failure>span{background:#4a2928;color:#ffaaa2}
+.passenger-shell.theme-dark .vehicle-categories button>span{background:#164758;color:#8ee0f2}
+
+.passenger-shell.theme-dark .support-form,
+.passenger-shell.theme-dark .support-list article{
+  background:#102a38;
+  border-color:#385766;
+  color:#f3f8fa;
+}
+.passenger-shell.theme-dark .support-form label{
+  color:#d8e5ea;
+}
+.passenger-shell.theme-dark .support-form :is(select,input,textarea){
+  border:1px solid #385766;
+  border-radius:10px;
+  background:#153341;
+  color:#eef7fa;
+}
+.passenger-shell.theme-dark .support-form option{
+  background:#153341;
+  color:#eef7fa;
+}
+.passenger-shell.theme-dark .support-form :is(select,input,textarea)::placeholder{
+  color:#91aab6;
+  opacity:1;
+}
+.passenger-shell.theme-dark .quote-empty span{
+  background:#493039;
+  color:#d9a0aa;
+}
+.passenger-shell.theme-dark .passenger-empty>span{
+  background:#493039;
+  color:#d9a0aa;
+}
