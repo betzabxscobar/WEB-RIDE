@@ -4,21 +4,29 @@ import { SupportPage, TripChat } from './components/RideExtras'
 import logoTipo from './assets/LogoTipo.png'
 import { panelLabel, type Role, type User } from './lib/auth'
 import { AppearanceSettings, useAppearance } from './components/AppearanceSettings'
-import { Home as HomeIcon, MapPin as MapPinIcon, Truck as TruckIcon, FileText as FileTextIcon, HelpCircle as HelpCircleIcon, User as UserIcon, Settings as SettingsIcon, Menu as MenuIcon, WalletCards as WalletIcon, LogOut as LogOutIcon } from 'lucide-react'
+import { AccountSettings } from './components/AccountSettings'
+import { Home as HomeIcon, MapPin as MapPinIcon, MapPinned as ZonesIcon, Landmark as BankIcon, Truck as TruckIcon, FileText as FileTextIcon, HelpCircle as HelpCircleIcon, User as UserIcon, Settings as SettingsIcon, Menu as MenuIcon, WalletCards as WalletIcon, LogOut as LogOutIcon } from 'lucide-react'
 import { DriverAccount, DriverHome, DriverNav, DriverTrips, DocumentsPage, EarningsPage, VehiclesPage } from './driver/DriverPages'
+import { BankAccountsPage, WorkZonesPage } from './driver/DriverToolsPages'
 import { initials, money } from './dashboard/formatters'
 import {
   activateVehicle,
+  deleteBankAccount,
   getDriverEarnings,
   getDriverIdentity,
   getMissingDriverRequirements,
   getDriverState,
+  listBanks,
+  listOwnBankAccounts,
   listOwnDocuments,
   listOwnVehicles,
+  listWorkZones,
   ownDocumentUrl,
   prepareSuperadminDriver,
   saveVehicle,
   saveDriverIdentity,
+  saveBankAccount,
+  saveWorkZones,
   setDriverAvailability,
   uploadDriverDocument,
   type DriverState,
@@ -26,11 +34,15 @@ import {
   type DriverIdentity,
   type OwnDocument,
   type OwnVehicle,
+  type Bank,
+  type BankAccount,
+  type WorkZone,
 } from './lib/driver-account'
 import {
   acceptTrip,
   advanceTrip,
   cancelTrip,
+  confirmPaymentReceived,
   esFinal,
   finishTrip,
   hasRatedTrip,
@@ -43,13 +55,13 @@ import {
   type TripPosition,
 } from './lib/trips'
 
-type Page = 'inicio' | 'viajes' | 'ganancias' | 'vehiculos' | 'documentos' | 'soporte' | 'cuenta' | 'configuracion'
-type Props = { user: User; views: Role[]; activeView: Role; onSwitchView: (view: Role) => void; onLogout: () => void }
+type Page = 'inicio' | 'viajes' | 'ganancias' | 'zonas' | 'bancos' | 'vehiculos' | 'documentos' | 'soporte' | 'cuenta' | 'configuracion'
+type Props = { user: User; views: Role[]; activeView: Role; onSwitchView: (view: Role) => void; onUserUpdate: (user: User) => void; onLogout: () => void }
 
 const EMPTY_STATE: DriverState = { exists: false, approved: false, approvalStatus: 'pendiente', available: false, hasActiveVehicle: false, rating: null }
 const EMPTY_IDENTITY: DriverIdentity = { cedula: '', fingerprintCode: '', licenseType: '', licenseExpiresAt: '' }
 
-export default function DriverDashboard({ user, views, activeView, onSwitchView, onLogout }: Props) {
+export default function DriverDashboard({ user, views, activeView, onSwitchView, onUserUpdate, onLogout }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [page, setPage] = useState<Page>('inicio')
   const [state, setState] = useState<DriverState>(EMPTY_STATE)
@@ -60,6 +72,9 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
   const [earnings, setEarnings] = useState<Record<string, DriverEarnings>>({})
   const [identity, setIdentity] = useState<DriverIdentity>(EMPTY_IDENTITY)
   const [missingRequirements, setMissingRequirements] = useState<string[]>([])
+  const [zones, setZones] = useState<WorkZone[]>([])
+  const [banks, setBanks] = useState<Bank[]>([])
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([])
   const [position, setPosition] = useState<TripPosition | null>(null)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
@@ -67,6 +82,10 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
   const [notice, setNotice] = useState('')
   const [ratingTrip, setRatingTrip] = useState<Trip | null>(null)
   const [chatTrip, setChatTrip] = useState<Trip | null>(null)
+  const [startingTrip, setStartingTrip] = useState<Trip | null>(null)
+  const [startCode, setStartCode] = useState('')
+  const [cancelingTrip, setCancelingTrip] = useState<Trip | null>(null)
+  const [cancelReason, setCancelReason] = useState('')
   const [ratingScore, setRatingScore] = useState(5)
   const [ratingComment, setRatingComment] = useState('')
   const appearance = useAppearance()
@@ -76,12 +95,13 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
   const load = useCallback(async () => {
     try {
       if (user.role === 'superadmin') await prepareSuperadminDriver()
-      const [nextState, nextTrips, nextVehicles, nextDocuments, nextEarnings, nextIdentity, nextMissing] = await Promise.all([
+      const [nextState, nextTrips, nextVehicles, nextDocuments, nextEarnings, nextIdentity, nextMissing, nextZones, nextBanks, nextAccounts] = await Promise.all([
         getDriverState(user.id), listDriverTrips(user.id), listOwnVehicles(user.id), listOwnDocuments(user.id), user.role === 'admin' ? Promise.resolve({}) : getDriverEarnings(), getDriverIdentity(user.id), user.role === 'admin' ? Promise.resolve([]) : getMissingDriverRequirements(),
+        user.role === 'admin' ? Promise.resolve([]) : listWorkZones(), user.role === 'admin' ? Promise.resolve([]) : listBanks(), user.role === 'admin' ? Promise.resolve([]) : listOwnBankAccounts(user.id),
       ])
       const active = nextTrips.find((trip) => !esFinal(trip.estado))
       const nextRequests = !active && nextState.approved && nextState.hasActiveVehicle && nextState.available ? await listOpenTripRequests() : []
-      setState(nextState); setTrips(nextTrips); setVehicles(nextVehicles); setDocuments(nextDocuments); setEarnings(nextEarnings); setIdentity(nextIdentity); setMissingRequirements(nextMissing); setRequests(nextRequests); setError('')
+      setState(nextState); setTrips(nextTrips); setVehicles(nextVehicles); setDocuments(nextDocuments); setEarnings(nextEarnings); setIdentity(nextIdentity); setMissingRequirements(nextMissing); setZones(nextZones); setBanks(nextBanks); setBankAccounts(nextAccounts); setRequests(nextRequests); setError('')
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'No pudimos actualizar tu panel.')
     } finally { setLoading(false) }
@@ -134,6 +154,23 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
     }, 'Gracias. La calificación del pasajero quedó guardada.')
   }
 
+  const advance = (trip: Trip) => {
+    if (trip.estado === 'CONDUCTOR_EN_ORIGEN') { setStartCode(''); setStartingTrip(trip); return }
+    void action(() => advanceTrip(trip.id).then(() => undefined))
+  }
+
+  const startWithCode = () => {
+    if (!startingTrip || !/^\d{6}$/.test(startCode)) { setError('Escribe los seis dígitos que muestra el pasajero.'); return }
+    const trip = startingTrip
+    void action(async () => { await advanceTrip(trip.id, startCode); setStartingTrip(null); setStartCode('') }, 'Código correcto. El viaje comenzó.')
+  }
+
+  const cancelWithReason = () => {
+    if (!cancelingTrip) return
+    const trip = cancelingTrip
+    void action(async () => { await cancelTrip(trip.id, cancelReason); setCancelingTrip(null); setCancelReason('') }, 'Viaje cancelado y motivo registrado.')
+  }
+
   const go = (next: Page) => { window.scrollTo({ top: 0, behavior: 'instant' }); setPage(next); setSidebarOpen(false); setError(''); setNotice('') }
   const canWork = !isReviewOnly && state.approved && state.hasActiveVehicle
 
@@ -144,6 +181,8 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
         <DriverNav active={page === 'inicio'} icon={<HomeIcon size={18} />} label="Inicio" onClick={() => go('inicio')}/>
         <DriverNav active={page === 'viajes'} icon={<MapPinIcon size={18} />} label="Viajes" onClick={() => go('viajes')}/>
         <DriverNav active={page === 'ganancias'} icon={<WalletIcon size={18} />} label="Ganancias" onClick={() => go('ganancias')}/>
+        <DriverNav active={page === 'zonas'} icon={<ZonesIcon size={18} />} label="Zonas de trabajo" onClick={() => go('zonas')}/>
+        <DriverNav active={page === 'bancos'} icon={<BankIcon size={18} />} label="Cuentas bancarias" onClick={() => go('bancos')}/>
         <DriverNav active={page === 'vehiculos'} icon={<TruckIcon size={18} />} label="Vehículos" onClick={() => go('vehiculos')}/>
         <DriverNav active={page === 'documentos'} icon={<FileTextIcon size={18} />} label="Documentos" onClick={() => go('documentos')}/>
         <DriverNav active={page === 'soporte'} icon={<HelpCircleIcon size={18} />} label="Soporte" onClick={() => go('soporte')}/>
@@ -165,24 +204,28 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
     {sidebarOpen && <SidebarBackdrop onClose={() => setSidebarOpen(false)} />}
     <section className="driver-workspace">
       <PanelPreview role={user.role} activeView={activeView} onSwitchView={onSwitchView} />
-      <header className="driver-topbar"><button type="button" className="driver-hamburger" aria-controls="driver-sidebar" aria-expanded={sidebarOpen} aria-label="Alternar menú" onClick={() => setSidebarOpen((value) => !value)}><MenuIcon size={18} aria-hidden /></button><div><span>PANEL DE CONDUCTOR</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'viajes' ? 'Tus viajes' : page === 'ganancias' ? 'Tus ganancias' : page === 'vehiculos' ? 'Tus vehículos' : page === 'documentos' ? 'Tus documentos' : page === 'soporte' ? 'Soporte' : page === 'configuracion' ? 'Configuración' : 'Tu cuenta'}</h1></div><div className="driver-top-actions">{views.length > 1 && <label className="driver-view-select"><span>Vista</span><select value={activeView} onChange={(event) => onSwitchView(event.target.value as Role)}>{views.map((view) => <option key={view} value={view}>{panelLabel(view)}</option>)}</select></label>}<button className="driver-avatar" onClick={() => go('cuenta')}>{initials(user.name)}</button></div></header>
+      <header className="driver-topbar"><button type="button" className="driver-hamburger" aria-controls="driver-sidebar" aria-expanded={sidebarOpen} aria-label="Alternar menú" onClick={() => setSidebarOpen((value) => !value)}><MenuIcon size={18} aria-hidden /></button><div><span>PANEL DE CONDUCTOR</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'viajes' ? 'Tus viajes' : page === 'ganancias' ? 'Tus ganancias' : page === 'zonas' ? 'Zonas de trabajo' : page === 'bancos' ? 'Cuentas bancarias' : page === 'vehiculos' ? 'Tus vehículos' : page === 'documentos' ? 'Tus documentos' : page === 'soporte' ? 'Soporte' : page === 'configuracion' ? 'Configuración' : 'Tu cuenta'}</h1></div><div className="driver-top-actions">{views.length > 1 && <label className="driver-view-select"><span>Vista</span><select value={activeView} onChange={(event) => onSwitchView(event.target.value as Role)}>{views.map((view) => <option key={view} value={view}>{panelLabel(view)}</option>)}</select></label>}<button className="driver-avatar" onClick={() => go('cuenta')}>{initials(user.name)}</button></div></header>
       <div className="driver-content">
         {isReviewOnly && <div className="driver-review-notice">Vista de revisión: puedes recorrer el panel, pero una cuenta administradora no puede ponerse en línea, aceptar ni finalizar viajes.</div>}
         {notice && <div className="driver-feedback success">✓ {notice}</div>}{error && <div className="driver-feedback failure">! {error}<button onClick={() => setError('')}>Cerrar</button></div>}
         {loading ? <div className="driver-loading">Actualizando tu información…</div> : page === 'inicio' ? <DriverHome state={state} active={activeTrip} requests={requests} position={position} busy={busy} reviewOnly={isReviewOnly} onAvailability={toggleAvailability} onTrips={() => go('viajes')} onProfile={() => go('documentos')} onReport={() => reportPosition(activeTrip?.id)}/>
-          : page === 'viajes' ? <DriverTrips active={activeTrip} requests={requests} history={trips} position={position} busy={busy} canWork={canWork} available={state.available} onAccept={(trip) => void action(() => acceptTrip(trip.id), 'Solicitud aceptada.')} onAdvance={(trip) => void action(() => advanceTrip(trip.id).then(() => undefined))} onFinish={finalize} onCancel={(trip) => void action(() => cancelTrip(trip.id), 'Viaje cancelado.')} onChat={setChatTrip}/>
+          : page === 'viajes' ? <DriverTrips active={activeTrip} requests={requests} history={trips} position={position} busy={busy} canWork={canWork} available={state.available} onAccept={(trip) => void action(() => acceptTrip(trip.id), 'Solicitud aceptada.')} onAdvance={advance} onFinish={finalize} onCancel={(trip) => { setCancelReason(''); setCancelingTrip(trip) }} onConfirmPayment={(trip) => void action(() => confirmPaymentReceived(trip.id), 'Pago recibido y registrado.')} onChat={setChatTrip}/>
           : page === 'ganancias' ? <EarningsPage earnings={earnings} reviewOnly={isReviewOnly}/>
+          : page === 'zonas' ? <WorkZonesPage zones={zones} busy={busy} reviewOnly={isReviewOnly} onSave={(ids) => void action(() => saveWorkZones(ids), 'Tus zonas de trabajo quedaron actualizadas.')}/>
+          : page === 'bancos' ? <BankAccountsPage banks={banks} accounts={bankAccounts} busy={busy} reviewOnly={isReviewOnly} onSave={(input) => void action(() => saveBankAccount(input).then(() => undefined), 'Cuenta bancaria guardada.')} onDelete={(id) => void action(() => deleteBankAccount(id), 'Cuenta bancaria eliminada.')}/>
           : page === 'vehiculos' ? <VehiclesPage vehicles={vehicles} busy={busy} onSave={(input) => void action(() => saveVehicle(input).then(() => undefined), 'Vehículo guardado.')} onActivate={(id) => void action(() => activateVehicle(id), 'Vehículo activado.')}/>
           : page === 'documentos' ? <DocumentsPage identity={identity} missing={missingRequirements} vehicles={vehicles} documents={documents} busy={busy} reviewOnly={isReviewOnly} onIdentity={(input) => void action(() => saveDriverIdentity(input), 'Identidad y licencia guardadas.')} onUpload={(type, file, options) => void action(() => uploadDriverDocument(user.id, type, file, options), 'Documento enviado para revisión.')} onOpen={async (path) => { try { window.open(await ownDocumentUrl(path), '_blank', 'noopener,noreferrer') } catch (cause) { setError(cause instanceof Error ? cause.message : 'No se pudo abrir el documento.') } }}/>
           : page === 'soporte' ? <SupportPage userId={user.id} trips={trips}/>
-          : page === 'configuracion' ? <div className="driver-page settings-page"><section className="driver-section-head"><span>PREFERENCIAS</span><h2>Configuración</h2><p>Personaliza todos los paneles de Ride.</p></section><AppearanceSettings theme={appearance.theme} reducedMotion={appearance.reducedMotion} onTheme={appearance.setTheme} onReducedMotion={appearance.setReducedMotion}/></div>
+          : page === 'configuracion' ? <div className="driver-page settings-page"><section className="driver-section-head"><span>PREFERENCIAS</span><h2>Configuración</h2><p>Personaliza todos los paneles de Ride.</p></section><AccountSettings user={user} onUserUpdate={onUserUpdate}/><AppearanceSettings theme={appearance.theme} reducedMotion={appearance.reducedMotion} onTheme={appearance.setTheme} onReducedMotion={appearance.setReducedMotion}/></div>
           : <DriverAccount user={user} state={state} vehicles={vehicles} documents={documents}/>
         }
       </div>
     </section>
     <nav className="driver-mobile-nav"><DriverNav active={page === 'inicio'} icon={<HomeIcon size={18} />} label="Inicio" onClick={() => go('inicio')}/><DriverNav active={page === 'viajes'} icon={<MapPinIcon size={18} />} label="Viajes" onClick={() => go('viajes')}/><DriverNav active={page === 'vehiculos'} icon={<TruckIcon size={18} />} label="Autos" onClick={() => go('vehiculos')}/><DriverNav active={page === 'documentos'} icon={<FileTextIcon size={18} />} label="Docs" onClick={() => go('documentos')}/><DriverNav active={page === 'cuenta'} icon={<UserIcon size={18} />} label="Cuenta" onClick={() => go('cuenta')}/></nav>
     {ratingTrip && <div className="driver-dialog-backdrop"><section className="driver-dialog"><button onClick={() => setRatingTrip(null)}>×</button><h2>¿Cómo estuvo el pasajero?</h2><p>Califica a {ratingTrip.pasajeroNombre}.</p><div className="driver-rating">{[1,2,3,4,5].map((score) => <button key={score} className={score <= ratingScore ? 'selected' : ''} onClick={() => setRatingScore(score)}>★</button>)}</div><textarea maxLength={300} value={ratingComment} onChange={(event) => setRatingComment(event.target.value)} placeholder="Comentario opcional"/><button className="primary" disabled={busy} onClick={submitRating}>Enviar calificación</button></section></div>}
-    {chatTrip && <TripChat trip={chatTrip} userId={user.id} onClose={() => setChatTrip(null)}/>}
+    {startingTrip && <div className="driver-dialog-backdrop"><section className="driver-dialog" role="dialog" aria-modal="true" aria-labelledby="start-trip-title"><button onClick={() => setStartingTrip(null)} aria-label="Cerrar">×</button><h2 id="start-trip-title">Código de inicio</h2><p>Pide al pasajero los seis dígitos que aparecen en su seguimiento. Así confirmamos que está dentro del vehículo correcto.</p><label className="driver-dialog-field">Código<input value={startCode} onChange={(event) => setStartCode(event.target.value.replace(/\D/g, '').slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="000000"/></label><button className="primary" disabled={busy || startCode.length !== 6} onClick={startWithCode}>{busy ? 'Comprobando…' : 'Validar y comenzar'}</button></section></div>}
+    {cancelingTrip && <div className="driver-dialog-backdrop"><section className="driver-dialog" role="dialog" aria-modal="true" aria-labelledby="cancel-trip-title"><button onClick={() => setCancelingTrip(null)} aria-label="Cerrar">×</button><h2 id="cancel-trip-title">Cancelar viaje</h2><p>Indica brevemente el motivo. Quedará registrado para soporte y posibles reclamos.</p><label className="driver-dialog-field">Motivo<textarea value={cancelReason} onChange={(event) => setCancelReason(event.target.value)} maxLength={200} placeholder="Ej. el pasajero no se presentó"/></label><button className="primary danger" disabled={busy} onClick={cancelWithReason}>{busy ? 'Cancelando…' : 'Confirmar cancelación'}</button></section></div>}
+    {chatTrip && <TripChat trip={chatTrip} userId={user.id} onClose={() => setChatTrip(null)}/>
   </main>
 }
 

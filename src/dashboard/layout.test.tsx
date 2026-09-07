@@ -33,6 +33,7 @@ vi.mock('../lib/driver-account', async (original) => ({
   ...await original<object>(), prepareSuperadminDriver: async () => {},
   getDriverState: async () => ({ exists: true, approved: false, approvalStatus: 'pendiente', available: false, hasActiveVehicle: false, rating: null }),
   listOwnVehicles: async () => [], listOwnDocuments: async () => [],
+  listWorkZones: async () => [], listBanks: async () => [], listOwnBankAccounts: async () => [],
   getDriverEarnings: async () => ({}), getMissingDriverRequirements: async () => [],
   getDriverIdentity: async () => ({ cedula: '', fingerprintCode: '', licenseType: '', licenseExpiresAt: '' }),
 }))
@@ -78,7 +79,7 @@ describe('panel navigation layout', () => {
       const props = { user, views, onSwitchView, onLogout: vi.fn() }
       const { container } = render(role === 'admin'
         ? <AdminDashboard {...props} viewAs="admin" onUserUpdate={vi.fn()} />
-        : role === 'driver' ? <DriverDashboard {...props} activeView="driver" />
+        : role === 'driver' ? <DriverDashboard {...props} activeView="driver" onUserUpdate={vi.fn()} />
           : <PassengerDashboard {...props} activeView="passenger" onUserUpdate={vi.fn()} />)
       await waitFor(() => expect(container.textContent).not.toMatch(/Cargando|Preparando tu panel/))
       const workspace = container.querySelector(role === 'admin' ? '.admin-main' : `.${role}-workspace`)!
@@ -95,7 +96,7 @@ describe('panel navigation layout', () => {
       expect(sidebar).toHaveAttribute('inert')
       const pages = role === 'passenger'
         ? ['Mis viajes', 'Direcciones', 'Pagos', 'Mi cuenta', 'Configuración', 'Soporte', 'Pedir viaje', 'Avisos']
-        : role === 'driver' ? ['Viajes', 'Ganancias', 'Vehículos', 'Documentos', 'Mi cuenta', 'Configuración', 'Soporte']
+        : role === 'driver' ? ['Viajes', 'Ganancias', 'Zonas de trabajo', 'Cuentas bancarias', 'Vehículos', 'Documentos', 'Mi cuenta', 'Configuración', 'Soporte']
           : ['Viajes', 'Usuarios', 'Conductores', 'Mi cuenta', 'Configuración']
       for (const [index, label] of pages.entries()) {
         if (sidebar.hasAttribute('inert')) fireEvent.click(screen.getByRole('button', { name: 'Alternar menú' }))

@@ -177,6 +177,9 @@ function databaseMessage(error: { message: string } | null, fallback: string): E
   const message = error.message.toLowerCase()
   if (message.includes('ya tienes un viaje')) return new Error('Ya tienes un viaje en curso.')
   if (message.includes('no hay tarifas')) return new Error('No hay tarifas disponibles en este momento.')
+  if (message.includes('codigo de inicio incorrecto')) return new Error('El código de inicio no es correcto.')
+  if (message.includes('no tiene codigo de inicio')) return new Error('El pasajero todavía no tiene un código. Marca primero que llegaste al punto.')
+  if (message.includes('no se paga en efectivo') || message.includes('se confirma automaticamente')) return new Error('Este pago se confirma automáticamente y no necesita confirmación manual.')
   if (message.includes('row-level security') || message.includes('permission denied')) {
     return new Error('No tienes permiso para realizar esta acción.')
   }
@@ -241,10 +244,17 @@ export async function acceptTrip(tripId: string): Promise<void> {
   if (error) throw databaseMessage(error, 'No se pudo aceptar el viaje.')
 }
 
-export async function advanceTrip(tripId: string): Promise<TripStatus> {
-  const { data, error } = await supabase.rpc('avanzar_viaje', { p_viaje_id: tripId })
+export async function advanceTrip(tripId: string, startCode?: string): Promise<TripStatus> {
+  const { data, error } = await supabase.rpc('avanzar_viaje', { p_viaje_id: tripId, p_codigo: startCode?.trim() || null })
   if (error) throw databaseMessage(error, 'No se pudo avanzar el viaje.')
   return String(data) as TripStatus
+}
+
+/** El código está protegido por RLS: únicamente lo puede leer el pasajero del viaje. */
+export async function getTripStartCode(tripId: string): Promise<string | null> {
+  const { data, error } = await supabase.from('codigos_viaje').select('codigo').eq('viaje_id', tripId).maybeSingle()
+  if (error) throw databaseMessage(error, 'No se pudo consultar el código de inicio.')
+  return data?.codigo ?? null
 }
 
 export async function finishTrip(tripId: string): Promise<number> {
@@ -394,9 +404,14 @@ export async function requestTrip(origin: Coordinates, destination: Place, quote
   return String(data)
 }
 
-export async function cancelTrip(tripId: string): Promise<void> {
-  const { error } = await supabase.rpc('cancelar_viaje', { p_viaje_id: tripId })
+export async function cancelTrip(tripId: string, reason?: string): Promise<void> {
+  const { error } = await supabase.rpc('cancelar_viaje', { p_viaje_id: tripId, p_motivo: reason?.trim() || null })
   if (error) throw databaseMessage(error, 'No se pudo cancelar el viaje.')
+}
+
+export async function confirmPaymentReceived(tripId: string): Promise<void> {
+  const { error } = await supabase.rpc('confirmar_pago_recibido', { p_viaje_id: tripId })
+  if (error) throw databaseMessage(error, 'No se pudo confirmar el pago.')
 }
 
 export async function hasRatedTrip(tripId: string, userId: string): Promise<boolean> {

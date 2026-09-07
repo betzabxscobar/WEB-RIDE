@@ -214,7 +214,7 @@ function App() {
 
   if (screen === 'home' && user && activeView === 'passenger') return <PassengerDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onUserUpdate={setUser} onLogout={logout} />
 
-  if (screen === 'home' && user && activeView === 'driver') return <DriverDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onLogout={logout} />
+  if (screen === 'home' && user && activeView === 'driver') return <DriverDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onUserUpdate={setUser} onLogout={logout} />
 
   if (loading && screen === 'welcome') return <main className="loading-screen" role="status" aria-live="polite" aria-label="Preparando Ride">
     <div className="loading-glow loading-glow-one" aria-hidden />

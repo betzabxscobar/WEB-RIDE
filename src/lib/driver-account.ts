@@ -41,6 +41,20 @@ export type DriverIdentity = {
 }
 
 export type DriverEarnings = { trips: number; gross: number; earned: number; commission: number }
+export type WorkZone = { id: string; name: string; selected: boolean }
+export type Bank = { id: string; name: string; logo: string | null; color: string | null }
+export type BankAccount = {
+  id: string
+  bank: string
+  bankName: string
+  bankLogo: string | null
+  bankColor: string | null
+  type: 'ahorros' | 'corriente'
+  number: string
+  holder: string
+  holderId: string | null
+  preferred: boolean
+}
 
 function failure(error: { message: string } | null, fallback: string): Error {
   if (!error) return new Error(fallback)
@@ -163,5 +177,61 @@ export async function ownDocumentUrl(path: string): Promise<string> {
   const { data, error } = await supabase.storage.from('documentos').createSignedUrl(path, 3600)
   if (error || !data) throw failure(error, 'No se pudo abrir el documento.')
   return data.signedUrl
+}
+
+export async function listWorkZones(): Promise<WorkZone[]> {
+  const { data, error } = await supabase.rpc('mis_zonas')
+  if (error) throw failure(error, 'No se pudieron cargar tus zonas de trabajo.')
+  return ((data ?? []) as Array<Record<string, unknown>>).map((row) => ({ id: String(row.id), name: String(row.nombre), selected: Boolean(row.elegida) }))
+}
+
+export async function saveWorkZones(zoneIds: string[]): Promise<void> {
+  const { error } = await supabase.rpc('elegir_mis_zonas', { p_zonas: zoneIds })
+  if (error) throw failure(error, 'No se pudieron guardar tus zonas de trabajo.')
+}
+
+export async function listBanks(): Promise<Bank[]> {
+  const { data, error } = await supabase.from('bancos').select('id, nombre, logo, color').eq('activo', true).order('orden')
+  if (error) throw failure(error, 'No se pudo cargar el catálogo de bancos.')
+  return (data ?? []).map((row) => ({ id: row.id, name: row.nombre, logo: row.logo, color: row.color }))
+}
+
+function toBankAccount(row: Record<string, unknown>): BankAccount {
+  const joined = Array.isArray(row.bancos) ? row.bancos[0] : row.bancos
+  const bank = joined && typeof joined === 'object' ? joined as Record<string, unknown> : {}
+  return {
+    id: String(row.id), bank: String(row.banco), bankName: String(row.banco_nombre ?? bank.nombre ?? row.banco),
+    bankLogo: (row.banco_logo ?? bank.logo ?? null) as string | null,
+    bankColor: (row.banco_color ?? bank.color ?? null) as string | null,
+    type: row.tipo as BankAccount['type'], number: String(row.numero), holder: String(row.titular),
+    holderId: (row.cedula_titular as string) ?? null, preferred: Boolean(row.predeterminada),
+  }
+}
+
+export async function listOwnBankAccounts(userId: string): Promise<BankAccount[]> {
+  const { data, error } = await supabase.from('cuentas_bancarias_chofer').select('id, banco, tipo, numero, titular, cedula_titular, predeterminada, bancos(nombre, logo, color)').eq('conductor_id', userId).eq('activa', true).order('predeterminada', { ascending: false })
+  if (error) throw failure(error, 'No se pudieron cargar tus cuentas bancarias.')
+  return (data ?? []).map((row) => toBankAccount(row as unknown as Record<string, unknown>))
+}
+
+export async function saveBankAccount(input: { id?: string; bank: string; type: BankAccount['type']; number: string; holder: string; holderId?: string; preferred: boolean }): Promise<string> {
+  const { data, error } = await supabase.rpc('registrar_cuenta_bancaria', {
+    p_banco: input.bank, p_tipo: input.type, p_numero: input.number, p_titular: input.holder,
+    p_cedula_titular: input.holderId?.trim() || null, p_predeterminada: input.preferred, p_cuenta_id: input.id ?? null,
+  })
+  if (error) throw failure(error, 'No se pudo guardar la cuenta bancaria.')
+  return String(data)
+}
+
+export async function deleteBankAccount(accountId: string): Promise<void> {
+  const { error } = await supabase.rpc('eliminar_cuenta_bancaria', { p_cuenta_id: accountId })
+  if (error) throw failure(error, 'No se pudo eliminar la cuenta bancaria.')
+}
+
+/** Solo devuelve cuentas cuando la sesión participa en el viaje indicado. */
+export async function listDriverBankAccountsForTrip(tripId: string): Promise<BankAccount[]> {
+  const { data, error } = await supabase.rpc('cuentas_del_chofer', { p_viaje_id: tripId })
+  if (error) throw failure(error, 'No se pudieron cargar los datos para la transferencia.')
+  return ((data ?? []) as Array<Record<string, unknown>>).map(toBankAccount)
 }
 
