@@ -44,6 +44,7 @@ export type Trip = {
   categoriaIcono: string | null
   montoCobrado: number
   pagoEstado: 'pendiente' | 'completado' | 'fallido' | null
+  multa: number
 }
 
 export type Place = {
@@ -94,7 +95,7 @@ const COLUMNAS = `
   origen_lat, origen_lng, origen_texto, origen_referencia,
   destino_lat, destino_lng, destino_texto, destino_referencia,
   categoria, categoria_nombre, categoria_icono,
-  monto_cobrado, pago_estado
+  monto_cobrado, pago_estado, multa
 `
 
 export const ESTADO_LABEL: Record<TripStatus, string> = {
@@ -167,6 +168,7 @@ function toTrip(row: Row): Trip {
     categoriaIcono: (row.categoria_icono as string) ?? null,
     montoCobrado: Number(row.monto_cobrado ?? 0),
     pagoEstado: (row.pago_estado as Trip['pagoEstado']) ?? null,
+    multa: Number(row.multa ?? 0),
   }
 }
 

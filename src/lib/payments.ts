@@ -2,7 +2,7 @@ import { supabase } from './supabase'
 
 export type PaymentMethod = {
   id: string
-  type: 'efectivo' | 'tarjeta' | 'deuna'
+  type: 'efectivo' | 'tarjeta' | 'deuna' | 'transferencia'
   detail: string | null
   preferred: boolean
   createdAt: string
@@ -12,7 +12,7 @@ export type RidePayment = {
   id: string
   tripId: string
   amount: number
-  type: 'pago' | 'reembolso' | 'reintento'
+  type: 'pago' | 'reembolso' | 'reintento' | 'multa'
   status: 'pendiente' | 'completado' | 'fallido'
   createdAt: string
 }
@@ -35,17 +35,18 @@ export async function listPaymentMethods(userId: string): Promise<PaymentMethod[
   }))
 }
 
-export async function registerPaymentMethod(type: 'efectivo' | 'deuna'): Promise<void> {
+export async function registerPaymentMethod(type: 'efectivo' | 'deuna' | 'transferencia'): Promise<void> {
   const { error } = await supabase.rpc('registrar_metodo_pago', {
     p_tipo: type,
     p_token: null,
     p_predeterminado: true,
   })
-  if (error) throw new Error(`No se pudo registrar ${type === 'deuna' ? 'DeUna' : 'el pago en efectivo'}.`)
+  if (error) throw new Error(`No se pudo registrar ${type === 'deuna' ? 'DeUna' : type === 'transferencia' ? 'la transferencia' : 'el pago en efectivo'}.`)
 }
 
 export const registerCashPayment = () => registerPaymentMethod('efectivo')
 export const registerDeunaPayment = () => registerPaymentMethod('deuna')
+export const registerTransferPayment = () => registerPaymentMethod('transferencia')
 
 export type DeunaCharge = { order: string; amount: number; qr: string | null; deepLink: string | null; alreadyPaid: boolean }
 
