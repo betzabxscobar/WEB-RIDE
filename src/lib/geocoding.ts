@@ -9,7 +9,7 @@ type PhotonResponse = { features?: PhotonFeature[] }
 
 const PHOTON_URL = 'https://photon.komoot.io'
 const ECUADOR_BBOX = '-92.2,-5.2,-75.0,1.8'
-const QUITO = { lat: -0.1807, lng: -78.4678 }
+const ECUADOR_CENTER = { lat: -1.8312, lng: -78.1834 }
 
 function text(value: unknown): string {
   return typeof value === 'string' ? value.trim() : ''
@@ -60,15 +60,10 @@ export async function searchPlaces(query: string, center?: { lat: number; lng: n
   }
   const data = await photon('/api/', params, signal)
   const places = (data.features ?? []).map(fromFeature).filter((place): place is Place => place != null)
-  const priorityCenter = center ?? QUITO
+  const priorityCenter = center ?? ECUADOR_CENTER
   return places
     .filter((place) => place.lat >= -5.2 && place.lat <= 1.8 && place.lng >= -92.2 && place.lng <= -75)
-    .sort((a, b) => {
-      const aQuito = /quito|pichincha/i.test(`${a.nombre} ${a.direccion}`) ? 0 : 1
-      const bQuito = /quito|pichincha/i.test(`${b.nombre} ${b.direccion}`) ? 0 : 1
-      if (!center && aQuito !== bQuito) return aQuito - bQuito
-      return squaredDistance(a, priorityCenter) - squaredDistance(b, priorityCenter)
-    })
+    .sort((a, b) => squaredDistance(a, priorityCenter) - squaredDistance(b, priorityCenter))
 }
 
 function squaredDistance(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {

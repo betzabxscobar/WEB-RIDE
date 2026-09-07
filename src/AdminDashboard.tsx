@@ -7,7 +7,9 @@ import { faltantes, listDrivers, type Driver } from './lib/drivers'
 import { listTrips, watchTrips, esFinal, ESTADO_LABEL, type Trip } from './lib/trips'
 import DriversPanel from './DriversPanel'
 import { AppearanceSettings, useAppearance } from './components/AppearanceSettings'
-import { Home as HomeIcon, Map as MapIcon, Users as UsersIcon, User as UserIcon, Settings as SettingsIcon, LogOut as LogOutIcon, Menu as MenuIcon, MapPin as MapPinIcon, Navigation as NavigationIcon, Search as SearchIcon, SlidersHorizontal as FilterIcon, CalendarDays as CalendarIcon, ArrowDownUp as SortIcon, Route as RouteIcon, CircleDollarSign as DollarIcon, CarFront as CarIcon, CheckCircle2 as CheckIcon, CircleX as CancelIcon, Activity as ActivityIcon, MoreVertical as MoreIcon, ShieldCheck as ShieldIcon, Mail as MailIcon, BriefcaseBusiness as RoleIcon, Pencil as PencilIcon, Camera as CameraIcon, LockKeyhole as LockIcon, X as CloseIcon } from 'lucide-react'
+import { TripRows, UserRows } from './admin/AdminTables'
+import { initials } from './dashboard/formatters'
+import { Home as HomeIcon, Map as MapIcon, Users as UsersIcon, User as UserIcon, Settings as SettingsIcon, LogOut as LogOutIcon, Menu as MenuIcon, Navigation as NavigationIcon, Search as SearchIcon, SlidersHorizontal as FilterIcon, CalendarDays as CalendarIcon, ArrowDownUp as SortIcon, Route as RouteIcon, CircleDollarSign as DollarIcon, CarFront as CarIcon, CheckCircle2 as CheckIcon, Activity as ActivityIcon, ShieldCheck as ShieldIcon, Mail as MailIcon, BriefcaseBusiness as RoleIcon, Pencil as PencilIcon, Camera as CameraIcon, LockKeyhole as LockIcon, X as CloseIcon } from 'lucide-react'
 
 type Props = {
   user: User
@@ -35,72 +37,6 @@ function NavIcon({ section }: { section: Section }) {
   if (section === 'Conductores') return <UsersIcon size={18} aria-hidden />
   if (section === 'Configuración') return <SettingsIcon size={18} aria-hidden />
   return <UserIcon size={18} aria-hidden />
-}
-
-function roleLabel(role: string) {
-  if (role === 'superadmin') return 'Superadmin'
-  if (role === 'admin') return 'Admin'
-  if (role === 'driver') return 'Conductor'
-  return 'Pasajero'
-}
-
-function roleClass(role: string) {
-  if (role === 'admin') return 'superadmin'
-  return role
-}
-
-function initials(name: string) {
-  return name.split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase()
-}
-
-function formatDate(value: string) {
-  if (!value) return 'Sin fecha'
-  return new Intl.DateTimeFormat('es-EC', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(value))
-}
-
-function paymentLabel(trip: Trip) {
-  return trip.montoCobrado > 0 ? 'Cobrado' : trip.estado === 'FINALIZADO' ? 'Pago pendiente' : 'Estimado'
-}
-
-function paymentClass(trip: Trip) {
-  return trip.montoCobrado > 0 ? 'paid' : trip.estado === 'FINALIZADO' ? 'pending' : 'estimated'
-}
-
-function UserRows({ users, loading, error, limit }: { users: User[]; loading: boolean; error: string; limit?: number }) {
-  const rows = limit == null ? users : users.slice(0, limit)
-  return <>
-    {error && <p className="admin-error">{error}</p>}
-    {loading && <p className="admin-empty">Cargando usuarios…</p>}
-    {!loading && !error && users.length === 0 && <p className="admin-empty">Todavía no hay cuentas registradas.</p>}
-    {!loading && !error && rows.map((account) => (
-      <div className="user-row" key={account.id}>
-        <span>{initials(account.name)}</span>
-        <div><strong>{account.name}</strong><small>{account.email}</small></div>
-        <em className={roleClass(account.role)}>{roleLabel(account.role)}</em>
-        <time><CalendarIcon size={13} aria-hidden />{formatDate(account.createdAt)}</time>
-      </div>
-    ))}
-  </>
-}
-
-function TripRows({ trips, loading, error, limit }: { trips: Trip[]; loading: boolean; error: string; limit?: number }) {
-  const rows = limit == null ? trips : trips.slice(0, limit)
-  return <>
-    {error && <p className="admin-error">{error}</p>}
-    {loading && <p className="admin-empty">Cargando viajes...</p>}
-    {!loading && !error && trips.length === 0 && <p className="admin-empty">No se encontraron viajes con estos filtros.</p>}
-    {!loading && !error && rows.length > 0 && <div className="trips-table">
-      {rows.map((trip) => (
-        <article className="trip-row" key={trip.id}>
-          <em className={`trip-state ${esFinal(trip.estado) ? trip.estado.toLowerCase() : 'activo'}`}>{trip.estado === 'FINALIZADO' && <CheckIcon size={11} aria-hidden />}{trip.estado === 'CANCELADO' && <CancelIcon size={11} aria-hidden />}{ESTADO_LABEL[trip.estado]}</em>
-          <div className="trip-route"><div className="route-point origin"><MapPinIcon size={15} aria-hidden /><span><small>Origen</small><strong>{trip.origenTexto}</strong></span></div><span className="route-line" aria-hidden /><div className="route-point destination"><NavigationIcon size={15} aria-hidden /><span><small>Destino</small><strong>{trip.destinoTexto}</strong></span></div></div>
-          <div className="trip-persons"><span><UserIcon size={14} aria-hidden /><b>{trip.pasajeroNombre}</b></span><span><CarIcon size={14} aria-hidden /><b>{trip.conductorNombre || 'Sin conductor'}{trip.vehiculoPlaca ? ` · ${trip.vehiculoPlaca}` : ''}</b></span></div>
-          <b className={`trip-amount ${paymentClass(trip)}`}><small>{paymentLabel(trip)}</small>${trip.montoCobrado > 0 ? trip.montoCobrado.toFixed(2) : (trip.tarifaFinal ?? trip.tarifaEstimada).toFixed(2)}</b>
-          <time className="trip-date"><CalendarIcon size={13} aria-hidden />{formatDate(trip.fechaSolicitud)}</time><button className="trip-more" type="button" aria-label="Más opciones del viaje"><MoreIcon size={17} aria-hidden /></button>
-        </article>
-      ))}
-    </div>}
-  </>
 }
 
 export default function AdminDashboard({ user, viewAs, views, onSwitchView, onUserUpdate, onLogout }: Props) {
