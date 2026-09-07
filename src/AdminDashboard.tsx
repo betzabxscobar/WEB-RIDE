@@ -8,6 +8,7 @@ import { faltantes, listDrivers, type Driver } from './lib/drivers'
 import { listTrips, watchTrips, esFinal, ESTADO_LABEL, type Trip } from './lib/trips'
 import DriversPanel from './DriversPanel'
 import { AppearanceSettings, useAppearance } from './components/AppearanceSettings'
+import { AccountSettings } from './components/AccountSettings'
 import { TripRows, UserRows } from './admin/AdminTables'
 import { initials } from './dashboard/formatters'
 import { Home as HomeIcon, Map as MapIcon, Users as UsersIcon, User as UserIcon, Settings as SettingsIcon, LogOut as LogOutIcon, Menu as MenuIcon, Navigation as NavigationIcon, Search as SearchIcon, SlidersHorizontal as FilterIcon, CalendarDays as CalendarIcon, ArrowDownUp as SortIcon, Route as RouteIcon, CircleDollarSign as DollarIcon, CarFront as CarIcon, CheckCircle2 as CheckIcon, Activity as ActivityIcon, ShieldCheck as ShieldIcon, Mail as MailIcon, BriefcaseBusiness as RoleIcon, Pencil as PencilIcon, Camera as CameraIcon, LockKeyhole as LockIcon, X as CloseIcon } from 'lucide-react'
@@ -332,7 +333,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onUs
           </section>
           <button className="account-signout-button" type="button" onClick={onLogout}><LogOutIcon size={19} aria-hidden />Cerrar sesión</button>
         </div>}
-        {activeSection === 'Configuración' && <div className="admin-content settings-page"><section className="overview-heading"><small>PREFERENCIAS</small><h2>Configuración</h2><p>Personaliza todos los paneles de Ride.</p></section><AppearanceSettings theme={appearance.theme} reducedMotion={appearance.reducedMotion} onTheme={appearance.setTheme} onReducedMotion={appearance.setReducedMotion}/></div>}
+        {activeSection === 'Configuración' && <div className="admin-content settings-page"><section className="overview-heading"><small>PREFERENCIAS</small><h2>Configuración</h2><p>Personaliza todos los paneles de Ride.</p></section><AccountSettings user={user} onUserUpdate={onUserUpdate}/><AppearanceSettings theme={appearance.theme} reducedMotion={appearance.reducedMotion} onTheme={appearance.setTheme} onReducedMotion={appearance.setReducedMotion}/></div>}
       </section>
       {editingAccount && <div className="account-dialog-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setEditingAccount(false) }}>
         <section className="account-dialog" role="dialog" aria-modal="true" aria-labelledby="account-dialog-title">

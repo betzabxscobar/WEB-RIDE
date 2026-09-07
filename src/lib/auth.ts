@@ -52,6 +52,7 @@ export type User = {
   role: Role
   mustChangePassword: boolean
   createdAt: string
+  avatarUrl: string | null
 }
 
 /**
@@ -70,9 +71,10 @@ type ProfileRow = {
   role: Role
   must_change_password: boolean
   created_at: string
+  foto_url: string | null
 }
 
-const PROFILE_COLUMNS = 'id, email, full_name, phone, role, must_change_password, created_at'
+const PROFILE_COLUMNS = 'id, email, full_name, phone, role, must_change_password, created_at, foto_url'
 
 export function toUser(row: ProfileRow): User {
   return {
@@ -83,6 +85,7 @@ export function toUser(row: ProfileRow): User {
     role: row.role,
     mustChangePassword: row.must_change_password,
     createdAt: row.created_at,
+    avatarUrl: row.foto_url ?? null,
   }
 }
 
@@ -262,6 +265,62 @@ export async function updateOwnProfile(input: { name: string; phone: string }): 
   const user = await loadCurrentUser()
   if (!user) throw new Error('Actualizamos tus datos, pero no pudimos recargar el perfil.')
   return user
+}
+
+async function reauthenticate(email: string, password: string): Promise<void> {
+  if (!password) throw new Error('Ingresa tu contraseña actual.')
+  const { error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password })
+  if (error) {
+    if (error.message.toLowerCase().includes('invalid login credentials')) throw new Error('Tu contraseña actual no es correcta.')
+    throw new Error(translateAuthError(error.message))
+  }
+}
+
+/** Solicita el cambio de correo después de comprobar la contraseña actual. */
+export async function changeOwnEmail(user: User, email: string, currentPassword: string): Promise<void> {
+  const normalized = email.trim().toLowerCase()
+  if (normalized === user.email.trim().toLowerCase()) throw new Error('Ese ya es tu correo actual.')
+  await reauthenticate(user.email, currentPassword)
+  const { error } = await supabase.auth.updateUser(
+    { email: normalized },
+    { emailRedirectTo: window.location.origin },
+  )
+  if (error) throw new Error(translateAuthError(error.message))
+}
+
+/** Cambia la contraseña después de comprobar que la actual pertenece al usuario. */
+export async function changeOwnPassword(user: User, currentPassword: string, newPassword: string): Promise<void> {
+  const minimum = user.role === 'admin' || user.role === 'superadmin' ? 10 : 8
+  if (newPassword.length < minimum) throw new Error(`La contraseña debe tener mínimo ${minimum} caracteres.`)
+  if (newPassword === currentPassword) throw new Error('Elige una contraseña distinta a la actual.')
+  await reauthenticate(user.email, currentPassword)
+  const { error } = await supabase.auth.updateUser({ password: newPassword })
+  if (error) throw new Error(translateAuthError(error.message))
+}
+
+/** Guarda una foto pública, pero restringe la escritura a la carpeta del usuario mediante RLS. */
+export async function uploadOwnAvatar(user: User, file: File): Promise<User> {
+  if (file.size > 2 * 1024 * 1024) throw new Error('La foto pesa más de 2 MB. Usa una más liviana.')
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) throw new Error('Sube una imagen JPG, PNG o WebP.')
+  const path = `${user.id}/perfil.jpg`
+  const { error: uploadError } = await supabase.storage.from('avatares').upload(path, file, { upsert: true, contentType: file.type })
+  if (uploadError) throw new Error('No pudimos subir la foto. Revisa el archivo e inténtalo nuevamente.')
+  const { data } = supabase.storage.from('avatares').getPublicUrl(path)
+  const avatarUrl = `${data.publicUrl}?v=${Date.now()}`
+  const { error } = await supabase.from('profiles').update({ foto_url: avatarUrl, updated_at: new Date().toISOString() }).eq('id', user.id)
+  if (error) throw new Error('Subimos la foto, pero no pudimos guardarla en tu perfil.')
+  const updated = await loadCurrentUser()
+  if (!updated) throw new Error('No pudimos recargar tu perfil.')
+  return updated
+}
+
+export async function removeOwnAvatar(user: User): Promise<User> {
+  await supabase.storage.from('avatares').remove([`${user.id}/perfil.jpg`])
+  const { error } = await supabase.from('profiles').update({ foto_url: null, updated_at: new Date().toISOString() }).eq('id', user.id)
+  if (error) throw new Error('No pudimos quitar tu foto.')
+  const updated = await loadCurrentUser()
+  if (!updated) throw new Error('No pudimos recargar tu perfil.')
+  return updated
 }
 
 /** Usuarios visibles para el panel. RLS decide qué filas devuelve. */
