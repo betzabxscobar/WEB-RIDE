@@ -223,6 +223,54 @@ button, input, select, textarea { line-height: 1.4; }
   .passenger-sidebar, .driver-sidebar, .admin-sidebar { transition: none !important; }
 }
 
+/* Refined shared sidebar: compact navigation, stronger hierarchy and depth. */
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar){
+  isolation:isolate;
+  padding:24px 16px 18px;
+  background:
+    radial-gradient(circle at 12% 3%,rgba(76,196,231,.14),transparent 28%),
+    linear-gradient(180deg,#071f30 0%,#082a3a 52%,#071e2b 100%)!important;
+  border-right:1px solid rgba(122,205,228,.16);
+  box-shadow:14px 0 42px rgba(3,18,28,.16);
+}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar)::after{
+  content:'';position:absolute;z-index:-1;left:16px;right:16px;bottom:13px;height:165px;border-radius:28px;
+  background:linear-gradient(150deg,rgba(70,191,226,.06),rgba(86,212,184,.025));pointer-events:none;
+}
+:where(.passenger-brand,.driver-brand,.admin-brand){min-height:54px!important;padding:0 8px 16px!important;border-bottom:1px solid rgba(255,255,255,.08)!important}
+:where(.passenger-brand,.driver-brand,.admin-brand) img{filter:drop-shadow(0 7px 15px rgba(80,202,236,.2))}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav{margin-top:20px!important;gap:7px!important}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav button{
+  position:relative;min-height:46px!important;padding:9px 11px!important;border:1px solid transparent!important;border-radius:12px!important;color:#9eb7c3!important;font-size:13px!important;font-weight:600!important;transition:background-color .18s ease,border-color .18s ease,color .18s ease,transform .18s ease!important;
+}
+:where(.passenger-sidebar,.driver-sidebar) nav button>span:first-child,
+.admin-sidebar nav button>svg{
+  width:30px!important;height:30px!important;display:grid!important;place-items:center!important;flex:none;border-radius:9px;background:rgba(255,255,255,.045);color:#91b8c7;transition:inherit;
+}
+.admin-sidebar nav button>svg{padding:6px}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav button:hover{
+  transform:translateX(2px)!important;border-color:rgba(116,211,236,.1)!important;background:rgba(255,255,255,.055)!important;color:#f5fbfd!important;
+}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav button.active{
+  transform:none!important;border-color:rgba(101,209,238,.16)!important;background:linear-gradient(100deg,rgba(72,190,226,.2),rgba(72,190,226,.07))!important;color:#fff!important;box-shadow:inset 3px 0 #68d5ef,0 8px 24px rgba(0,12,20,.1)!important;
+}
+:where(.passenger-sidebar,.driver-sidebar) nav button.active>span:first-child,
+.admin-sidebar nav button.active>svg{background:rgba(103,211,239,.15);color:#7eddf2}
+.admin-sidebar .nav-group>small{padding-inline:11px;color:#668695!important;font-size:10px!important;letter-spacing:1.5px!important}
+:where(.passenger-profile,.driver-profile,.sidebar-profile){
+  margin-top:auto!important;padding:13px 11px!important;border:1px solid rgba(134,202,220,.1)!important;border-radius:14px!important;background:rgba(255,255,255,.035)!important;
+}
+:where(.passenger-profile,.driver-profile,.sidebar-profile)>span{box-shadow:0 7px 18px rgba(45,176,210,.14)}
+:where(.passenger-profile,.driver-profile,.sidebar-profile) strong{color:#f5fbfd!important;font-size:12px!important}
+:where(.passenger-profile,.driver-profile,.sidebar-profile) small{color:#82a4b2!important;font-size:11px!important}
+:where(.passenger-logout,.driver-logout,.admin-logout){
+  min-height:43px!important;margin-top:9px!important;border:1px solid rgba(151,205,219,.13)!important;border-radius:11px!important;background:rgba(255,255,255,.025)!important;color:#9fb8c4!important;font-size:12px!important;
+}
+:where(.passenger-logout,.driver-logout,.admin-logout):hover{border-color:rgba(105,211,239,.3)!important;background:rgba(86,199,229,.08)!important;color:#fff!important}
+.sidebar-dismiss{top:17px;right:13px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.035);font-size:20px}
+.panel-switcher.sidebar{padding:10px;border:1px solid rgba(134,202,220,.1);border-radius:13px;background:rgba(255,255,255,.03)}
+.panel-switcher.sidebar select{min-height:40px!important;border-color:rgba(128,199,217,.16)!important;background:#0d3344!important;color:#e9f6fa!important;border-radius:9px!important}
+
 /* Acabado visual: superficies limpias, jerarquía compacta y acento Ride. */
 :root {
   --ride-canvas: #f5f7f9;
@@ -493,4 +541,122 @@ html[data-ride-theme="dark"] .viewing-as button { background: #143746 !important
   }
   .admin-shell .recent-trips .trip-persons { display: grid; gap: 6px; }
   .admin-shell .recent-trips .trip-date { justify-self: start; }
+}
+
+/* Keep the sidebar art direction above legacy per-panel declarations. */
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar){
+  padding:24px 16px 18px;
+  background:radial-gradient(circle at 12% 3%,rgba(76,196,231,.14),transparent 28%),linear-gradient(180deg,#071f30 0%,#082a3a 52%,#071e2b 100%)!important;
+  border-right-color:rgba(122,205,228,.16)!important;
+  box-shadow:14px 0 42px rgba(3,18,28,.16)!important;
+}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav button{min-height:46px!important;padding:9px 11px!important;border:1px solid transparent!important;border-radius:12px!important;color:#9eb7c3!important;font-size:13px!important;font-weight:600!important}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav button:hover{border-color:rgba(116,211,236,.1)!important;background:rgba(255,255,255,.055)!important;color:#f5fbfd!important;transform:translateX(2px)!important}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav button.active{border-color:rgba(101,209,238,.16)!important;background:linear-gradient(100deg,rgba(72,190,226,.2),rgba(72,190,226,.07))!important;color:#fff!important;box-shadow:inset 3px 0 #68d5ef,0 8px 24px rgba(0,12,20,.1)!important;transform:none!important}
+:where(.passenger-profile,.driver-profile,.sidebar-profile){padding:13px 11px!important;border:1px solid rgba(134,202,220,.1)!important;border-radius:14px!important;background:rgba(255,255,255,.035)!important}
+:where(.passenger-logout,.driver-logout,.admin-logout){min-height:43px!important;margin-top:9px!important;border:1px solid rgba(151,205,219,.13)!important;border-radius:11px!important;background:rgba(255,255,255,.025)!important;color:#9fb8c4!important}
+
+/* Right-side drawer. It shares one geometry across passenger, driver and admin
+   so none of the legacy panel rules can make it overflow the viewport. */
+:where(.passenger-shell,.driver-shell,.admin-shell){--ride-sidebar-width:250px;overflow-x:clip}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar){
+  position:fixed!important;inset:0 -250px 0 auto!important;left:auto!important;right:calc(-1 * var(--ride-sidebar-width))!important;
+  width:min(var(--ride-sidebar-width),calc(100vw - 16px))!important;max-width:calc(100vw - 16px);height:100dvh!important;
+  box-sizing:border-box;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain;
+  border:0!important;border-left:1px solid rgba(122,205,228,.13)!important;
+  box-shadow:-14px 0 42px rgba(3,18,28,.16)!important;
+  transition:right .32s cubic-bezier(.22,1,.36,1),visibility .24s ease,opacity .24s ease!important;
+}
+:where(.passenger-shell,.driver-shell,.admin-shell).sidebar-open :where(.passenger-sidebar,.driver-sidebar,.admin-sidebar){right:0!important;left:auto!important;transform:none!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important}
+.admin-sidebar{transform:none!important;opacity:1;visibility:visible;pointer-events:auto}
+.admin-shell:not(.sidebar-open) .admin-sidebar{opacity:0;visibility:hidden;pointer-events:none}
+:where(.passenger-workspace,.driver-workspace,.admin-main){margin-left:0!important;transition:margin-right .32s cubic-bezier(.22,1,.36,1),width .32s cubic-bezier(.22,1,.36,1)!important}
+@media(min-width:1051px){
+  :where(.passenger-shell,.driver-shell,.admin-shell).sidebar-open :where(.passenger-workspace,.driver-workspace,.admin-main){margin-right:var(--ride-sidebar-width)!important;margin-left:0!important;width:calc(100% - var(--ride-sidebar-width))!important}
+}
+@media(max-width:1050px){
+  :where(.passenger-shell,.driver-shell,.admin-shell).sidebar-open :where(.passenger-workspace,.driver-workspace,.admin-main){margin:0!important;width:100%!important}
+}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav{width:100%;min-width:0;overflow-x:hidden!important}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav button{width:100%;max-width:100%;min-width:0;box-sizing:border-box;overflow:hidden;border:0!important;outline:0!important;box-shadow:none!important}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav button:hover{transform:translateX(-2px)!important;border:0!important;box-shadow:none!important}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav button.active{border:0!important;outline:0!important;box-shadow:none!important;background:rgba(57,188,227,.13)!important}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav button:focus-visible{outline:2px solid rgba(105,211,239,.7)!important;outline-offset:-2px!important}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar)::after{display:none!important}
+.sidebar-dismiss{left:12px!important;right:auto!important}
+:where(.passenger-brand,.driver-brand,.admin-brand){padding-left:36px!important;padding-right:8px!important}
+.admin-sidebar .sidebar-bottom{min-width:0;padding-bottom:max(2px,env(safe-area-inset-bottom))}
+.admin-sidebar :where(.panel-switcher.sidebar,.sidebar-profile,.admin-logout){width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+.admin-sidebar .panel-switcher.sidebar select{max-width:100%;text-overflow:ellipsis}
+@media(max-height:720px){
+  :where(.passenger-sidebar,.driver-sidebar,.admin-sidebar){padding-top:16px;padding-bottom:12px}
+  :where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav{margin-top:12px!important;gap:3px!important}
+  :where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav button{min-height:40px!important;padding-block:5px!important}
+  .admin-sidebar nav{padding-block:10px!important}.admin-sidebar .sidebar-bottom{gap:6px!important}
+}
+
+/* Header and workspace follow the sidebar's new right-hand direction. */
+:where(.passenger-topbar,.driver-topbar,.admin-main>header){
+  padding-inline:clamp(24px,4vw,56px)!important;column-gap:12px!important;
+}
+.admin-main>header>div:nth-child(2),.passenger-title,.driver-topbar>div:first-of-type{order:1;margin-right:auto!important;min-width:0}
+.admin-main>header .admin-profile,.passenger-top-actions,.driver-top-actions{order:2}
+.admin-main>header .hamburger-button,.passenger-topbar>.hamburger-button,.driver-topbar>.driver-hamburger{
+  order:3;position:static!important;flex:0 0 44px!important;width:44px!important;height:44px!important;margin:0 0 0 4px!important;
+  border:1px solid var(--ride-panel-border,#d7e4e9)!important;border-radius:12px!important;background:var(--ride-panel-surface,#fff)!important;
+  color:#1488aa!important;box-shadow:0 5px 16px rgba(8,38,56,.045)!important;transform:none!important;
+}
+.admin-main>header .hamburger-button:hover,.passenger-topbar>.hamburger-button:hover,.driver-topbar>.driver-hamburger:hover{
+  border-color:#a8dce9!important;background:#eaf8fb!important;color:#087594!important;transform:translateY(-1px)!important;
+}
+.admin-main>header .admin-profile{margin-left:8px;padding-right:4px}
+.admin-main>header .admin-profile>span,.passenger-avatar,.driver-avatar{box-shadow:0 0 0 3px var(--ride-panel-surface,#fff),0 0 0 4px var(--ride-panel-border,#d7e4e9)}
+.admin-content{width:100%!important;max-width:1360px!important;margin-inline:auto!important;padding-inline:clamp(24px,4vw,56px)!important}
+.admin-shell .overview-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
+.admin-shell .metric-strip{align-items:stretch}
+.admin-shell .metric-strip article{height:100%;min-width:0}
+.admin-shell :where(.admin-card,.trip-row,.queue-row,.user-row,.driver-row){min-width:0}
+.admin-shell :where(.trip-route,.trip-persons,.route-point,.queue-row>div,.user-row>div){min-width:0}
+
+@media(max-width:760px){
+  :where(.passenger-topbar,.driver-topbar,.admin-main>header){padding-inline:16px!important}
+  .passenger-topbar>.hamburger-button,.driver-topbar>.driver-hamburger{order:2;margin-left:0!important}
+  .passenger-top-actions,.driver-top-actions{order:3}
+  .admin-main>header .admin-profile div{display:none}
+  .admin-main>header .admin-profile{margin-left:0;padding:0}
+  .admin-content{padding-inline:16px!important}
+  .admin-shell .overview-heading{display:block}
+}
+
+/* The sidebar frame stays still; only its navigation list scrolls. */
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar){
+  overflow:hidden!important;
+  overscroll-behavior:none;
+}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  margin-bottom:10px!important;
+  padding-right:4px!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(103,209,237,.4) transparent;
+}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav::-webkit-scrollbar{width:5px;height:5px}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav::-webkit-scrollbar-track{margin-block:6px;background:transparent}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav::-webkit-scrollbar-thumb{border-radius:999px;background:rgba(103,209,237,.34)}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav:hover::-webkit-scrollbar-thumb{background:rgba(103,209,237,.58)}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav::-webkit-scrollbar-thumb:hover{background:#64cee9}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav::-webkit-scrollbar-button,
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav::-webkit-scrollbar-corner{display:none;width:0;height:0;background:transparent}
+:where(.passenger-profile,.driver-profile,.sidebar-bottom){flex:0 0 auto}
+.admin-sidebar .sidebar-bottom{margin-top:0!important}
+@supports(mask-image:linear-gradient(#000,#000)){
+  :where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav{
+    mask-image:linear-gradient(to bottom,transparent 0,#000 10px,#000 calc(100% - 10px),transparent 100%);
+    padding-block:10px!important;
+    margin-top:10px!important;
+  }
 }

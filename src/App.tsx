@@ -7,6 +7,7 @@ import AdminDashboard from './AdminDashboard'
 import PassengerDashboard from './PassengerDashboard'
 import DriverDashboard from './DriverDashboard'
 import './DriverDashboard.css'
+import { ArrowRight, CheckCircle2, LockKeyhole, Mail, ShieldCheck } from 'lucide-react'
 import { supabase } from './lib/supabase'
 import {
   changeInitialPassword,
@@ -202,7 +203,21 @@ function App() {
 
   if (screen === 'home' && user && activeView === 'driver') return <DriverDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onLogout={logout} />
 
-  if (loading && screen === 'welcome') return <div className="loading-screen"><span>Preparando Ride…</span></div>
+  if (loading && screen === 'welcome') return <main className="loading-screen" role="status" aria-live="polite" aria-label="Preparando Ride">
+    <div className="loading-glow loading-glow-one" aria-hidden />
+    <div className="loading-glow loading-glow-two" aria-hidden />
+    <section className="loading-card">
+      <div className="loading-logo-wrap" aria-hidden>
+        <span className="loading-orbit"><i /><i /><i /></span>
+        <img src={logoTipo} alt="" />
+      </div>
+      <div className="loading-wordmark">Ride</div>
+      <h1>Preparando tu experiencia</h1>
+      <p>Estamos conectando tu cuenta y dejando todo listo.</p>
+      <div className="loading-progress" aria-hidden><span /></div>
+      <small>Solo tomará un momento</small>
+    </section>
+  </main>
 
   if (screen === 'home' && user) return <main className="user-home"><PanelPreview role={user.role} activeView={activeView ?? user.role} onSwitchView={switchView} />
 
@@ -212,16 +227,19 @@ function App() {
 
   return <main className="auth-page">
     <section className="brand-panel">
-      <div className="brand-copy"><div className="wordmark"><img src={logoTipo} className="wordmark-logo" alt="Ride" /><span>Ride</span></div><h1>Muévete con<br/><em>libertad.</em></h1><p>Una forma más segura, transparente y humana de llegar a donde quieres.</p></div>
+      <div className="brand-copy"><div className="wordmark"><img src={logoTipo} className="wordmark-logo" alt="Ride" /><span>Ride</span></div><span className="brand-kicker">TU CIUDAD, A TU RITMO</span><h1>Muévete con<br/><em>libertad.</em></h1><p>Una forma más segura, transparente y humana de llegar a donde quieres.</p><div className="brand-benefits"><span><CheckCircle2 size={16} aria-hidden /> Viajes confiables</span><span><ShieldCheck size={16} aria-hidden /> Acceso protegido</span></div></div>
+      <div className="brand-status"><span className="status-dot" aria-hidden /><div><strong>Ride está listo para ti</strong><small>Solicita, conduce o administra desde un solo lugar.</small></div></div>
       <div className="city-art"><div className="moon"/><div className="route"><i/><i/><i/></div><div className="car">▰</div><div className="buildings"><i/><i/><i/><i/><i/><i/></div></div>
     </section>
 
     <section className="form-panel">
       <div className="mobile-brand"><img src={logoTipo} className="wordmark-logo mobile-logo" alt="Ride" /><b>Ride</b></div>
-      {screen === 'welcome' && <div className="auth-box welcome-box"><span className="eyebrow">BIENVENIDO A RIDE</span><h2>Tu próximo viaje<br/>empieza aquí.</h2><p>Crea una cuenta o inicia sesión para continuar.</p><button className="primary-action" onClick={() => setScreen('register')}>Crear cuenta <span>→</span></button><button className="secondary-action" onClick={() => setScreen('login')}>Ya tengo una cuenta</button></div>}
-      {screen === 'login' && <AuthForm title="Qué bueno verte" subtitle="Ingresa tus datos para continuar." submit="Iniciar sesión" loading={loading} message={message} notice={notice} showPassword={showPassword} setShowPassword={setShowPassword} onSubmit={(event) => { event.preventDefault(); handleLogin(event.currentTarget) }} onBack={() => { setScreen('welcome'); setMessage(''); setNotice('') }} footer={<>¿Aún no tienes cuenta? <button onClick={() => { setScreen('register'); setMessage(''); setNotice('') }}>Regístrate</button></>} extra={<button type="button" className="link-button" onClick={() => { setScreen('forgot'); setMessage(''); setNotice('') }}>¿Olvidaste tu contraseña?</button>} />}
-      {screen === 'forgot' && <ForgotPasswordForm loading={loading} message={message} onSubmit={(event) => { event.preventDefault(); handleForgotPassword(event.currentTarget) }} onBack={() => { setScreen('login'); setMessage(''); setNotice('') }} />}
-      {screen === 'register' && <RegisterForm loading={loading} message={message} notice={notice} showPassword={showPassword} setShowPassword={setShowPassword} onSubmit={(event) => { event.preventDefault(); handleRegister(event.currentTarget) }} onBack={() => { setScreen('welcome'); setMessage(''); setNotice('') }} onLogin={() => { setScreen('login'); setMessage(''); setNotice('') }} />}
+      <div className="auth-stage">
+        {screen === 'welcome' && <div className="auth-box welcome-box"><span className="auth-icon"><ShieldCheck size={20} aria-hidden /></span><span className="eyebrow">BIENVENIDO A RIDE</span><h2>Tu próximo viaje<br/>empieza aquí.</h2><p>Crea una cuenta o inicia sesión para continuar.</p><button className="primary-action" onClick={() => setScreen('register')}>Crear cuenta <ArrowRight size={18} aria-hidden /></button><button className="secondary-action" onClick={() => setScreen('login')}>Ya tengo una cuenta</button><div className="auth-assurance"><ShieldCheck size={15} aria-hidden /> Tus datos viajan protegidos</div></div>}
+        {screen === 'login' && <AuthForm title="Qué bueno verte" subtitle="Ingresa tus datos para continuar." submit="Iniciar sesión" loading={loading} message={message} notice={notice} showPassword={showPassword} setShowPassword={setShowPassword} onSubmit={(event) => { event.preventDefault(); handleLogin(event.currentTarget) }} onBack={() => { setScreen('welcome'); setMessage(''); setNotice('') }} footer={<>¿Aún no tienes cuenta? <button onClick={() => { setScreen('register'); setMessage(''); setNotice('') }}>Regístrate</button></>} extra={<button type="button" className="link-button" onClick={() => { setScreen('forgot'); setMessage(''); setNotice('') }}>¿Olvidaste tu contraseña?</button>} />}
+        {screen === 'forgot' && <ForgotPasswordForm loading={loading} message={message} onSubmit={(event) => { event.preventDefault(); handleForgotPassword(event.currentTarget) }} onBack={() => { setScreen('login'); setMessage(''); setNotice('') }} />}
+        {screen === 'register' && <RegisterForm loading={loading} message={message} notice={notice} showPassword={showPassword} setShowPassword={setShowPassword} onSubmit={(event) => { event.preventDefault(); handleRegister(event.currentTarget) }} onBack={() => { setScreen('welcome'); setMessage(''); setNotice('') }} onLogin={() => { setScreen('login'); setMessage(''); setNotice('') }} />}
+      </div>
     </section>
   </main>
 }
@@ -235,7 +253,7 @@ function PanelSwitcher({views,active,onSwitch}:{views:Role[];active:Role|null;on
 
 type AuthProps = { title:string; subtitle:string; submit:string; loading:boolean; message:string; notice:string; showPassword:boolean; setShowPassword:(value:boolean)=>void; onSubmit:(event:FormEvent<HTMLFormElement>)=>void; onBack:()=>void; footer:ReactNode; extra?:ReactNode }
 function AuthForm(props: AuthProps) {
-  return <div className="auth-box"><button className="back" onClick={props.onBack}>← Volver</button><span className="eyebrow">ACCESO SEGURO</span><h2>{props.title}</h2><p>{props.subtitle}</p><form onSubmit={props.onSubmit}><label>Correo electrónico<input required name="email" type="email" autoComplete="email" placeholder="nombre@correo.com" /></label><label>Contraseña<div className="password-field"><input required name="password" type={props.showPassword ? 'text' : 'password'} autoComplete="current-password" placeholder="Tu contraseña" /><button type="button" onClick={() => props.setShowPassword(!props.showPassword)}>{props.showPassword ? 'Ocultar' : 'Ver'}</button></div></label>{props.notice && <div className="notice">{props.notice}</div>}{props.message && <div className="error">{props.message}</div>}<button className="primary-action" disabled={props.loading}>{props.loading ? 'Ingresando…' : props.submit}<span>→</span></button>{props.extra && <div className="form-extra">{props.extra}</div>}</form><div className="form-footer">{props.footer}</div></div>
+  return <div className="auth-box"><button className="back" onClick={props.onBack}>← Volver</button><span className="auth-icon"><LockKeyhole size={20} aria-hidden /></span><span className="eyebrow">ACCESO SEGURO</span><h2>{props.title}</h2><p>{props.subtitle}</p><form onSubmit={props.onSubmit}><label>Correo electrónico<div className="input-with-icon"><Mail size={17} aria-hidden /><input required name="email" type="email" autoComplete="email" placeholder="nombre@correo.com" /></div></label><label>Contraseña<div className="password-field input-with-icon"><LockKeyhole size={17} aria-hidden /><input required name="password" type={props.showPassword ? 'text' : 'password'} autoComplete="current-password" placeholder="Tu contraseña" /><button type="button" onClick={() => props.setShowPassword(!props.showPassword)}>{props.showPassword ? 'Ocultar' : 'Ver'}</button></div></label>{props.notice && <div className="notice">{props.notice}</div>}{props.message && <div className="error">{props.message}</div>}<button className="primary-action" disabled={props.loading}>{props.loading ? 'Ingresando…' : props.submit}<ArrowRight size={18} aria-hidden /></button>{props.extra && <div className="form-extra">{props.extra}</div>}</form><div className="form-footer">{props.footer}</div><div className="auth-assurance"><ShieldCheck size={15} aria-hidden /> Conexión cifrada y acceso protegido</div></div>
 }
 
 /// Paso 1 de la recuperación: pedir el enlace por correo.
