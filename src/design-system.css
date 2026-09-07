@@ -7,8 +7,8 @@
  */
 
 :root {
-  --ride-font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  --ride-font-display: 'Sora', var(--ride-font-body);
+  --ride-font-body: 'Montserrat', system-ui, -apple-system, sans-serif;
+  --ride-font-display: 'Josefin Sans', var(--ride-font-body);
 
   --ride-brand-50: #effaff;
   --ride-brand-100: #d9f4fc;
@@ -27,7 +27,7 @@
 
   --ride-ink: #102a38;
   --ride-ink-soft: #526a77;
-  --ride-muted: #718691;
+  --ride-muted: #526a77;
   --ride-canvas: #f3f7f9;
   --ride-surface: #ffffff;
   --ride-surface-soft: #f7fafb;
@@ -57,6 +57,28 @@ button,
 input,
 select,
 textarea { font-family: inherit; }
+
+/* Tipografía común también fuera de los paneles y en contenido de mapas. */
+:where(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--ride-font-display);
+  font-weight: 700;
+  text-wrap: balance;
+}
+
+:where(.admin-brand, .passenger-brand, .passenger-mobile-brand,
+  .driver-brand, .driver-mobile-brand) {
+  font-family: var(--ride-font-display);
+}
+
+.maplibregl-map,
+.maplibregl-popup,
+.leaflet-container,
+.leaflet-popup-content,
+.leaflet-tooltip {
+  font-family: var(--ride-font-body);
+}
+
+::file-selector-button { font-family: inherit; }
 
 button,
 a,
@@ -252,7 +274,7 @@ textarea { -webkit-tap-highlight-color: transparent; }
   border-radius: var(--ride-radius-sm);
   background: var(--ride-brand-500);
   color: #062638;
-  font-weight: 800;
+  font-weight:600;
   box-shadow: none;
   transition: transform var(--ride-transition), background var(--ride-transition), border-color var(--ride-transition), box-shadow var(--ride-transition);
 }
@@ -282,8 +304,8 @@ textarea { -webkit-tap-highlight-color: transparent; }
 :where(.passenger-shell, .driver-shell, .admin-shell)
   :where(.passenger-kicker, .driver-section-head > span, .overview-heading > small, .admin-card-head small) {
   color: var(--ride-brand-600);
-  font-size: 10px;
-  font-weight: 800;
+  font-size:11px;
+  font-weight:600;
   letter-spacing: 1.25px;
   text-transform: uppercase;
 }
@@ -368,7 +390,7 @@ textarea { -webkit-tap-highlight-color: transparent; }
   border-radius: var(--ride-radius-sm);
   background: var(--ride-brand-500);
   color: #062638;
-  font-weight: 800;
+  font-weight:600;
 }
 
 /* Los portales viven bajo <body>, por eso se enlazan al tema del documento. */

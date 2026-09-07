@@ -1,0 +1,496 @@
+/* Shared layout rules are loaded after the legacy page styles. */
+body { min-width: 0; font-size: 14px; line-height: 1.5; }
+h1, h2, h3, h4, h5, h6 { line-height: 1.25; }
+button, input, select, textarea { line-height: 1.4; }
+
+.viewing-as {
+  position: static;
+  min-width: 0;
+  min-height: 52px;
+  padding: 10px clamp(18px, 3vw, 40px);
+  gap: 8px 20px;
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+.viewing-as > span { min-width: 0; overflow-wrap: anywhere; }
+.viewing-as svg { flex-shrink: 0; }
+.viewing-as button { min-height: 32px; padding: 6px 10px; font-size: 12px; font-weight: 600; }
+
+.passenger-topbar, .driver-topbar, .admin-main > header {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  height: auto;
+  min-height: 88px;
+  padding: 16px clamp(20px, 3vw, 40px);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.passenger-topbar .hamburger-button,
+.admin-main > header .hamburger-button,
+.driver-topbar .driver-hamburger {
+  position: static;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  transform: none;
+  border-radius: 12px;
+}
+.passenger-title, .driver-topbar > div:first-of-type, .admin-main > header > div:nth-child(2) {
+  min-width: 0;
+  flex: 1;
+}
+.passenger-topbar h1, .driver-topbar h1, .admin-main > header h1 {
+  font-size: clamp(20px, 2vw, 26px);
+  line-height: 1.2;
+  letter-spacing: -.3px;
+  overflow-wrap: anywhere;
+  margin: 4px 0 0;
+}
+.passenger-top-actions, .driver-top-actions { flex-shrink: 0; gap: 10px; }
+.passenger-view-select select, .driver-view-select select { max-width: 210px; font-size: 12px; }
+.passenger-content, .driver-content, .admin-content { padding: 28px clamp(20px, 3vw, 40px) 48px; }
+.passenger-workspace, .driver-workspace, .admin-main { min-width: 0; }
+.driver-map-wrap { position: relative; isolation: isolate; z-index: 0; }
+.driver-topbar .driver-avatar { flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; }
+
+.passenger-sidebar, .driver-sidebar, .admin-sidebar {
+  z-index: 50;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #31515f transparent;
+}
+.passenger-sidebar nav, .driver-sidebar nav, .admin-sidebar nav { margin-top: 20px; gap: 6px; }
+.passenger-sidebar > *, .driver-sidebar > *, .admin-sidebar > * { flex-shrink: 0; }
+.passenger-sidebar nav button, .driver-sidebar nav button, .admin-sidebar nav button {
+  min-height: 42px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.passenger-sidebar nav button .passenger-nav-label {
+  flex: 1;
+  width: auto;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: left;
+}
+.passenger-sidebar .passenger-brand, .driver-sidebar .driver-brand, .admin-sidebar .admin-brand { padding-right: 28px; }
+.sidebar-dismiss {
+  position: absolute;
+  right: 10px;
+  top: 12px;
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  border: 0;
+  border-radius: 8px;
+  color: #b7cbd4;
+  background: transparent;
+  font-size: 24px;
+}
+.sidebar-dismiss:hover { background: #153644; color: white; }
+.sidebar-backdrop { display: none; }
+
+.driver-shell.theme-dark :is(.driver-map-card, .driver-dialog, .driver-route,
+  .driver-history article, .earnings-note, .document-upload, .driver-account-grid dl div) {
+  background: var(--ride-panel-surface);
+  color: var(--ride-panel-ink);
+  border-color: var(--ride-panel-border);
+}
+.driver-shell.theme-dark :is(.driver-block, .requirements-card) {
+  background: #352c1a;
+  border-color: #6d5930;
+}
+.driver-shell.theme-dark :is(.driver-block, .requirements-card) :is(h3, strong, p, li) { color: #f5dfac; }
+.driver-shell.theme-dark .driver-map-card button {
+  background: #153644;
+  border-color: #466b7a;
+  color: #b9e9f7;
+}
+:is(.passenger-shell, .driver-shell, .admin-shell).theme-dark label { color: var(--ride-panel-muted); }
+
+.passenger-shell .feature-card { padding: 20px 16px; gap: 12px; }
+.passenger-shell .feature-card img,
+.passenger-shell .feature-card.feature-seguro img { width: 64px; height: 64px; }
+.passenger-shell .feature-card > div { justify-items: start; text-align: left; }
+.passenger-shell .feature-card h4 {
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+.passenger-shell .feature-card p {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.passenger-welcome h2 {
+  color: #fff !important;
+  font-size: clamp(28px, 3vw, 38px);
+  letter-spacing: -.5px;
+}
+.driver-status-card h2 { color: #fff !important; }
+.passenger-welcome p, .start-ride-card p, .driver-status-card p,
+.auth-box > p, .admin-card-head p { font-size: 13px; line-height: 1.6; }
+.admin-shell .admin-empty, .driver-shell .driver-empty p, .passenger-shell .passenger-empty p {
+  color: var(--ride-panel-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.brand-copy h1 { letter-spacing: -1px; line-height: 1.12; }
+.auth-box h2 { letter-spacing: -.5px; }
+.auth-box > .back { display: block; min-height: 36px; margin: 0 0 16px; }
+.auth-box .eyebrow { display: block; }
+.auth-box label { font-size: 12px; font-weight: 600; }
+.auth-box input { font-weight: 400; }
+.form-panel {
+  background: linear-gradient(180deg, rgba(255,255,255,.97), rgba(248,251,252,.88)),
+    url('./assets/FondoBlancoRide.png') center bottom / cover no-repeat;
+}
+.passenger-dialog, .driver-dialog, .ride-dialog, .account-dialog, .admin-dialog {
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+}
+
+/* Drawers overlay narrow screens instead of squeezing the workspace. */
+@media (max-width: 1050px) {
+  .passenger-shell.sidebar-open .passenger-workspace,
+  .driver-shell.sidebar-open .driver-workspace,
+  .admin-shell.sidebar-open .admin-main { margin-left: 0; width: 100%; }
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    border: 0;
+    border-radius: 0;
+    background: rgba(3, 18, 28, .55);
+  }
+  .driver-sidebar {
+    display: flex;
+    position: fixed;
+    inset: 0 auto 0 -280px;
+    width: min(280px, 85vw);
+    height: 100dvh;
+    padding: 24px 18px;
+  }
+  .driver-shell.sidebar-open .driver-sidebar { left: 0; }
+}
+
+@media (max-width: 760px) {
+  .passenger-topbar, .driver-topbar, .admin-main > header {
+    padding: 12px 16px;
+    min-height: 76px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .passenger-topbar .passenger-mobile-brand { display: none; }
+  .passenger-topbar .passenger-title { display: block; }
+  .passenger-topbar h1, .driver-topbar h1, .admin-main > header h1 { font-size: 21px; }
+  .passenger-top-actions, .driver-top-actions { width: 100%; justify-content: flex-end; }
+  .passenger-view-select, .driver-view-select { margin-right: auto; min-width: 0; }
+  .passenger-view-select select, .driver-view-select select { max-width: 190px; }
+  .passenger-content, .driver-content, .admin-content { padding: 20px 16px 32px; }
+  .passenger-welcome { padding: 24px; flex-direction: column; align-items: flex-start; gap: 18px; }
+  .passenger-welcome button { white-space: normal; }
+  .passenger-mobile-nav { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .passenger-mobile-nav, .driver-mobile-nav { z-index: 35; }
+  .passenger-mobile-nav button, .driver-mobile-nav button { font-size: 10px; min-width: 0; }
+  .passenger-mobile-nav button span { font-size: 10px; line-height: 1.3; }
+  .driver-shell.theme-dark .driver-mobile-nav { background: #0a1f2b; border-color: #31515f; }
+  .driver-shell.theme-dark .driver-mobile-nav button.active { background: #12394a; color: #6fd4f2; }
+  .admin-shell { overflow-x: clip; }
+  .admin-shell .overview-metrics article { flex-direction: column; justify-content: center; gap: 10px; padding: 18px 10px; }
+  .admin-shell .overview-metrics article > div { min-width: 0; text-align: center; }
+  .admin-shell .overview-metrics small { white-space: normal; overflow-wrap: anywhere; }
+  .admin-shell .admin-card-head { flex-wrap: wrap; gap: 12px; }
+  .admin-shell .admin-card-head > div { min-width: 0; flex: 1 1 170px; }
+  .auth-page { grid-template-columns: minmax(0, 1fr); }
+  .form-panel { padding: 32px 20px; }
+  .two-fields { grid-template-columns: minmax(0, 1fr); }
+  .auth-box h2, .welcome-box h2 { font-size: 32px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .passenger-workspace, .driver-workspace, .admin-main,
+  .passenger-sidebar, .driver-sidebar, .admin-sidebar { transition: none !important; }
+}
+
+/* Acabado visual: superficies limpias, jerarquía compacta y acento Ride. */
+:root {
+  --ride-canvas: #f5f7f9;
+  --ride-surface-soft: #f8fafb;
+  --ride-border: #dce6eb;
+  --ride-border-strong: #c7d9e1;
+  --ride-shadow-sm: 0 1px 2px rgba(8, 38, 56, .03), 0 8px 24px rgba(8, 38, 56, .045);
+  --ride-shadow-md: 0 2px 4px rgba(8, 38, 56, .035), 0 18px 42px rgba(8, 38, 56, .07);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell) {
+  background: var(--ride-panel-canvas);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell)
+  :where(h1, h2, h3, h4) {
+  font-family: var(--ride-font-body);
+  font-weight: 700;
+  letter-spacing: -.025em;
+}
+
+:where(.brand-copy h1, .auth-box h2, .first-access h1, .passenger-welcome h2) {
+  font-family: var(--ride-font-display);
+}
+
+:where(.passenger-topbar, .driver-topbar, .admin-main > header) {
+  overflow: visible;
+  background: color-mix(in srgb, var(--ride-panel-surface) 96%, transparent) !important;
+  border-bottom-color: var(--ride-panel-border) !important;
+  box-shadow: 0 1px 0 rgba(8, 38, 56, .02);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell).theme-dark
+  :where(.passenger-topbar, .driver-topbar, .admin-main > header) {
+  background: rgba(10, 31, 43, .96) !important;
+}
+
+.viewing-as {
+  background: #eaf7fb;
+  color: #31515e;
+  border-bottom: 1px solid #d3e7ee;
+}
+.viewing-as button {
+  border: 1px solid #b9dfe9;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, .72);
+  color: #117a9b;
+  text-decoration: none;
+}
+.viewing-as button:hover { background: #fff; text-decoration: none; }
+html[data-ride-theme="dark"] .viewing-as {
+  background: #0c2634 !important;
+  border-color: #294957 !important;
+}
+html[data-ride-theme="dark"] .viewing-as button { background: #143746 !important; }
+
+:where(.passenger-sidebar, .driver-sidebar, .admin-sidebar) {
+  background: #082636 !important;
+  border-right: 1px solid #173c4c;
+  box-shadow: 8px 0 30px rgba(3, 18, 28, .08);
+}
+:where(.passenger-sidebar, .driver-sidebar, .admin-sidebar) nav button {
+  border-radius: 10px;
+  color: #a9bec8;
+  transition: background-color .16s ease, color .16s ease, transform .16s ease;
+}
+:where(.passenger-sidebar, .driver-sidebar, .admin-sidebar) nav button:hover {
+  background: rgba(255, 255, 255, .055) !important;
+  color: #f5fbfd !important;
+  transform: translateX(2px);
+}
+:where(.passenger-sidebar, .driver-sidebar, .admin-sidebar) nav button.active {
+  background: rgba(74, 190, 231, .12) !important;
+  box-shadow: inset 3px 0 #57c6e8 !important;
+  color: #69d5f2 !important;
+}
+:where(.passenger-sidebar, .driver-sidebar, .admin-sidebar)
+  :where(.passenger-logout, .driver-logout, .admin-logout) {
+  border-color: #315464;
+  background: transparent;
+  color: #c5d6de;
+}
+
+.admin-content, .passenger-content, .driver-content { max-width: 1440px; }
+.admin-content { margin-inline: auto; }
+.overview-heading { margin-bottom: 18px; }
+.overview-heading h2 { margin-block: 5px 4px; font-size: clamp(24px, 2.4vw, 30px); }
+.overview-heading p { margin: 0; }
+
+.admin-shell:not(.theme-dark) :is(.admin-card, .metric-strip article, .admin-metrics article,
+  .settings-card, .admin-account-card) {
+  border-color: var(--ride-panel-border);
+  background: #fff;
+  box-shadow: var(--ride-shadow-sm);
+}
+.admin-shell:not(.theme-dark) :is(.metric-strip, .admin-metrics) article:nth-child(n) {
+  background: #fff;
+}
+.admin-shell.theme-dark :is(.admin-card, .metric-strip article, .admin-metrics article,
+  .settings-card, .admin-account-card) {
+  background: #102e3c;
+  border-color: #31515f;
+}
+
+.admin-shell :is(.metric-strip, .admin-metrics) {
+  display: grid;
+  gap: 14px;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.admin-shell .metric-strip { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.admin-shell .admin-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.admin-shell :is(.metric-strip, .admin-metrics) article {
+  min-width: 0;
+  min-height: 100px;
+  padding: 20px;
+  gap: 14px;
+  border: 1px solid var(--ride-panel-border) !important;
+  border-radius: 16px;
+}
+.admin-shell :is(.metric-strip, .admin-metrics) article + article { border-left-width: 1px; }
+.admin-shell :is(.metric-strip, .admin-metrics) article > div { min-width: 0; }
+.admin-shell :is(.metric-strip, .admin-metrics) small {
+  color: var(--ride-panel-muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.admin-shell :is(.metric-strip, .admin-metrics) strong {
+  margin-top: 4px;
+  color: var(--ride-panel-ink);
+  font-size: 24px;
+  line-height: 1;
+}
+.admin-shell :is(.overview-metric-icon, .metric-icon, .driver-metric-icon, .user-metric-icon) {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+}
+
+.operations-grid { grid-template-columns: minmax(0, 1.7fr) minmax(280px, .75fr); gap: 18px; }
+.admin-card { overflow: hidden; border-radius: 16px; }
+.admin-shell:not(.theme-dark) :is(.recent-trips, .review-queue, .overview-users,
+  .users-monitoring, .trips-monitoring, .drivers-monitoring) .admin-card-head {
+  background: #fff;
+  border-bottom: 1px solid var(--ride-panel-border);
+}
+.admin-shell:not(.theme-dark) :is(.recent-trips, .review-queue, .overview-users,
+  .users-monitoring, .trips-monitoring, .drivers-monitoring) .admin-card-head h3 {
+  color: var(--ride-panel-ink);
+}
+.admin-shell:not(.theme-dark) :is(.recent-trips, .review-queue, .overview-users,
+  .users-monitoring, .trips-monitoring, .drivers-monitoring) .admin-card-head p {
+  color: var(--ride-panel-muted);
+}
+.admin-shell :is(.admin-card-head button, .link-button, .driver-toggle, .doc-ok,
+  .account-outline-button, .account-dialog footer button[type=submit]) {
+  border: 1px solid #b9e3ef !important;
+  border-radius: 9px;
+  background: #edf9fc !important;
+  color: #08799c !important;
+  box-shadow: none !important;
+}
+.admin-shell :is(.admin-card-head button, .link-button, .driver-toggle, .doc-ok,
+  .account-outline-button, .account-dialog footer button[type=submit]):not(:disabled):hover {
+  border-color: #7bcce2 !important;
+  background: #dff5fa !important;
+  color: #055d79 !important;
+}
+.admin-shell .recent-trips .admin-card-head button,
+.admin-shell .review-queue .admin-card-head button,
+.admin-shell .overview-users .admin-card-head button { border-radius: 9px; padding: 8px 13px; }
+
+.admin-shell:not(.theme-dark) :is(.users-monitoring .user-row, .drivers-monitoring .driver-row,
+  .trips-monitoring .trip-row, .recent-trips .trip-row, .queue-row) {
+  background: #fff !important;
+  border-color: #e4ebef !important;
+}
+.admin-shell :is(.user-row, .driver-row, .trip-row, .queue-row) {
+  transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+.admin-shell .recent-trips .trip-row {
+  grid-template-columns: 84px minmax(0, 1fr) auto;
+  grid-template-areas:
+    'state route amount'
+    'state persons date';
+  gap: 6px 14px;
+  padding: 13px 14px;
+}
+.admin-shell .recent-trips .trip-more { display: none; }
+.admin-shell .recent-trips .trip-persons { display: flex; gap: 16px; }
+.admin-shell .recent-trips .trip-amount { grid-area: amount; }
+.admin-shell .recent-trips .trip-date { justify-self: end; }
+.admin-shell:not(.theme-dark) :is(.users-monitoring .user-row, .drivers-monitoring .driver-row,
+  .trips-monitoring .trip-row, .recent-trips .trip-row, .queue-row):hover {
+  background: #f8fbfc !important;
+  border-color: #cfe0e7 !important;
+  box-shadow: 0 5px 16px rgba(8, 38, 56, .045);
+}
+
+.passenger-shell:not(.theme-dark) :is(.start-ride-card, .active-trip,
+  .recent-trip-list .trip-row, .trip-history article, .notification-list article,
+  .request-form, .quote-card, .address-form, .address-list > article,
+  .payment-methods, .payment-history, .tracking-main, .tracking-driver,
+  .account-details, .account-summary, .settings-card, .support-form,
+  .support-list article),
+.driver-shell:not(.theme-dark) :is(.active-driver-trip,
+  .driver-request-list article, .vehicle-list article, .vehicle-form,
+  .document-list article, .driver-account-grid > section, .driver-account-grid > aside,
+  .driver-summary article, .settings-card, .earnings-hero, .earnings-grid article,
+  .requirements-card, .identity-form, .document-group) {
+  border-color: var(--ride-panel-border);
+  background: #fff;
+  box-shadow: var(--ride-shadow-sm);
+}
+.driver-shell .driver-status-card {
+  border: 1px solid #16485c;
+  background: linear-gradient(120deg, #082f43, #0d465d);
+  box-shadow: var(--ride-shadow-md);
+}
+.driver-shell .driver-status-card small { color: #72d5ed; }
+.driver-shell .driver-status-card p { color: #c0d5de; }
+
+.passenger-shell .home-features { gap: 14px; }
+.passenger-shell .feature-card {
+  border-color: var(--ride-panel-border);
+  background: #fff;
+  box-shadow: var(--ride-shadow-sm);
+}
+.passenger-shell .feature-card::after { opacity: .045; }
+.passenger-shell .feature-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--ride-border-strong);
+  box-shadow: var(--ride-shadow-md);
+}
+
+.passenger-shell :is(.passenger-primary-action, .define-route-button,
+  .passenger-welcome button, .quote-card > button),
+.driver-shell :is(.driver-trip-actions .primary, .vehicle-form .primary,
+  .identity-form > .primary, .driver-request-list article > button) {
+  border-color: #2aaed7 !important;
+  background: #39bce3 !important;
+  color: #062b3a !important;
+  box-shadow: 0 8px 18px rgba(38, 169, 220, .16) !important;
+}
+
+@media (max-width: 1100px) {
+  .admin-shell .metric-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .operations-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 620px) {
+  .admin-shell :is(.metric-strip, .admin-metrics) { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px; }
+  .admin-shell :is(.metric-strip, .admin-metrics) article { min-height: 104px; padding: 16px 10px !important; }
+  .admin-shell :is(.metric-strip, .admin-metrics) strong { font-size: 22px !important; }
+  .admin-shell .recent-trips .trip-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'state amount'
+      'route route'
+      'persons persons'
+      'date date';
+    gap: 10px;
+    padding: 14px;
+  }
+  .admin-shell .recent-trips .trip-persons { display: grid; gap: 6px; }
+  .admin-shell .recent-trips .trip-date { justify-self: start; }
+}

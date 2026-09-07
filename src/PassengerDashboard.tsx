@@ -1,3 +1,4 @@
+import { PanelPreview, SidebarDismiss, SidebarBackdrop } from './components/PanelPreview'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import './PassengerDashboard.css'
@@ -377,13 +378,14 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
   }, [offeredRatingTripId, page, rating, trackingTrip, user.id])
 
   const go = (next: Page) => {
+    window.scrollTo({ top: 0, behavior: 'instant' })
     setPage(next); setError(''); setNotice('')
   }
 
   const navTo = (next: Page) => {
     go(next)
     try {
-      if (typeof window !== 'undefined' && window.innerWidth <= 760) setSidebarOpen(false)
+      if (typeof window !== 'undefined' && window.innerWidth <= 1050) setSidebarOpen(false)
     } catch {
       /* ignore */
     }
@@ -496,13 +498,13 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
 
   return <main className={`passenger-shell ${darkMode ? 'theme-dark' : 'theme-light'} ${reducedMotion ? 'reduced-motion' : ''} ${sidebarOpen ? 'sidebar-open' : ''}`}>
     <div className="passenger-sidebar-trigger" aria-hidden="true"/>
-    <aside id="passenger-sidebar" className={`passenger-sidebar ${sidebarOpen ? '' : 'collapsed'}`}>
+    <aside id="passenger-sidebar" className={`passenger-sidebar ${sidebarOpen ? '' : 'collapsed'}`} inert={!sidebarOpen}><SidebarDismiss onClose={() => setSidebarOpen(false)} />
       <div className="passenger-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
       <nav aria-label="Panel del pasajero">
         <NavButton active={page === 'inicio'} icon={<HomeIcon size={16} />} label="Inicio" onClick={() => navTo('inicio')}/>
         <NavButton active={page === 'pedir'} icon={<RideRequestIcon size={16} />} label="Pedir viaje" onClick={() => navTo('pedir')}/>
         <NavButton active={page === 'viajes'} icon={<ListIcon size={16} />} label="Mis viajes" onClick={() => navTo('viajes')}/>
-        <NavButton active={page === 'avisos'} icon={<BellIcon size={16} />} label="Avisos" onClick={() => { openNotifications(); if (typeof window !== 'undefined' && window.innerWidth <= 760) setSidebarOpen(false) }} />
+        <NavButton active={page === 'avisos'} icon={<BellIcon size={16} />} label="Avisos" onClick={() => { openNotifications(); if (typeof window !== 'undefined' && window.innerWidth <= 1050) setSidebarOpen(false) }} />
         <NavButton active={page === 'direcciones'} icon={<MapPinIcon size={16} />} label="Direcciones" onClick={() => navTo('direcciones')}/>
         <NavButton active={page === 'pagos'} icon={<DollarSignIcon size={16} />} label="Pagos" onClick={() => navTo('pagos')}/>
         <NavButton active={page === 'soporte'} icon={<HelpCircleIcon size={16} />} label="Soporte" onClick={() => navTo('soporte')}/>
@@ -516,7 +518,9 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
       <button className="passenger-logout" onClick={onLogout}><LogOut size={17} aria-hidden /><span>Cerrar sesión</span></button>
     </aside>
 
+    {sidebarOpen && <SidebarBackdrop onClose={() => setSidebarOpen(false)} />}
     <section className="passenger-workspace">
+      <PanelPreview role={user.role} activeView={activeView} onSwitchView={onSwitchView} />
       <header className="passenger-topbar">
         <button type="button" aria-controls="passenger-sidebar" aria-expanded={sidebarOpen} aria-label="Alternar menú" className="hamburger-button" onClick={() => setSidebarOpen((v) => !v)}>
           <MenuIcon size={20} aria-hidden />

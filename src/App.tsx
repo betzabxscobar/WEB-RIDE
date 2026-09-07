@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
-import { Eye } from 'lucide-react'
+import { PanelPreview } from './components/PanelPreview'
 import './App.css'
 import logoTipo from './assets/LogoTipo.png'
 import AdminDashboard from './AdminDashboard'
@@ -164,7 +164,6 @@ function App() {
   // Vista efectiva y opciones disponibles para la sesión actual.
   const activeView: Role | null = user ? (view ?? user.role) : null
   const availableViews = user ? viewsAllowed(user.role) : []
-  const viewingOtherPanel = user != null && view != null && view !== user.role
 
   const switchView = (next: Role) => {
     if (!user) return
@@ -172,6 +171,7 @@ function App() {
     // que un admin no pueda abrir la vista de superadmin.
     if (!viewsAllowed(user.role).includes(next)) return
     setView(next === user.role ? null : next)
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
   }
 
   const finishFirstAccess = async (form: HTMLFormElement) => {
@@ -198,22 +198,16 @@ function App() {
   const viewIsAdministrative = activeView === 'admin' || activeView === 'superadmin'
   if (screen === 'home' && user && viewIsAdministrative) return <AdminDashboard user={user} viewAs={activeView as Role} views={availableViews} onSwitchView={switchView} onUserUpdate={setUser} onLogout={logout} />
 
-  if (screen === 'home' && user && activeView === 'passenger') return <>
-    {viewingOtherPanel && <ViewingAsBar role={user.role} onBack={() => setView(null)} />}
-    <PassengerDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onLogout={logout} />
-  </>
+  if (screen === 'home' && user && activeView === 'passenger') return <PassengerDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onLogout={logout} />
 
-  if (screen === 'home' && user && activeView === 'driver') return <>
-    {viewingOtherPanel && <ViewingAsBar role={user.role} onBack={() => setView(null)} />}
-    <DriverDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onLogout={logout} />
-  </>
+  if (screen === 'home' && user && activeView === 'driver') return <DriverDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onLogout={logout} />
 
   if (loading && screen === 'welcome') return <div className="loading-screen"><span>Preparando Ride…</span></div>
 
-  if (screen === 'home' && user) return <main className="user-home">
-    {viewingOtherPanel && <ViewingAsBar role={user.role} onBack={() => setView(null)} />}
+  if (screen === 'home' && user) return <main className="user-home"><PanelPreview role={user.role} activeView={activeView ?? user.role} onSwitchView={switchView} />
+
     <header><div className="mini-brand"><Logo /><b>Ride</b></div><div className="home-actions"><PanelSwitcher views={availableViews} active={activeView} onSwitch={switchView} /><button onClick={logout}>Cerrar sesión</button></div></header>
-    <section><span className="success-mark">✓</span><p>Sesión iniciada correctamente</p><h1>Hola, {user.name.split(' ')[0]}</h1><p className="home-copy">{viewingOtherPanel ? `Así ve la app una cuenta de ${activeView === 'driver' ? 'conductor' : 'pasajero'}.` : `Tu cuenta de ${activeView === 'driver' ? 'conductor' : 'pasajero'} está lista.`}</p><div className="account-card"><div><small>Correo</small><strong>{user.email}</strong></div><div><small>Teléfono</small><strong>{user.phone || 'Sin teléfono'}</strong></div><div><small>Modo</small><strong>{activeView === 'driver' ? 'Conduzco' : 'Viajo'}</strong></div></div></section>
+    <section><span className="success-mark">✓</span><p>Sesión iniciada correctamente</p><h1>Hola, {user.name.split(' ')[0]}</h1><p className="home-copy">{activeView !== user.role ? `Así ve la app una cuenta de ${activeView === 'driver' ? 'conductor' : 'pasajero'}.` : `Tu cuenta de ${activeView === 'driver' ? 'conductor' : 'pasajero'} está lista.`}</p><div className="account-card"><div><small>Correo</small><strong>{user.email}</strong></div><div><small>Teléfono</small><strong>{user.phone || 'Sin teléfono'}</strong></div><div><small>Modo</small><strong>{activeView === 'driver' ? 'Conduzco' : 'Viajo'}</strong></div></div></section>
   </main>
 
   return <main className="auth-page">
@@ -238,11 +232,6 @@ function PanelSwitcher({views,active,onSwitch}:{views:Role[];active:Role|null;on
   return <label className="panel-switcher"><span className="sr-only">Cambiar de panel</span><select value={active} onChange={(event)=>onSwitch(event.target.value as Role)}>{views.map((view)=><option key={view} value={view}>{panelLabel(view)}</option>)}</select></label>
 }
 
-/// Aviso de que se está mirando una pantalla distinta a la del rol propio.
-function ViewingAsBar({role,onBack}:{role:Role;onBack:()=>void}) {
-  const nombre = role === 'superadmin' ? 'superadministrador' : 'administrador'
-  return <div className="viewing-as"><span><Eye size={16} aria-hidden />Viendo como {nombre}</span><button onClick={onBack}>Volver a mi panel</button></div>
-}
 
 type AuthProps = { title:string; subtitle:string; submit:string; loading:boolean; message:string; notice:string; showPassword:boolean; setShowPassword:(value:boolean)=>void; onSubmit:(event:FormEvent<HTMLFormElement>)=>void; onBack:()=>void; footer:ReactNode; extra?:ReactNode }
 function AuthForm(props: AuthProps) {

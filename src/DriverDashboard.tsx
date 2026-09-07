@@ -1,3 +1,4 @@
+import { PanelPreview, SidebarDismiss, SidebarBackdrop } from './components/PanelPreview'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { SupportPage, TripChat } from './components/RideExtras'
 import logoTipo from './assets/LogoTipo.png'
@@ -49,7 +50,6 @@ const EMPTY_STATE: DriverState = { exists: false, approved: false, approvalStatu
 const EMPTY_IDENTITY: DriverIdentity = { cedula: '', fingerprintCode: '', licenseType: '', licenseExpiresAt: '' }
 
 export default function DriverDashboard({ user, views, activeView, onSwitchView, onLogout }: Props) {
-  const [selectedView, setSelectedView] = useState<Role>(activeView)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [page, setPage] = useState<Page>('inicio')
   const [state, setState] = useState<DriverState>(EMPTY_STATE)
@@ -134,11 +134,11 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
     }, 'Gracias. La calificación del pasajero quedó guardada.')
   }
 
-  const go = (next: Page) => { setPage(next); setSidebarOpen(false); setError(''); setNotice('') }
+  const go = (next: Page) => { window.scrollTo({ top: 0, behavior: 'instant' }); setPage(next); setSidebarOpen(false); setError(''); setNotice('') }
   const canWork = !isReviewOnly && state.approved && state.hasActiveVehicle
 
   return <main className={`driver-shell ${appearance.darkMode ? 'theme-dark' : ''} ${appearance.reducedMotion ? 'reduced-motion' : ''} ${sidebarOpen ? 'sidebar-open' : ''}`}>
-    <aside id="driver-sidebar" className="driver-sidebar" aria-hidden={!sidebarOpen}>
+    <aside id="driver-sidebar" className="driver-sidebar" aria-hidden={!sidebarOpen} inert={!sidebarOpen}><SidebarDismiss onClose={() => setSidebarOpen(false)} />
       <div className="driver-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
       <nav aria-label="Panel del conductor">
         <DriverNav active={page === 'inicio'} icon={<HomeIcon size={18} />} label="Inicio" onClick={() => go('inicio')}/>
@@ -154,17 +154,18 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
       {views.length > 1 && (
         <label className="panel-switcher sidebar">
           <span>Panel actual</span>
-          <select value={selectedView} onChange={(event) => setSelectedView(event.target.value as Role)}>
+          <select value={activeView} onChange={(event) => onSwitchView(event.target.value as Role)}>
             {views.map((view) => <option key={view} value={view}>{panelLabel(view)}</option>)}
           </select>
-          <button type="button" onClick={() => onSwitchView(selectedView)}>Ir</button>
+
         </label>
       )}
       <button className="driver-logout" onClick={onLogout}>Cerrar sesión</button>
     </aside>
+    {sidebarOpen && <SidebarBackdrop onClose={() => setSidebarOpen(false)} />}
     <section className="driver-workspace">
-      <button type="button" className="driver-hamburger" aria-controls="driver-sidebar" aria-expanded={sidebarOpen} aria-label="Alternar menú" onClick={() => setSidebarOpen((value) => !value)}><MenuIcon size={18} aria-hidden /></button>
-      <header className="driver-topbar"><div><span>PANEL DE CONDUCTOR</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'viajes' ? 'Tus viajes' : page === 'ganancias' ? 'Tus ganancias' : page === 'vehiculos' ? 'Tus vehículos' : page === 'documentos' ? 'Tus documentos' : page === 'soporte' ? 'Soporte' : page === 'configuracion' ? 'Configuración' : 'Tu cuenta'}</h1></div><div className="driver-top-actions">{views.length > 1 && <label className="driver-view-select"><span>Vista</span><select value={selectedView} onChange={(event) => setSelectedView(event.target.value as Role)}>{views.map((view) => <option key={view} value={view}>{panelLabel(view)}</option>)}</select><button onClick={() => onSwitchView(selectedView)}>Ir</button></label>}<button className="driver-avatar" onClick={() => go('cuenta')}>{initials(user.name)}</button></div></header>
+      <PanelPreview role={user.role} activeView={activeView} onSwitchView={onSwitchView} />
+      <header className="driver-topbar"><button type="button" className="driver-hamburger" aria-controls="driver-sidebar" aria-expanded={sidebarOpen} aria-label="Alternar menú" onClick={() => setSidebarOpen((value) => !value)}><MenuIcon size={18} aria-hidden /></button><div><span>PANEL DE CONDUCTOR</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'viajes' ? 'Tus viajes' : page === 'ganancias' ? 'Tus ganancias' : page === 'vehiculos' ? 'Tus vehículos' : page === 'documentos' ? 'Tus documentos' : page === 'soporte' ? 'Soporte' : page === 'configuracion' ? 'Configuración' : 'Tu cuenta'}</h1></div><div className="driver-top-actions">{views.length > 1 && <label className="driver-view-select"><span>Vista</span><select value={activeView} onChange={(event) => onSwitchView(event.target.value as Role)}>{views.map((view) => <option key={view} value={view}>{panelLabel(view)}</option>)}</select></label>}<button className="driver-avatar" onClick={() => go('cuenta')}>{initials(user.name)}</button></div></header>
       <div className="driver-content">
         {isReviewOnly && <div className="driver-review-notice">Vista de revisión: puedes recorrer el panel, pero una cuenta administradora no puede ponerse en línea, aceptar ni finalizar viajes.</div>}
         {notice && <div className="driver-feedback success">✓ {notice}</div>}{error && <div className="driver-feedback failure">! {error}<button onClick={() => setError('')}>Cerrar</button></div>}

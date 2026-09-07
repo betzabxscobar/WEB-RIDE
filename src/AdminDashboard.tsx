@@ -1,3 +1,4 @@
+import { PanelPreview, SidebarDismiss, SidebarBackdrop } from './components/PanelPreview'
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import './AdminDashboard.css'
@@ -41,7 +42,12 @@ function NavIcon({ section }: { section: Section }) {
 
 export default function AdminDashboard({ user, viewAs, views, onSwitchView, onUserUpdate, onLogout }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [activeSection, setActiveSection] = useState<Section>('Resumen')
+  const [activeSection, setActiveSectionState] = useState<Section>('Resumen')
+  const setActiveSection = (next: Section) => {
+    setActiveSectionState(next)
+    if (window.innerWidth <= 1050) setSidebarOpen(false)
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }
   const [users, setUsers] = useState<User[]>([])
   const [trips, setTrips] = useState<Trip[]>([])
   const [drivers, setDrivers] = useState<Driver[]>([])
@@ -64,7 +70,6 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onUs
   const appearance = useAppearance()
 
   const isSuperadmin = viewAs === 'superadmin'
-  const viewingOtherPanel = viewAs !== user.role
   const accessName = isSuperadmin ? 'SUPERADMINISTRACIÓN' : 'ADMINISTRACIÓN'
   const profileName = isSuperadmin ? 'Superadministrador' : 'Administrador'
 
@@ -169,7 +174,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onUs
 
   return (
     <main className={`admin-shell ${appearance.darkMode ? 'theme-dark' : ''} ${appearance.reducedMotion ? 'reduced-motion' : ''} ${sidebarOpen ? 'sidebar-open' : ''}`}>
-      <aside id="admin-sidebar" className="admin-sidebar" aria-hidden={!sidebarOpen}>
+      <aside id="admin-sidebar" className="admin-sidebar" aria-hidden={!sidebarOpen} inert={!sidebarOpen}><SidebarDismiss onClose={() => setSidebarOpen(false)} />
         <div className="admin-brand">
           <img src={logoAsset} className="admin-brand-logo" alt="Ride" />
           <div><strong>Ride</strong><small>Centro de operaciones</small></div>
@@ -210,17 +215,10 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onUs
         </div>
       </aside>
 
-      {sidebarOpen && (
-        <div className="admin-overlay" onClick={() => setSidebarOpen(false)} aria-hidden={!sidebarOpen} />
-      )}
+      {sidebarOpen && <SidebarBackdrop onClose={() => setSidebarOpen(false)} />}
 
       <section className="admin-main">
-        {viewingOtherPanel && (
-          <div className="viewing-as">
-            <span>Vista previa del panel de administrador</span>
-            <button onClick={() => onSwitchView(user.role as Role)}>Volver a mi panel</button>
-          </div>
-        )}
+        <PanelPreview role={user.role} activeView={viewAs} onSwitchView={onSwitchView} />
         <header>
           <button aria-controls="admin-sidebar" aria-expanded={sidebarOpen} aria-label="Alternar menú" className="hamburger-button" onClick={() => setSidebarOpen((v) => !v)}>
             <MenuIcon size={18} />
