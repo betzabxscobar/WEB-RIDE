@@ -1,0 +1,331 @@
+/*
+ * Sistema visual de Ride
+ * ----------------------
+ * Esta hoja se carga al final y actúa como contrato común entre los paneles.
+ * Los estilos históricos conservan la composición de cada pantalla; aquí se
+ * unifican color, tipografía, superficies, controles, foco y estados.
+ */
+
+:root {
+  --ride-font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --ride-font-display: 'Sora', var(--ride-font-body);
+
+  --ride-brand-50: #effaff;
+  --ride-brand-100: #d9f4fc;
+  --ride-brand-200: #b9e9f7;
+  --ride-brand-400: #59c5e8;
+  --ride-brand-500: #26a9dc;
+  --ride-brand-600: #1688ad;
+  --ride-brand-700: #126d8b;
+
+  --ride-success-50: #eaf8f2;
+  --ride-success-500: #238767;
+  --ride-warning-50: #fff7e5;
+  --ride-warning-500: #9a6a16;
+  --ride-danger-50: #fff0ee;
+  --ride-danger-500: #b64c45;
+
+  --ride-ink: #102a38;
+  --ride-ink-soft: #526a77;
+  --ride-muted: #718691;
+  --ride-canvas: #f3f7f9;
+  --ride-surface: #ffffff;
+  --ride-surface-soft: #f7fafb;
+  --ride-border: #d8e5eb;
+  --ride-border-strong: #b9d6df;
+
+  --ride-radius-sm: 9px;
+  --ride-radius-md: 13px;
+  --ride-radius-lg: 18px;
+  --ride-radius-xl: 24px;
+  --ride-shadow-sm: 0 3px 12px rgba(12, 48, 65, .05);
+  --ride-shadow-md: 0 12px 34px rgba(12, 48, 65, .075);
+  --ride-shadow-lg: 0 22px 58px rgba(12, 48, 65, .1);
+  --ride-focus: 0 0 0 3px rgba(38, 169, 220, .24);
+  --ride-transition: 180ms cubic-bezier(.2, .8, .2, 1);
+}
+
+html { background: var(--ride-canvas); }
+
+body {
+  color: var(--ride-ink);
+  background: var(--ride-canvas);
+  font-family: var(--ride-font-body);
+}
+
+button,
+input,
+select,
+textarea { font-family: inherit; }
+
+button,
+a,
+input,
+select,
+textarea { -webkit-tap-highlight-color: transparent; }
+
+:where(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid rgba(38, 169, 220, .34);
+  outline-offset: 2px;
+}
+
+:where(button, input, select, textarea):disabled {
+  cursor: not-allowed;
+  opacity: .62;
+}
+
+/* Contrato temático compartido por los tres paneles. */
+:where(.passenger-shell, .driver-shell, .admin-shell) {
+  --ride-panel-ink: var(--ride-ink);
+  --ride-panel-muted: var(--ride-muted);
+  --ride-panel-canvas: var(--ride-canvas);
+  --ride-panel-surface: var(--ride-surface);
+  --ride-panel-surface-soft: var(--ride-surface-soft);
+  --ride-panel-border: var(--ride-border);
+  --ride-panel-border-strong: var(--ride-border-strong);
+  min-width: 0;
+  color: var(--ride-panel-ink);
+  background: var(--ride-panel-canvas);
+  font-family: var(--ride-font-body);
+  color-scheme: light;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell).theme-dark {
+  --ride-panel-ink: #edf7fa;
+  --ride-panel-muted: #b7cbd4;
+  --ride-panel-canvas: #071b27;
+  --ride-panel-surface: #102c3a;
+  --ride-panel-surface-soft: #153644;
+  --ride-panel-border: #31515f;
+  --ride-panel-border-strong: #466b7a;
+  --ride-shadow-sm: 0 4px 14px rgba(0, 0, 0, .16);
+  --ride-shadow-md: 0 14px 38px rgba(0, 0, 0, .2);
+  --ride-shadow-lg: 0 24px 64px rgba(0, 0, 0, .28);
+  color-scheme: dark;
+}
+
+/* Compatibilidad con las variables locales existentes. */
+.passenger-shell {
+  --p-ink: var(--ride-panel-ink);
+  --p-muted: var(--ride-panel-muted);
+  --p-bg: var(--ride-panel-canvas);
+  --p-paper: var(--ride-panel-surface);
+  --p-line: var(--ride-panel-border);
+  --p-blue: var(--ride-brand-500);
+}
+
+.driver-shell {
+  --d-ink: var(--ride-panel-ink);
+  --d-muted: var(--ride-panel-muted);
+  --d-bg: var(--ride-panel-canvas);
+  --d-line: var(--ride-panel-border);
+}
+
+.admin-shell {
+  --a-ink: var(--ride-panel-ink);
+  --a-muted: var(--ride-panel-muted);
+  --a-bg: var(--ride-panel-canvas);
+  --a-line: var(--ride-panel-border);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell)
+  :where(h1, h2, h3, h4) {
+  color: var(--ride-panel-ink);
+  font-family: var(--ride-font-display);
+  text-wrap: balance;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell)
+  :where(p, small, dt, time) { color: var(--ride-panel-muted); }
+
+:where(.passenger-shell, .driver-shell, .admin-shell)
+  :where(input, select, textarea) {
+  min-height: 42px;
+  border-color: var(--ride-panel-border);
+  border-radius: var(--ride-radius-sm);
+  background: var(--ride-panel-surface);
+  color: var(--ride-panel-ink);
+  transition: border-color var(--ride-transition), box-shadow var(--ride-transition), background var(--ride-transition);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell)
+  :where(input, select, textarea):focus {
+  border-color: var(--ride-brand-500);
+  box-shadow: var(--ride-focus);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell)
+  :where(input, textarea)::placeholder {
+  color: var(--ride-panel-muted);
+  opacity: .78;
+}
+
+/* Encabezados: misma altura, fondo y jerarquía en los tres roles. */
+:where(.passenger-topbar, .driver-topbar, .admin-main > header) {
+  min-height: 78px;
+  border-bottom: 1px solid var(--ride-panel-border);
+  background: color-mix(in srgb, var(--ride-panel-surface) 94%, transparent);
+  box-shadow: 0 5px 22px rgba(8, 38, 56, .035);
+  backdrop-filter: blur(14px);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell).theme-dark
+  :where(.passenger-topbar, .driver-topbar, .admin-main > header) {
+  background: color-mix(in srgb, var(--ride-panel-surface) 90%, transparent);
+  border-bottom-color: var(--ride-panel-border);
+}
+
+:where(.passenger-topbar, .driver-topbar, .admin-main > header) h1 {
+  margin: 0;
+  font-size: clamp(18px, 2vw, 23px);
+  letter-spacing: -.45px;
+}
+
+/* Superficies principales. Se evita que cada pantalla parezca otro producto. */
+.passenger-shell :where(
+  .start-ride-card, .active-trip, .recent-trip-list .trip-row,
+  .trip-history article, .notification-list article, .request-form,
+  .quote-card, .address-form, .address-list > article, .payment-methods,
+  .payment-history, .tracking-main, .tracking-driver, .account-details,
+  .account-summary, .settings-card, .support-form, .support-list article
+),
+.driver-shell :where(
+  .driver-status-card, .active-driver-trip, .driver-request-list article,
+  .vehicle-list article, .vehicle-form, .document-list article,
+  .driver-account-grid > section, .driver-account-grid > aside,
+  .driver-summary article, .settings-card, .earnings-hero,
+  .earnings-grid article, .requirements-card, .identity-form, .document-group
+),
+.admin-shell :where(
+  .admin-card, .metric-strip article, .admin-metrics article,
+  .settings-card, .admin-account-card, .drivers-monitoring .driver-row,
+  .users-monitoring .user-row, .trips-monitoring .trip-row
+) {
+  border-color: var(--ride-panel-border);
+  background-color: var(--ride-panel-surface);
+  color: var(--ride-panel-ink);
+  box-shadow: var(--ride-shadow-sm);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell).theme-dark
+  :where(
+    .start-ride-card, .active-trip, .recent-trip-list .trip-row,
+    .trip-history article, .notification-list article, .request-form,
+    .quote-card, .address-form, .address-list > article, .payment-methods,
+    .payment-history, .tracking-main, .tracking-driver, .account-details,
+    .account-summary, .settings-card, .support-form, .support-list article,
+    .driver-status-card, .active-driver-trip, .driver-request-list article,
+    .vehicle-list article, .vehicle-form, .document-list article,
+    .driver-account-grid > section, .driver-account-grid > aside,
+    .driver-summary article, .earnings-hero, .earnings-grid article,
+    .requirements-card, .identity-form, .document-group,
+    .admin-card, .metric-strip article, .admin-metrics article,
+    .admin-account-card, .drivers-monitoring .driver-row,
+    .users-monitoring .user-row, .trips-monitoring .trip-row
+  ) {
+  border-color: var(--ride-panel-border);
+  background-color: var(--ride-panel-surface);
+  color: var(--ride-panel-ink);
+  box-shadow: var(--ride-shadow-sm);
+}
+
+/* Acciones: primaria sólida, secundaria contenida y destructiva inequívoca. */
+:where(.passenger-shell, .driver-shell, .admin-shell)
+  :where(
+    .passenger-primary-action, .define-route-button, .quote-card > button,
+    .address-form > button, .tracking-pay, .driver-trip-actions .primary,
+    .vehicle-form .primary, .identity-form > .primary,
+    .driver-request-list article > button, .admin-dialog button[type='submit'],
+    .account-dialog button[type='submit']
+  ) {
+  min-height: 42px;
+  border: 1px solid var(--ride-brand-500);
+  border-radius: var(--ride-radius-sm);
+  background: var(--ride-brand-500);
+  color: #062638;
+  font-weight: 800;
+  box-shadow: none;
+  transition: transform var(--ride-transition), background var(--ride-transition), border-color var(--ride-transition), box-shadow var(--ride-transition);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell)
+  :where(
+    .passenger-primary-action, .define-route-button, .quote-card > button,
+    .address-form > button, .tracking-pay, .driver-trip-actions .primary,
+    .vehicle-form .primary, .identity-form > .primary,
+    .driver-request-list article > button, .admin-dialog button[type='submit'],
+    .account-dialog button[type='submit']
+  ):not(:disabled):hover {
+  transform: translateY(-1px);
+  border-color: var(--ride-brand-600);
+  background: var(--ride-brand-400);
+  box-shadow: 0 8px 20px rgba(38, 169, 220, .2);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell)
+  :where(.danger, button.danger, .delete):not(:disabled) {
+  border-color: #efb6b1;
+  background: var(--ride-danger-50);
+  color: var(--ride-danger-500);
+}
+
+/* Etiquetas y estados usan la misma semántica en todos los módulos. */
+:where(.passenger-shell, .driver-shell, .admin-shell)
+  :where(.passenger-kicker, .driver-section-head > span, .overview-heading > small, .admin-card-head small) {
+  color: var(--ride-brand-600);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.25px;
+  text-transform: uppercase;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell)
+  :where(.success, .finalizado, .aprobado) {
+  --ride-state-bg: var(--ride-success-50);
+  --ride-state-color: var(--ride-success-500);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell)
+  :where(.failure, .cancelado, .rechazado, .sin_conductor) {
+  --ride-state-bg: var(--ride-danger-50);
+  --ride-state-color: var(--ride-danger-500);
+}
+
+/* El oscuro es accesibilidad, no una escena nocturna: superficies planas y legibles. */
+:where(.passenger-shell, .driver-shell, .admin-shell).theme-dark
+  :where(input, select, textarea, .theme-options button) {
+  border-color: var(--ride-panel-border);
+  background: var(--ride-panel-surface-soft);
+  color: var(--ride-panel-ink);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell).theme-dark
+  :where(.danger, button.danger, .delete):not(:disabled) {
+  border-color: #75433f;
+  background: #422725;
+  color: #ffb3ad;
+}
+
+@media (max-width: 760px) {
+  :where(.passenger-topbar, .driver-topbar, .admin-main > header) {
+    min-height: 72px;
+  }
+
+  :where(.passenger-content, .driver-content, .admin-content) {
+    padding-inline: clamp(14px, 4vw, 20px);
+  }
+
+  :where(.passenger-shell, .driver-shell, .admin-shell)
+    :where(button, input, select, textarea) { min-height: 44px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.passenger-shell, .driver-shell, .admin-shell) *,
+  :where(.passenger-shell, .driver-shell, .admin-shell) *::before,
+  :where(.passenger-shell, .driver-shell, .admin-shell) *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
