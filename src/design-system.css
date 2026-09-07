@@ -143,6 +143,10 @@ textarea { -webkit-tap-highlight-color: transparent; }
 :where(.passenger-shell, .driver-shell, .admin-shell)
   :where(p, small, dt, time) { color: var(--ride-panel-muted); }
 
+:where(.passenger-workspace, .driver-workspace, .admin-main),
+:where(.passenger-content, .driver-content, .admin-content),
+:where(.passenger-page, .driver-page, .admin-page) { min-width: 0; }
+
 :where(.passenger-shell, .driver-shell, .admin-shell)
   :where(input, select, textarea) {
   min-height: 42px;
@@ -401,6 +405,61 @@ html[data-ride-theme='dark'] .ride-chat textarea {
   color: #edf7fa;
 }
 
+/* Correcciones de auditoría: elimina bordes negros y hovers fluorescentes que
+   habían quedado en reglas aisladas de los tres paneles. */
+.passenger-shell:not(.theme-dark)
+  :is(.payment-history article, .tracking-position, .settings-toggle),
+.admin-shell:not(.theme-dark)
+  :is(.admin-card-head, .user-filters, .driver-toolbar, .trip-filters, .drivers-monitoring .driver-detail) {
+  border-color: var(--ride-panel-border);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell)
+  :where(.passenger-logout, .driver-logout, .admin-logout):not(:disabled):hover {
+  border-color: var(--ride-brand-400);
+  background: rgba(89, 197, 232, .11);
+  color: #ffffff;
+  box-shadow: none;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell)
+  :where(.account-avatar, .driver-account-hero > span, .admin-profile > span, .account-avatar-large) {
+  border-color: var(--ride-panel-border-strong);
+}
+
+.passenger-shell:not(.theme-dark)
+  :is(.passenger-primary-action, .passenger-welcome button, .passenger-empty button,
+      .quote-card > button, .address-form > button, .payment-head button,
+      .payment-empty button, .tracking-pay, .tracking-contact a,
+      .tracking-contact button, .address-actions button:not(.danger),
+      .payment-method-actions > button:not(.delete)):not(:disabled):hover,
+.admin-shell:not(.theme-dark)
+  :is(.admin-card-head button, .link-button, .driver-toggle, .doc-ok,
+      .account-outline-button, .account-dialog footer button[type='submit']):not(:disabled):hover {
+  border-color: var(--ride-brand-600);
+  background: var(--ride-brand-100);
+  color: #07354a;
+  box-shadow: none;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell).theme-dark
+  :is(.passenger-primary-action, .passenger-welcome button, .passenger-empty button,
+      .quote-card > button, .address-form > button, .payment-head button,
+      .payment-empty button, .tracking-pay, .tracking-contact a,
+      .tracking-contact button, .address-actions button:not(.danger),
+      .payment-method-actions > button:not(.delete), .admin-card-head button,
+      .link-button, .driver-toggle, .doc-ok, .account-outline-button,
+      .account-dialog footer button[type='submit']):not(:disabled):hover {
+  border-color: var(--ride-brand-400);
+  background: #17495b;
+  color: #dff8ff;
+  box-shadow: none;
+}
+
+:where(.ride-map-canvas, .request-map, .tracking-map, .driver-home-map) {
+  max-width: 100%;
+}
+
 @media (max-width: 760px) {
   :where(.passenger-topbar, .driver-topbar, .admin-main > header) {
     min-height: 72px;
@@ -419,6 +478,19 @@ html[data-ride-theme='dark'] .ride-chat textarea {
 
   :where(.passenger-shell, .driver-shell) .support-layout {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  :where(.passenger-shell, .driver-shell, .admin-shell)
+    :where(.start-ride-card, .active-trip, .request-form, .quote-card,
+      .account-details, .account-summary, .settings-card, .support-form,
+      .driver-status-card, .active-driver-trip, .vehicle-form,
+      .identity-form, .document-group, .admin-card) {
+    border-radius: var(--ride-radius-md);
+  }
+
+  :where(.passenger-shell, .driver-shell, .admin-shell)
+    :where(.theme-options button, .trip-row, .user-row, .driver-row) {
+    overflow-wrap: anywhere;
   }
 }
 
