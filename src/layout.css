@@ -213,7 +213,25 @@ button, input, select, textarea { line-height: 1.4; }
   .admin-shell .admin-card-head { flex-wrap: wrap; gap: 12px; }
   .admin-shell .admin-card-head > div { min-width: 0; flex: 1 1 170px; }
   .auth-page { grid-template-columns: minmax(0, 1fr); }
-  .form-panel { padding: 32px 20px; }
+  .auth-page .form-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 16px clamp(12px, 4vw, 20px);
+  }
+  .auth-page .mobile-brand {
+    position: static;
+    align-self: flex-start;
+    flex: 0 0 auto;
+    margin: 0 0 12px 2px;
+  }
+  .auth-page .auth-stage {
+    width: min(100%, 460px);
+    min-width: 0;
+    margin: 0 auto;
+    align-self: center;
+  }
   .two-fields { grid-template-columns: minmax(0, 1fr); }
   .auth-box h2, .welcome-box h2 { font-size: 32px; }
 }

@@ -225,7 +225,7 @@ function App() {
     <section><span className="success-mark">✓</span><p>Sesión iniciada correctamente</p><h1>Hola, {user.name.split(' ')[0]}</h1><p className="home-copy">{activeView !== user.role ? `Así ve la app una cuenta de ${activeView === 'driver' ? 'conductor' : 'pasajero'}.` : `Tu cuenta de ${activeView === 'driver' ? 'conductor' : 'pasajero'} está lista.`}</p><div className="account-card"><div><small>Correo</small><strong>{user.email}</strong></div><div><small>Teléfono</small><strong>{user.phone || 'Sin teléfono'}</strong></div><div><small>Modo</small><strong>{activeView === 'driver' ? 'Conduzco' : 'Viajo'}</strong></div></div></section>
   </main>
 
-  return <main className="auth-page">
+  return <main className={`auth-page auth-page-${screen}`}>
     <section className="brand-panel">
       <div className="brand-copy"><div className="wordmark"><img src={logoTipo} className="wordmark-logo" alt="Ride" /><span>Ride</span></div><span className="brand-kicker">TU CIUDAD, A TU RITMO</span><h1>Muévete con<br/><em>libertad.</em></h1><p>Una forma más segura, transparente y humana de llegar a donde quieres.</p><div className="brand-benefits"><span><CheckCircle2 size={16} aria-hidden /> Viajes confiables</span><span><ShieldCheck size={16} aria-hidden /> Acceso protegido</span></div></div>
       <div className="brand-status"><span className="status-dot" aria-hidden /><div><strong>Ride está listo para ti</strong><small>Solicita, conduce o administra desde un solo lugar.</small></div></div>

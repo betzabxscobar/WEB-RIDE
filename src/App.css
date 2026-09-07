@@ -173,16 +173,20 @@ html[data-ride-theme="dark"] .viewing-as button{background:#163746!important;col
 .form-footer{font-size:12px}.link-button{font-size:12px}
 
 @media(max-width:850px){
-  .form-panel{padding:96px 20px 28px}
-  .mobile-brand{left:24px;top:26px;z-index:2}
-  .auth-stage{margin:auto}
-  .form-panel .auth-box{margin-top:0;padding:30px 26px 26px;border-radius:21px}
+  .form-panel{place-items:start center;padding:88px clamp(14px,4vw,24px) 18px}
+  .mobile-brand{left:clamp(18px,5vw,24px);top:20px;z-index:2}
+  .auth-stage{min-width:0;width:min(100%,460px);margin:0 auto;align-self:start}
+  .form-panel .auth-box{min-width:0;margin:0;padding:26px clamp(19px,5vw,26px) 22px;border-radius:21px}
+  .auth-box h2{font-size:clamp(28px,8vw,38px);overflow-wrap:anywhere}
+  .auth-box input,.input-with-icon,.password-field{min-width:0}
 }
 @media(max-width:430px){
   .form-panel{padding-inline:14px}
-  .form-panel .auth-box{padding:27px 20px 23px}
+  .form-panel .auth-box{padding:23px 18px 19px;border-radius:18px}
   .auth-icon{width:42px;height:42px}
-  .role-picker{grid-template-columns:1fr}
+  .role-picker{gap:7px}
+  .role-picker button{min-width:0;padding:10px 8px}
+  .role-picker small{overflow-wrap:anywhere}
 }
 
 /* Branded app bootstrap. The bar is intentionally indeterminate: session
@@ -216,12 +220,25 @@ html[data-ride-theme="dark"] .viewing-as button{background:#163746!important;col
 @media(max-width:480px){.loading-card{padding:35px 22px 29px;border-radius:23px}.loading-logo-wrap{width:92px;height:92px}.loading-logo-wrap img{width:49px;height:57px}.loading-card h1{font-size:22px}}
 @media(prefers-reduced-motion:reduce){.loading-screen *{animation:none!important}.loading-progress span{width:65%;margin:auto}}
 
-/* Keep the split auth experience inside the viewport. The form column becomes
-   scrollable only when a genuinely tall form (such as registration) needs it. */
-.auth-page{height:100dvh;min-height:0;overflow:hidden}
+/* Keep authentication inside the visible viewport. Each screen gets only the
+   amount of vertical space it needs, so short forms never create a scrollbar. */
+.auth-page{position:fixed;inset:0;width:100%;height:100dvh;min-height:0;overflow:hidden}
+body:has(.auth-page){height:100dvh;min-height:0;overflow:hidden}
+#root:has(>.auth-page){height:100%;overflow:hidden}
 .auth-page>.brand-panel,.auth-page>.form-panel{height:100%;min-height:0}
 .auth-page>.brand-panel{overflow:hidden}
-.auth-page>.form-panel{overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:auto}
+.auth-page>.form-panel{contain:paint;overflow:hidden;overscroll-behavior:contain}
+
+/* Registration has more controls, but remains compact on ordinary laptop
+   screens. The column may scroll only when the available height is smaller. */
+.auth-page-register .form-panel .auth-box{padding-block:clamp(22px,3.5vh,34px)}
+.auth-page-register .back{margin-bottom:clamp(12px,2vh,22px)}
+.auth-page-register .auth-box>p{margin-bottom:clamp(14px,2.2vh,22px)}
+.auth-page-register .auth-box form{gap:clamp(10px,1.65vh,15px)}
+.auth-page-register .role-picker button{padding-block:10px}
+.auth-page-register .auth-box input{min-height:44px;padding-block:10px}
+.auth-page-register .primary-action{min-height:46px}
+.auth-page-register .form-footer{margin-top:clamp(12px,2vh,18px)}
 
 @media(max-height:700px) and (min-width:851px){
   .brand-panel{padding:24px clamp(38px,6vw,82px)!important}
@@ -231,16 +248,50 @@ html[data-ride-theme="dark"] .viewing-as button{background:#163746!important;col
   .brand-benefits{margin-top:18px}
   .brand-benefits span{padding:7px 10px}
   .brand-status{padding:11px 14px;border-radius:14px}
-  .form-panel{padding:18px clamp(24px,4vw,56px)}
-  .form-panel .auth-box{padding:28px 34px 25px;border-radius:22px}
-  .auth-icon{width:42px;height:42px;margin-bottom:13px}
+  .form-panel{padding:14px clamp(24px,4vw,56px)}
+  .form-panel .auth-box{padding:22px 34px 20px;border-radius:22px}
+  .auth-page-login .back,.auth-page-forgot .back{margin-bottom:12px}
+  .auth-icon{width:40px;height:40px;margin-bottom:9px;border-radius:12px}
+  .auth-box h2{font-size:clamp(29px,2.8vw,35px);margin-block:5px 6px}
   .welcome-box h2{font-size:clamp(34px,3.3vw,43px)}
-  .auth-box>p{margin-bottom:20px}
-  .primary-action,.secondary-action{min-height:48px}
-  .auth-assurance{margin-top:17px;padding-top:15px}
+  .auth-box>p{margin-bottom:13px;line-height:1.45}
+  .auth-page-login .auth-box form,.auth-page-forgot .auth-box form{gap:10px}
+  .auth-box label{gap:5px;font-size:12px}
+  .auth-box input{min-height:42px;padding-block:9px}
+  .primary-action,.secondary-action{min-height:43px}
+  .form-extra{margin-top:0}
+  .link-button{padding-block:3px}
+  .form-footer{margin-top:12px}
+  .auth-assurance{margin-top:12px;padding-top:10px}
+  .auth-page-register .form-panel .auth-box{padding:18px 30px}
+  .auth-page-register .back{margin-bottom:9px}
+  .auth-page-register .auth-box h2{font-size:29px;margin-block:4px 6px}
+  .auth-page-register .auth-box>p{margin-bottom:10px;line-height:1.4}
+  .auth-page-register .auth-box form{gap:8px}
+  .auth-page-register .auth-box label{gap:4px;font-size:11px}
+  .auth-page-register .role-picker button{padding:7px 10px}
+  .auth-page-register .auth-box input{min-height:40px;padding-block:8px}
+  .auth-page-register .primary-action{min-height:42px}
+  .auth-page-register .form-footer{margin-top:9px}
 }
 
 @media(max-width:850px){
   .auth-page{height:100dvh;min-height:0}
-  .auth-page>.form-panel{height:100%;min-height:0;overflow-y:auto}
+  .auth-page>.form-panel{height:100%;min-height:0}
+  .auth-page-register>.form-panel{overflow-y:auto}
+}
+
+@media(max-width:850px) and (max-height:760px){
+  .form-panel{padding-top:68px;padding-bottom:10px}
+  .mobile-brand{top:12px}
+  .form-panel .auth-box{padding:22px 24px 20px}
+  .back{margin-bottom:14px}
+  .auth-icon{width:40px;height:40px;margin-bottom:10px}
+  .auth-box h2,.welcome-box h2{font-size:clamp(28px,8vw,36px);margin-block:5px 7px}
+  .auth-box>p{margin-bottom:16px;line-height:1.45}
+  .auth-box form{gap:11px}
+  .auth-box input{min-height:44px;padding-block:10px}
+  .primary-action,.secondary-action{min-height:44px}
+  .auth-assurance{margin-top:14px;padding-top:12px}
+  .form-footer{margin-top:14px}
 }
