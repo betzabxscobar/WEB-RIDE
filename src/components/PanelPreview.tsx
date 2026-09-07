@@ -1,4 +1,4 @@
-import { Eye } from 'lucide-react'
+import { Eye, PanelRightClose } from 'lucide-react'
 import { panelLabel, type Role } from '../lib/auth'
 
 /** Lives inside each workspace so the sidebar cannot cover the message. */
@@ -15,7 +15,7 @@ export function PanelPreview({ role, activeView, onSwitchView }: {
 }
 
 export function SidebarDismiss({ onClose }: { onClose: () => void }) {
-  return <button type="button" className="sidebar-dismiss" onClick={onClose} aria-label="Cerrar menú">×</button>
+  return <button type="button" className="sidebar-dismiss" onClick={onClose} aria-label="Contraer menú"><PanelRightClose size={18} aria-hidden /></button>
 }
 
 export function SidebarBackdrop({ onClose }: { onClose: () => void }) {

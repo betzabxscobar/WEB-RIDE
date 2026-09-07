@@ -678,3 +678,52 @@ html[data-ride-theme="dark"] .viewing-as button { background: #143746 !important
     margin-top:10px!important;
   }
 }
+
+/* One sidebar language for passenger, driver and administration. Passenger is
+   the reference: identical frame, controls, navigation states and footer. */
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar){
+  --sidebar-edge:rgba(122,205,228,.14);
+  --sidebar-muted:#9eb7c3;
+  --sidebar-accent:#6dd9f1;
+  padding:20px 16px 16px!important;
+}
+:where(.passenger-brand,.driver-brand,.admin-brand){
+  min-height:62px!important;display:flex!important;align-items:center!important;gap:10px!important;
+  padding:0 8px 14px 44px!important;border-bottom:1px solid rgba(255,255,255,.09)!important;
+}
+:where(.passenger-brand,.driver-brand,.admin-brand) img{width:32px!important;height:38px!important;object-fit:contain}
+:where(.passenger-brand,.driver-brand) b,.admin-brand strong{color:#fff!important;font-size:23px!important;line-height:1!important}
+.admin-brand>div{display:flex!important;align-items:center}.admin-brand small{display:none!important}
+.sidebar-dismiss{
+  left:14px!important;right:auto!important;top:29px!important;width:32px!important;height:32px!important;min-height:32px!important;
+  display:grid!important;place-items:center!important;padding:0!important;border:1px solid var(--sidebar-edge)!important;
+  border-radius:9px!important;background:rgba(255,255,255,.04)!important;color:#9fc2cf!important;font-size:0!important;
+  transition:background-color .18s ease,border-color .18s ease,color .18s ease,transform .18s ease!important;
+}
+.sidebar-dismiss:hover{border-color:rgba(109,217,241,.34)!important;background:rgba(109,217,241,.11)!important;color:#fff!important;transform:translateX(1px)}
+.sidebar-dismiss:focus-visible{outline:2px solid var(--sidebar-accent)!important;outline-offset:2px}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav{margin-top:14px!important;gap:6px!important}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav button{
+  min-height:44px!important;display:flex!important;grid-template-columns:none!important;align-items:center!important;gap:10px!important;
+  padding:7px 10px!important;border-radius:11px!important;color:var(--sidebar-muted)!important;text-align:left!important;
+}
+:where(.passenger-sidebar,.driver-sidebar) nav button>span:first-child,.admin-sidebar nav button>svg{
+  width:30px!important;height:30px!important;display:grid!important;place-items:center!important;flex:0 0 30px!important;
+  padding:6px!important;border-radius:9px!important;background:rgba(255,255,255,.045)!important;color:#91b8c7!important;
+}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav button:hover{background:rgba(255,255,255,.055)!important;color:#f5fbfd!important;transform:none!important}
+:where(.passenger-sidebar,.driver-sidebar,.admin-sidebar) nav button.active{background:rgba(57,188,227,.14)!important;color:#fff!important;transform:none!important}
+:where(.passenger-sidebar,.driver-sidebar) nav button.active>span:first-child,.admin-sidebar nav button.active>svg{background:rgba(103,211,239,.15)!important;color:var(--sidebar-accent)!important}
+.admin-sidebar .nav-group{gap:5px!important}.admin-sidebar .nav-group>small{padding:4px 10px 2px!important}
+.admin-sidebar .nav-group button>b{margin-left:auto}
+:where(.passenger-profile,.driver-profile,.sidebar-profile){
+  min-height:64px!important;display:flex!important;align-items:center!important;gap:10px!important;margin-top:auto!important;
+  padding:10px!important;border:1px solid rgba(134,202,220,.12)!important;border-radius:13px!important;background:rgba(255,255,255,.035)!important;
+}
+:where(.passenger-logout,.driver-logout,.admin-logout){
+  width:100%!important;min-height:43px!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;
+  margin-top:8px!important;padding:9px 11px!important;border:1px solid rgba(151,205,219,.16)!important;border-radius:11px!important;
+  background:rgba(255,255,255,.025)!important;color:#b7cbd4!important;font-size:12px!important;font-weight:600!important;
+}
+.panel-switcher.sidebar{width:100%!important;margin:0 0 8px!important;padding:10px!important;border-radius:13px!important}
+:where(.passenger-topbar>.hamburger-button,.driver-topbar>.driver-hamburger,.admin-main>header>.hamburger-button) svg{width:20px;height:20px}

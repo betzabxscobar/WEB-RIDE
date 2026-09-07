@@ -4,7 +4,7 @@ import { SupportPage, TripChat } from './components/RideExtras'
 import logoTipo from './assets/LogoTipo.png'
 import { panelLabel, type Role, type User } from './lib/auth'
 import { AppearanceSettings, useAppearance } from './components/AppearanceSettings'
-import { Home as HomeIcon, MapPin as MapPinIcon, Truck as TruckIcon, FileText as FileTextIcon, HelpCircle as HelpCircleIcon, User as UserIcon, Settings as SettingsIcon, Menu as MenuIcon, WalletCards as WalletIcon } from 'lucide-react'
+import { Home as HomeIcon, MapPin as MapPinIcon, Truck as TruckIcon, FileText as FileTextIcon, HelpCircle as HelpCircleIcon, User as UserIcon, Settings as SettingsIcon, Menu as MenuIcon, WalletCards as WalletIcon, LogOut as LogOutIcon } from 'lucide-react'
 import { DriverAccount, DriverHome, DriverNav, DriverTrips, DocumentsPage, EarningsPage, VehiclesPage } from './driver/DriverPages'
 import { initials, money } from './dashboard/formatters'
 import {
@@ -160,7 +160,7 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
 
         </label>
       )}
-      <button className="driver-logout" onClick={onLogout}>Cerrar sesión</button>
+      <button className="driver-logout" onClick={onLogout}><LogOutIcon size={17} aria-hidden /><span>Cerrar sesión</span></button>
     </aside>
     {sidebarOpen && <SidebarBackdrop onClose={() => setSidebarOpen(false)} />}
     <section className="driver-workspace">
