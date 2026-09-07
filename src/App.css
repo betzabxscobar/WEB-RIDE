@@ -215,3 +215,32 @@ html[data-ride-theme="dark"] .viewing-as button{background:#163746!important;col
 @keyframes loading-card-in{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
 @media(max-width:480px){.loading-card{padding:35px 22px 29px;border-radius:23px}.loading-logo-wrap{width:92px;height:92px}.loading-logo-wrap img{width:49px;height:57px}.loading-card h1{font-size:22px}}
 @media(prefers-reduced-motion:reduce){.loading-screen *{animation:none!important}.loading-progress span{width:65%;margin:auto}}
+
+/* Keep the split auth experience inside the viewport. The form column becomes
+   scrollable only when a genuinely tall form (such as registration) needs it. */
+.auth-page{height:100dvh;min-height:0;overflow:hidden}
+.auth-page>.brand-panel,.auth-page>.form-panel{height:100%;min-height:0}
+.auth-page>.brand-panel{overflow:hidden}
+.auth-page>.form-panel{overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:auto}
+
+@media(max-height:700px) and (min-width:851px){
+  .brand-panel{padding:24px clamp(38px,6vw,82px)!important}
+  .brand-kicker{margin-top:26px}
+  .brand-copy h1{margin:10px 0 15px;font-size:clamp(42px,4.5vw,60px);line-height:1.02}
+  .brand-copy>p{margin-block:0;font-size:14px!important;line-height:1.55!important}
+  .brand-benefits{margin-top:18px}
+  .brand-benefits span{padding:7px 10px}
+  .brand-status{padding:11px 14px;border-radius:14px}
+  .form-panel{padding:18px clamp(24px,4vw,56px)}
+  .form-panel .auth-box{padding:28px 34px 25px;border-radius:22px}
+  .auth-icon{width:42px;height:42px;margin-bottom:13px}
+  .welcome-box h2{font-size:clamp(34px,3.3vw,43px)}
+  .auth-box>p{margin-bottom:20px}
+  .primary-action,.secondary-action{min-height:48px}
+  .auth-assurance{margin-top:17px;padding-top:15px}
+}
+
+@media(max-width:850px){
+  .auth-page{height:100dvh;min-height:0}
+  .auth-page>.form-panel{height:100%;min-height:0;overflow-y:auto}
+}
