@@ -83,6 +83,15 @@ textarea { -webkit-tap-highlight-color: transparent; }
   --ride-panel-surface-soft: var(--ride-surface-soft);
   --ride-panel-border: var(--ride-border);
   --ride-panel-border-strong: var(--ride-border-strong);
+  /* AppearanceSettings y RideExtras son compartidos, aunque sus primeras
+     reglas nacieron en el panel del pasajero. */
+  --p-ink: var(--ride-panel-ink);
+  --p-muted: var(--ride-panel-muted);
+  --p-paper: var(--ride-panel-surface);
+  --p-line: var(--ride-panel-border);
+  --passenger-text: var(--ride-panel-ink);
+  --passenger-card: var(--ride-panel-surface);
+  --passenger-line: var(--ride-panel-border);
   min-width: 0;
   color: var(--ride-panel-ink);
   background: var(--ride-panel-canvas);
@@ -106,11 +115,7 @@ textarea { -webkit-tap-highlight-color: transparent; }
 
 /* Compatibilidad con las variables locales existentes. */
 .passenger-shell {
-  --p-ink: var(--ride-panel-ink);
-  --p-muted: var(--ride-panel-muted);
   --p-bg: var(--ride-panel-canvas);
-  --p-paper: var(--ride-panel-surface);
-  --p-line: var(--ride-panel-border);
   --p-blue: var(--ride-brand-500);
 }
 
@@ -306,6 +311,96 @@ textarea { -webkit-tap-highlight-color: transparent; }
   color: #ffb3ad;
 }
 
+/* Configuración compartida: la misma tarjeta y controles en cualquier rol. */
+:where(.passenger-shell, .driver-shell, .admin-shell) .settings-shared {
+  width: min(100%, 920px);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell) .settings-card {
+  padding: clamp(19px, 3vw, 25px);
+  border: 1px solid var(--ride-panel-border);
+  border-radius: var(--ride-radius-lg);
+  background: var(--ride-panel-surface);
+  box-shadow: var(--ride-shadow-sm);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell) .theme-options button {
+  min-width: 0;
+  border-color: var(--ride-panel-border);
+  background: var(--ride-panel-surface);
+  color: var(--ride-panel-ink);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell) .theme-options button.selected {
+  border-color: var(--ride-brand-500);
+  background: var(--ride-brand-50);
+  box-shadow: var(--ride-focus);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell).theme-dark .theme-options button.selected {
+  background: #153f50;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell) .settings-toggle {
+  border-color: var(--ride-panel-border);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell) .settings-toggle:has(input:focus-visible) > i {
+  box-shadow: var(--ride-focus);
+}
+
+/* Soporte y chat son usados por pasajero y conductor. */
+:where(.passenger-shell, .driver-shell) :where(.support-form, .support-list article) {
+  border-color: var(--ride-panel-border);
+  background: var(--ride-panel-surface);
+  color: var(--ride-panel-ink);
+  box-shadow: var(--ride-shadow-sm);
+}
+
+:where(.passenger-shell, .driver-shell) .support-form > button,
+.ride-chat footer button {
+  min-height: 44px;
+  border: 1px solid var(--ride-brand-500);
+  border-radius: var(--ride-radius-sm);
+  background: var(--ride-brand-500);
+  color: #062638;
+  font-weight: 800;
+}
+
+/* Los portales viven bajo <body>, por eso se enlazan al tema del documento. */
+.passenger-dialog,
+.driver-dialog,
+.ride-chat {
+  border: 1px solid var(--ride-border);
+  background: var(--ride-surface);
+  color: var(--ride-ink);
+  box-shadow: var(--ride-shadow-lg);
+}
+
+html[data-ride-theme='dark'] :where(.passenger-dialog, .driver-dialog, .ride-chat) {
+  --passenger-text: #edf7fa;
+  --passenger-card: #102c3a;
+  --passenger-line: #31515f;
+  border-color: #31515f;
+  background: #102c3a;
+  color: #edf7fa;
+  color-scheme: dark;
+}
+
+html[data-ride-theme='dark'] :where(.passenger-dialog, .driver-dialog, .ride-chat)
+  :where(h2, h3, strong) { color: #edf7fa; }
+
+html[data-ride-theme='dark'] :where(.passenger-dialog, .driver-dialog, .ride-chat)
+  :where(p, small, label) { color: #b7cbd4; }
+
+html[data-ride-theme='dark'] .ride-chat-messages article { background: #173b4a; }
+html[data-ride-theme='dark'] .ride-chat-messages article.mine { background: #147fa4; }
+html[data-ride-theme='dark'] .ride-chat textarea {
+  border-color: #31515f;
+  background: #153644;
+  color: #edf7fa;
+}
+
 @media (max-width: 760px) {
   :where(.passenger-topbar, .driver-topbar, .admin-main > header) {
     min-height: 72px;
@@ -317,6 +412,14 @@ textarea { -webkit-tap-highlight-color: transparent; }
 
   :where(.passenger-shell, .driver-shell, .admin-shell)
     :where(button, input, select, textarea) { min-height: 44px; }
+
+  :where(.passenger-shell, .driver-shell, .admin-shell) .theme-options {
+    grid-template-columns: 1fr;
+  }
+
+  :where(.passenger-shell, .driver-shell) .support-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
