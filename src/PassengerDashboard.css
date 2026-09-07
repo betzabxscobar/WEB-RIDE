@@ -254,3 +254,8 @@ html[data-ride-theme="dark"] .settings-shared .theme-options button:nth-child(3)
   background:#493039;
   color:#d9a0aa;
 }
+
+.driver-conversion-card{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:15px;align-items:center;margin-top:18px;padding:22px;border:1px solid var(--p-line);border-radius:18px;background:var(--p-paper);box-shadow:0 12px 38px rgba(12,48,65,.045)}
+.driver-conversion-card>span{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:#e5f7fb;color:#1689ad}.driver-conversion-card>div{display:grid;gap:4px}.driver-conversion-card small{color:#1689ad;font-size:9px;font-weight:800;letter-spacing:1px}.driver-conversion-card h3{margin:0;font:800 16px Sora,sans-serif}.driver-conversion-card p{margin:0;color:var(--p-muted);font-size:10px;line-height:1.55}.driver-conversion-card>button{min-height:42px;border:1px solid #46cbe4;border-radius:10px;background:#123f50;color:#bff8ff;padding:10px 14px;font-size:10px;font-weight:800}
+.passenger-shell.theme-dark .driver-conversion-card{background:var(--p-paper)}.passenger-shell.theme-dark .driver-conversion-card>span{background:#164758;color:#8ee0f2}
+@media(max-width:680px){.driver-conversion-card{grid-template-columns:44px 1fr;padding:18px}.driver-conversion-card>span{width:44px;height:44px}.driver-conversion-card>button{grid-column:1/-1;width:100%}}

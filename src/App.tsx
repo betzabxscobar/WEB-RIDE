@@ -9,6 +9,7 @@ import DriverDashboard from './DriverDashboard'
 import './DriverDashboard.css'
 import { ArrowRight, CheckCircle2, LockKeyhole, Mail, ShieldCheck } from 'lucide-react'
 import { supabase } from './lib/supabase'
+import { useRideBrowserNotifications } from './lib/browser-notifications'
 import {
   changeInitialPassword,
   completePasswordReset,
@@ -44,6 +45,7 @@ function App() {
   // Pantalla que se está mostrando. El rol real del usuario no cambia nunca:
   // esto solo decide qué interfaz se ve. `null` = la que toca por su rol.
   const [view, setView] = useState<Role | null>(null)
+  useRideBrowserNotifications(user?.id)
 
   // Restaura la sesión guardada y se mantiene al día si el token se refresca
   // o si la sesión se cierra en otra pestaña.
@@ -67,6 +69,17 @@ function App() {
         setRecovering(false)
         setView(null)
         setScreen('welcome')
+        return
+      }
+      // La confirmación de registro también vuelve como SIGNED_IN. Se vuelve
+      // a leer el perfil real para que el enlace abra directamente la cuenta.
+      if (event === 'SIGNED_IN') {
+        void loadCurrentUser().then((signedInUser) => {
+          if (!active || !signedInUser) return
+          setUser(signedInUser)
+          setView(null)
+          setScreen('home')
+        }).catch(() => undefined)
       }
     })
 
@@ -199,7 +212,7 @@ function App() {
   const viewIsAdministrative = activeView === 'admin' || activeView === 'superadmin'
   if (screen === 'home' && user && viewIsAdministrative) return <AdminDashboard user={user} viewAs={activeView as Role} views={availableViews} onSwitchView={switchView} onUserUpdate={setUser} onLogout={logout} />
 
-  if (screen === 'home' && user && activeView === 'passenger') return <PassengerDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onLogout={logout} />
+  if (screen === 'home' && user && activeView === 'passenger') return <PassengerDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onUserUpdate={setUser} onLogout={logout} />
 
   if (screen === 'home' && user && activeView === 'driver') return <DriverDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onLogout={logout} />
 

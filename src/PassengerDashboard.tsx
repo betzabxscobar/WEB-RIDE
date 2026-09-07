@@ -12,7 +12,7 @@ import { dateTime as date, initials, money } from './dashboard/formatters'
 import { AppearanceSettings } from './components/AppearanceSettings'
 import { Home as HomeIcon, CarFront as RideRequestIcon, List as ListIcon, Bell as BellIcon, MapPin as MapPinIcon, DollarSign as DollarSignIcon, HelpCircle as HelpCircleIcon, User as UserIcon, Settings as SettingsIcon, CheckCircle2, AlertCircle, ArrowRight, Search, LogOut, Menu as MenuIcon } from 'lucide-react'
 import { SupportPage, TripChat } from './components/RideExtras'
-import { panelLabel, type Role, type User } from './lib/auth'
+import { convertPassengerToDriver, panelLabel, type Role, type User } from './lib/auth'
 import { routeBetween, type RoadRoute } from './lib/routing'
 import {
   addSavedAddress,
@@ -72,6 +72,7 @@ type Props = {
   views: Role[]
   activeView: Role
   onSwitchView: (view: Role) => void
+  onUserUpdate: (user: User) => void
   onLogout: () => void
 }
 
@@ -92,7 +93,7 @@ function vehicle(trip: Trip): string {
   return [model || 'Vehículo asignado', trip.vehiculoColor, trip.vehiculoPlaca].filter(Boolean).join(' · ')
 }
 
-function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }: Props) {
+function PassengerDashboard({ user, views, activeView, onSwitchView, onUserUpdate, onLogout }: Props) {
   const [page, setPage] = useState<Page>('inicio')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [trips, setTrips] = useState<Trip[]>([])
@@ -504,6 +505,18 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
     } finally { setBusy(false) }
   }
 
+  const becomeDriver = async (): Promise<boolean> => {
+    setBusy(true); setError(''); setNotice('')
+    try {
+      const updated = await convertPassengerToDriver()
+      onUserUpdate(updated)
+      return true
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'No pudimos cambiar tu cuenta a chofer.')
+      return false
+    } finally { setBusy(false) }
+  }
+
   return <main className={`passenger-shell ${darkMode ? 'theme-dark' : 'theme-light'} ${reducedMotion ? 'reduced-motion' : ''} ${sidebarOpen ? 'sidebar-open' : ''}`}>
     <div className="passenger-sidebar-trigger" aria-hidden="true"/>
     <aside id="passenger-sidebar" className={`passenger-sidebar ${sidebarOpen ? '' : 'collapsed'}`} inert={!sidebarOpen}><SidebarDismiss onClose={() => setSidebarOpen(false)} />
@@ -556,7 +569,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onLogout }:
           : page === 'direcciones' ? <AddressesPage addresses={addresses} busy={busy} onSave={saveCurrentAddress} onFavorite={toggleFavoriteAddress} onDelete={removeAddress}/>
           : page === 'pagos' ? <PaymentsPage methods={paymentMethods} payments={payments} trips={trips} busy={busy} onAddCash={addCashPayment} onAddDeuna={addDeuna} onAddTransfer={addTransfer} onPreferred={selectPreferredPayment} onDelete={removePaymentMethod}/>
           : page === 'soporte' ? <SupportPage userId={user.id} trips={trips}/>
-          : page === 'configuracion' ? <SettingsPage theme={theme} reducedMotion={reducedMotion} onTheme={changeTheme} onReducedMotion={changeReducedMotion}/>
+          : page === 'configuracion' ? <SettingsPage theme={theme} reducedMotion={reducedMotion} canBecomeDriver={user.role === 'passenger'} busy={busy} onTheme={changeTheme} onReducedMotion={changeReducedMotion} onBecomeDriver={becomeDriver}/>
           : <AccountPage user={user} trips={trips} addresses={addresses} methods={paymentMethods} onAddresses={() => go('direcciones')} onPayments={() => go('pagos')} onSettings={() => go('configuracion')}/>
         }
       </div>
@@ -673,8 +686,9 @@ function AccountPage({ user, trips, addresses, methods, onAddresses, onPayments,
   return <div className="passenger-page account-page"><section className="account-hero"><span className="account-avatar">{initials(user.name)}</span><div><span className="passenger-kicker">PERFIL DE PASAJERO</span><h2>{user.name}</h2><p>Tu información personal y actividad reciente.</p></div></section><section className="account-layout"><div className="account-details"><h3>Datos personales</h3><dl><div><dt>Nombre</dt><dd>{user.name}</dd></div><div><dt>Correo</dt><dd>{user.email}</dd></div><div><dt>Teléfono</dt><dd>{user.phone || 'Sin teléfono registrado'}</dd></div><div><dt>Tipo de cuenta</dt><dd>Pasajero</dd></div></dl><div className="account-links"><button className="account-link" onClick={onAddresses}>Administrar {addresses.length} {addresses.length === 1 ? 'dirección guardada' : 'direcciones guardadas'} →</button><button className="account-link" onClick={onPayments}>Administrar {methods.length} {methods.length === 1 ? 'forma de pago' : 'formas de pago'} →</button><button className="account-link" onClick={onSettings}>Abrir configuración →</button></div></div><div className="account-summary"><span>VIAJES FINALIZADOS</span><strong>{completed}</strong><p>{trips.length - completed} solicitudes en otros estados</p></div></section></div>
 }
 
-function SettingsPage({ theme, reducedMotion, onTheme, onReducedMotion }: { theme: ThemePreference; reducedMotion: boolean; onTheme: (theme: ThemePreference) => void; onReducedMotion: (enabled: boolean) => void }) {
-  return <div className="passenger-page settings-page"><section className="passenger-section-head"><div><span>PREFERENCIAS</span><h2>Configuración</h2><p>Personaliza cómo se ve y se comporta Ride en este navegador.</p></div></section><AppearanceSettings theme={theme} reducedMotion={reducedMotion} onTheme={onTheme} onReducedMotion={onReducedMotion}/></div>
+function SettingsPage({ theme, reducedMotion, canBecomeDriver, busy, onTheme, onReducedMotion, onBecomeDriver }: { theme: ThemePreference; reducedMotion: boolean; canBecomeDriver: boolean; busy: boolean; onTheme: (theme: ThemePreference) => void; onReducedMotion: (enabled: boolean) => void; onBecomeDriver: () => Promise<boolean> }) {
+  const [confirmingDriver, setConfirmingDriver] = useState(false)
+  return <div className="passenger-page settings-page"><section className="passenger-section-head"><div><span>PREFERENCIAS</span><h2>Configuración</h2><p>Personaliza cómo se ve y se comporta Ride en este navegador.</p></div></section><AppearanceSettings theme={theme} reducedMotion={reducedMotion} onTheme={onTheme} onReducedMotion={onReducedMotion}/>{canBecomeDriver && <section className="driver-conversion-card"><span><RideRequestIcon size={22} aria-hidden /></span><div><small>CONDUCIR CON RIDE</small><h3>Quiero ser chofer</h3><p>Usa esta misma cuenta, correo, teléfono e historial para comenzar tu registro como conductor.</p></div><button type="button" onClick={() => setConfirmingDriver(true)}>Comenzar registro</button></section>}{confirmingDriver && <Dialog title="¿Pasarte a chofer?" text="Tu cuenta conservará los viajes anteriores. Después deberás registrar un vehículo, subir tus documentos y esperar la aprobación administrativa antes de recibir solicitudes." onClose={() => setConfirmingDriver(false)}><button className="dialog-secondary" disabled={busy} onClick={() => setConfirmingDriver(false)}>Ahora no</button><button className="dialog-primary" disabled={busy} onClick={() => void onBecomeDriver().then((changed) => { if (changed) setConfirmingDriver(false) })}>{busy ? 'Actualizando…' : 'Sí, quiero conducir'}</button></Dialog>}</div>
 }
 
 function Route({ trip }: { trip: Trip }) {

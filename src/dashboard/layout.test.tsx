@@ -79,7 +79,7 @@ describe('panel navigation layout', () => {
       const { container } = render(role === 'admin'
         ? <AdminDashboard {...props} viewAs="admin" onUserUpdate={vi.fn()} />
         : role === 'driver' ? <DriverDashboard {...props} activeView="driver" />
-          : <PassengerDashboard {...props} activeView="passenger" />)
+          : <PassengerDashboard {...props} activeView="passenger" onUserUpdate={vi.fn()} />)
       await waitFor(() => expect(container.textContent).not.toMatch(/Cargando|Preparando tu panel/))
       const workspace = container.querySelector(role === 'admin' ? '.admin-main' : `.${role}-workspace`)!
       expect(workspace.firstElementChild).toHaveClass('viewing-as')
@@ -91,7 +91,7 @@ describe('panel navigation layout', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Alternar menú' }))
       expect(sidebar).not.toHaveAttribute('inert')
       capture(`${capturePrefix}-open`, container)
-      fireEvent.click(screen.getByRole('button', { name: 'Cerrar menú' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Contraer menú' }))
       expect(sidebar).toHaveAttribute('inert')
       const pages = role === 'passenger'
         ? ['Mis viajes', 'Direcciones', 'Pagos', 'Mi cuenta', 'Configuración', 'Soporte', 'Pedir viaje', 'Avisos']
@@ -101,7 +101,7 @@ describe('panel navigation layout', () => {
         if (sidebar.hasAttribute('inert')) fireEvent.click(screen.getByRole('button', { name: 'Alternar menú' }))
         fireEvent.click(within(sidebar as HTMLElement).getByRole('button', { name: label }))
         await waitFor(() => expect(workspace.textContent).not.toMatch(/Cargando/))
-        if (!sidebar.hasAttribute('inert')) fireEvent.click(screen.getByRole('button', { name: 'Cerrar menú' }))
+        if (!sidebar.hasAttribute('inert')) fireEvent.click(screen.getByRole('button', { name: 'Contraer menú' }))
         capture(`${capturePrefix}-page-${index}`, container)
       }
       fireEvent.click(screen.getByRole('button', { name: 'Volver a mi panel' }))

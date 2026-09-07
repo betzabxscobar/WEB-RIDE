@@ -218,6 +218,31 @@ export async function completePasswordReset(newPassword: string): Promise<void> 
   if (error) throw new Error(translateAuthError(error.message))
 }
 
+/**
+ * Convierte la cuenta de pasajero actual en cuenta de chofer.
+ *
+ * El servidor conserva el historial y crea la ficha del conductor pendiente
+ * de revisión. La interfaz nunca cambia el rol por su cuenta: vuelve a leer
+ * `profiles` después del RPC para respetar la decisión de la base de datos.
+ */
+export async function convertPassengerToDriver(): Promise<User> {
+  const { error } = await supabase.rpc('quiero_ser_chofer')
+  if (error) throw new Error(translateDriverConversionError(error.message))
+
+  const user = await loadCurrentUser()
+  if (!user) throw new Error('Actualizamos tu cuenta, pero no pudimos recargar el perfil.')
+  return user
+}
+
+export function translateDriverConversionError(message: string): string {
+  const normalized = message.toLowerCase()
+  if (normalized.includes('termina tu viaje')) return 'Termina o cancela tu viaje activo antes de pasarte a chofer.'
+  if (normalized.includes('solo una cuenta de pasajero')) return 'Solo una cuenta de pasajero puede solicitar el cambio a chofer.'
+  if (normalized.includes('debes iniciar sesion')) return 'Tu sesión expiró. Vuelve a iniciar sesión.'
+  if (normalized.includes('no encontramos tu perfil')) return 'No encontramos el perfil de tu cuenta.'
+  return 'No pudimos cambiar tu cuenta a chofer. Intenta nuevamente.'
+}
+
 /** Actualiza los datos editables del perfil de la sesión actual. */
 export async function updateOwnProfile(input: { name: string; phone: string }): Promise<User> {
   const { data: sessionData } = await supabase.auth.getSession()
