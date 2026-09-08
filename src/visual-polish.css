@@ -1,0 +1,545 @@
+/*
+ * Capa final de acabado visual.
+ * Se carga después de los estilos históricos para que pasajero, conductor y
+ * administración compartan la misma escala, contraste y comportamiento.
+ */
+
+:root {
+  --ride-control-height: 44px;
+  --ride-content-width: 1360px;
+  --ride-section-gap: clamp(18px, 2.4vw, 28px);
+}
+
+@media (min-width: 761px) {
+  html { scrollbar-gutter: stable; }
+}
+
+body {
+  min-height: 100dvh;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell) {
+  min-height: 100dvh;
+  font-size: 14px;
+}
+
+:where(.passenger-content, .driver-content, .admin-content) {
+  width: 100%;
+  max-width: var(--ride-content-width);
+  margin-inline: auto;
+  padding: clamp(22px, 3vw, 38px) clamp(18px, 4vw, 56px) clamp(42px, 6vw, 72px);
+}
+
+:where(.passenger-page, .driver-page, .admin-content) {
+  min-width: 0;
+}
+
+:where(.passenger-page, .driver-page) {
+  display: grid;
+  align-content: start;
+  gap: var(--ride-section-gap);
+}
+
+/* Encabezados más legibles y con una jerarquía idéntica. */
+:where(.passenger-section-head, .driver-section-head, .overview-heading) {
+  margin: 0;
+}
+
+:where(.passenger-section-head, .driver-section-head, .overview-heading) h2 {
+  margin: 5px 0 6px;
+  color: var(--ride-panel-ink);
+  font-size: clamp(24px, 2.5vw, 32px);
+  line-height: 1.15;
+}
+
+:where(.passenger-section-head, .driver-section-head, .overview-heading) p {
+  max-width: 68ch;
+  margin: 0;
+  color: var(--ride-panel-muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+:where(.passenger-section-head, .driver-section-head) > span,
+.overview-heading > small {
+  color: var(--ride-brand-600);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.35px;
+}
+
+/* Superficies consistentes, sin decoraciones que compitan con el contenido. */
+:where(.passenger-shell, .driver-shell, .admin-shell) :where(
+  .start-ride-card, .active-trip, .recent-trip-list .trip-row,
+  .trip-history article, .notification-list article, .request-form,
+  .quote-card, .address-form, .address-list > article, .payment-methods,
+  .payment-history, .tracking-main, .tracking-driver, .account-details,
+  .account-summary, .settings-card, .support-form, .support-list article,
+  .driver-status-card, .active-driver-trip, .driver-request-list article,
+  .vehicle-list article, .vehicle-form, .document-list article,
+  .driver-account-grid > section, .driver-account-grid > aside,
+  .driver-summary article, .earnings-hero, .earnings-grid article,
+  .requirements-card, .identity-form, .document-group, .driver-tool-card,
+  .bank-account-form, .bank-account-list article, .admin-card,
+  .metric-strip article, .admin-metrics article, .account-settings
+) {
+  border: 1px solid var(--ride-panel-border);
+  border-radius: var(--ride-radius-lg);
+  background: var(--ride-panel-surface);
+  color: var(--ride-panel-ink);
+  box-shadow: var(--ride-shadow-sm);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell) :where(
+  .trip-row, .user-row, .driver-row, .queue-row, .document-list article,
+  .bank-account-list article
+) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Formularios y acciones: tamaño táctil, foco visible y contraste estable. */
+:where(.passenger-shell, .driver-shell, .admin-shell) :where(label) {
+  color: var(--ride-panel-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell) :where(input, select, textarea) {
+  min-width: 0;
+  min-height: var(--ride-control-height);
+  padding: 10px 12px;
+  border: 1px solid var(--ride-panel-border);
+  border-radius: var(--ride-radius-sm);
+  background: var(--ride-panel-surface-soft);
+  color: var(--ride-panel-ink);
+  font-size: 13px;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell) textarea {
+  min-height: 104px;
+  resize: vertical;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell) :where(button, a) {
+  transition: background-color var(--ride-transition), border-color var(--ride-transition),
+    color var(--ride-transition), box-shadow var(--ride-transition), transform var(--ride-transition);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell) :where(
+  .passenger-primary-action, .define-route-button, .passenger-welcome button,
+  .quote-card > button, .address-form > button, .tracking-pay,
+  .support-form > button, .driver-trip-actions .primary,
+  .driver-request-list article > button, .vehicle-form .primary,
+  .identity-form > .primary, .driver-tool-card footer button,
+  .bank-account-form footer button[type='submit'], .account-settings-form > button,
+  .admin-dialog button[type='submit'], .account-dialog button[type='submit']
+) {
+  min-height: var(--ride-control-height);
+  border: 1px solid var(--ride-brand-500) !important;
+  border-radius: 10px;
+  background: var(--ride-brand-500) !important;
+  color: #062b3a !important;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 7px 18px rgba(38, 169, 220, .16) !important;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell) :where(
+  .passenger-primary-action, .define-route-button, .passenger-welcome button,
+  .quote-card > button, .address-form > button, .tracking-pay,
+  .support-form > button, .driver-trip-actions .primary,
+  .driver-request-list article > button, .vehicle-form .primary,
+  .identity-form > .primary, .driver-tool-card footer button,
+  .bank-account-form footer button[type='submit'], .account-settings-form > button,
+  .admin-dialog button[type='submit'], .account-dialog button[type='submit']
+):not(:disabled):hover {
+  border-color: var(--ride-brand-600) !important;
+  background: var(--ride-brand-400) !important;
+  color: #052735 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(38, 169, 220, .22) !important;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell) :where(.danger, button.danger, .delete) {
+  border-color: color-mix(in srgb, var(--ride-danger-500) 38%, var(--ride-panel-border)) !important;
+  background: color-mix(in srgb, var(--ride-danger-50) 86%, var(--ride-panel-surface)) !important;
+  color: var(--ride-danger-500) !important;
+  box-shadow: none !important;
+}
+
+/* Estados y mensajes dejan de depender del color solamente. */
+:where(.driver-feedback, .passenger-feedback, .account-settings-feedback,
+  .account-feedback, .admin-error, .driver-review-notice) {
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+:where(.driver-feedback, .passenger-feedback, .account-settings-feedback,
+  .account-feedback) {
+  padding: 12px 14px;
+}
+
+/* Tablas y listados administrativos con separación tranquila. */
+.admin-shell :where(.admin-card-head, .user-filters, .driver-toolbar, .trip-filters) {
+  border-color: var(--ride-panel-border) !important;
+}
+
+.admin-shell:not(.theme-dark) :where(.admin-card-head, .user-filters, .driver-toolbar, .trip-filters) {
+  background: var(--ride-panel-surface) !important;
+}
+
+.admin-shell :where(.user-row, .driver-row, .trip-row, .queue-row) {
+  border-color: var(--ride-panel-border) !important;
+  background: var(--ride-panel-surface) !important;
+}
+
+.admin-shell :where(.admin-card-head button, .link-button, .driver-toggle,
+  .doc-ok, .account-outline-button) {
+  min-height: 40px;
+  border: 1px solid var(--ride-panel-border-strong) !important;
+  border-radius: 9px;
+  background: var(--ride-panel-surface-soft) !important;
+  color: var(--ride-brand-700) !important;
+  box-shadow: none !important;
+}
+
+.admin-shell :where(.admin-card-head button, .link-button, .driver-toggle,
+  .doc-ok, .account-outline-button):not(:disabled):hover {
+  border-color: var(--ride-brand-400) !important;
+  background: var(--ride-brand-100) !important;
+  color: #075772 !important;
+  box-shadow: none !important;
+}
+
+/* Configuración compartida: nada se comprime ni queda con texto diminuto. */
+.settings-shared,
+.account-settings {
+  width: min(100%, 940px);
+}
+
+.settings-shared { display: grid; gap: 16px; }
+
+.settings-card-head h3,
+.account-settings-head h3 { font-size: 16px; }
+
+.settings-card-head p,
+.account-settings-head p,
+.settings-storage,
+.notification-permission small,
+.account-avatar-editor small,
+.account-settings-form > small { font-size: 12px; }
+
+.theme-options button {
+  min-height: 78px;
+  padding: 14px;
+  text-align: left;
+}
+
+.theme-options button small { font-size: 11px; line-height: 1.45; }
+
+.account-settings { padding: clamp(18px, 3vw, 28px); }
+.account-settings-form { gap: 14px; }
+.account-settings-form h4 { font-size: 14px; }
+.account-settings-form label,
+.account-avatar-editor :where(label, button),
+.account-settings-form button { font-size: 12px; }
+
+/* Diálogos útiles en pantallas pequeñas y coherentes con el tema activo. */
+:where(.passenger-dialog-backdrop, .driver-dialog-backdrop, .ride-dialog-backdrop,
+  .account-dialog-backdrop) {
+  padding: clamp(12px, 3vw, 24px);
+  background: rgba(3, 18, 28, .62);
+  backdrop-filter: blur(5px);
+}
+
+:where(.passenger-dialog, .driver-dialog, .ride-chat, .account-dialog, .admin-dialog) {
+  width: min(100%, 520px);
+  max-height: calc(100dvh - 24px);
+  border: 1px solid var(--ride-border);
+  border-radius: 18px;
+  background: var(--ride-surface);
+  box-shadow: var(--ride-shadow-lg);
+}
+
+html[data-ride-theme='dark'] :where(.passenger-dialog, .driver-dialog, .ride-chat,
+  .account-dialog, .admin-dialog) {
+  border-color: #31515f;
+  background: #102c3a;
+  color: #edf7fa;
+}
+
+/* El oscuro es una variante de accesibilidad, no una ambientación nocturna. */
+:where(.passenger-shell, .driver-shell, .admin-shell).theme-dark {
+  --ride-panel-canvas: #071b27;
+  --ride-panel-surface: #102c3a;
+  --ride-panel-surface-soft: #153644;
+  --ride-panel-border: #31515f;
+  --ride-panel-border-strong: #466b7a;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell).theme-dark :where(
+  .feature-card, .work-zone-grid button, .driver-map-card, .driver-route,
+  .driver-history article, .earnings-note, .driver-account-grid dl div,
+  .account-detail-grid > div, .account-password-row
+) {
+  border-color: var(--ride-panel-border) !important;
+  background: var(--ride-panel-surface-soft) !important;
+  color: var(--ride-panel-ink) !important;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell).theme-dark
+  :where(.admin-card-head button, .link-button, .driver-toggle, .doc-ok,
+  .account-outline-button) {
+  border-color: #3d6575 !important;
+  background: #153644 !important;
+  color: #a9e9f7 !important;
+}
+
+/* Móvil y tablet: una columna real, acciones completas y navegación segura. */
+@media (max-width: 900px) {
+  :where(.passenger-section-head, .driver-section-head).with-action {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  :where(.passenger-section-head, .driver-section-head).with-action > button {
+    align-self: flex-start;
+  }
+
+  .operations-grid,
+  .support-layout,
+  .driver-account-grid { grid-template-columns: minmax(0, 1fr) !important; }
+
+  .document-list article { grid-template-columns: auto minmax(0, 1fr) !important; }
+  .document-actions { grid-column: 1 / -1; width: 100%; max-width: none; }
+}
+
+@media (max-width: 760px) {
+  :root { --ride-section-gap: 18px; }
+
+  :where(.passenger-topbar, .driver-topbar, .admin-main > header) {
+    min-height: 70px;
+    padding: 11px 14px !important;
+    flex-wrap: nowrap;
+  }
+
+  :where(.passenger-topbar, .driver-topbar, .admin-main > header) h1 {
+    font-size: 19px;
+  }
+
+  :where(.passenger-topbar, .driver-topbar) :where(.passenger-top-actions, .driver-top-actions) {
+    width: auto;
+  }
+
+  :where(.passenger-view-select, .driver-view-select) { display: none; }
+
+  :where(.passenger-content, .driver-content, .admin-content) {
+    padding: 18px 14px calc(88px + env(safe-area-inset-bottom));
+  }
+
+  :where(.passenger-section-head, .driver-section-head, .overview-heading) h2 {
+    font-size: 24px;
+  }
+
+  :where(.passenger-shell, .driver-shell, .admin-shell) :where(
+    .start-ride-card, .active-trip, .request-form, .quote-card,
+    .address-form, .payment-methods, .payment-history, .tracking-main,
+    .tracking-driver, .account-details, .account-summary, .settings-card,
+    .support-form, .driver-status-card, .active-driver-trip, .vehicle-form,
+    .identity-form, .document-group, .driver-tool-card, .bank-account-form,
+    .admin-card, .account-settings
+  ) { border-radius: 14px; }
+
+  .passenger-welcome { padding: 22px; }
+  .passenger-welcome h2 { font-size: 27px; }
+
+  .theme-options,
+  .account-settings-form > div,
+  .bank-account-form > div,
+  .work-zone-grid { grid-template-columns: minmax(0, 1fr) !important; }
+
+  .account-avatar-editor { align-items: center; }
+  .account-avatar-editor > div { min-width: 0; }
+  .account-avatar-editor > div > div { flex-wrap: wrap; }
+
+  .driver-trip-actions,
+  .vehicle-form footer,
+  .bank-account-form footer,
+  .account-dialog footer { flex-wrap: wrap; }
+
+  .driver-trip-actions > button,
+  .vehicle-form footer > button,
+  .bank-account-form footer > button { flex: 1 1 150px; }
+
+  :where(.passenger-mobile-nav, .driver-mobile-nav) {
+    min-height: calc(64px + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    border-top-color: var(--ride-panel-border);
+    background: color-mix(in srgb, var(--ride-panel-surface) 96%, transparent);
+    backdrop-filter: blur(16px);
+  }
+
+  :where(.passenger-mobile-nav, .driver-mobile-nav) button {
+    min-height: 58px;
+    padding: 7px 3px;
+    overflow: hidden;
+  }
+
+  .admin-shell :where(.user-filters, .trip-filters, .driver-toolbar) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .admin-shell :where(.user-filters, .trip-filters, .driver-toolbar) > * {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 460px) {
+  .auth-page .form-panel { padding: 14px 12px 28px; }
+  .auth-page-welcome .form-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-block: 74px 28px;
+  }
+  .auth-page-welcome .mobile-brand {
+    position: absolute;
+    top: 16px;
+  }
+  .auth-page .auth-stage { width: 100%; }
+  .auth-box, .welcome-box { padding: 24px 20px; border-radius: 18px; }
+  .auth-box h2, .welcome-box h2 { font-size: 28px; }
+
+  .admin-shell :where(.metric-strip, .admin-metrics) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .admin-shell :where(.metric-strip, .admin-metrics) article {
+    min-height: 82px;
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 14px !important;
+  }
+
+  .admin-shell :where(.metric-strip, .admin-metrics) article > div {
+    text-align: left;
+  }
+
+  .account-avatar-editor {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .bank-account-list article { grid-template-columns: minmax(0, 1fr); }
+  .bank-account-list article > span { display: none; }
+  .bank-account-list article > div:last-child { justify-content: stretch; }
+  .bank-account-list article > div:last-child button { flex: 1; width: auto; }
+
+  .document-list article { grid-template-columns: minmax(0, 1fr) !important; }
+  .document-list article > .doc-state { justify-self: start; }
+  .document-actions { grid-template-columns: minmax(0, 1fr) !important; }
+}
+
+/* Acceso antes de iniciar sesión: sigue el tema del dispositivo. El oscuro
+   cambia contraste y superficies, no la hora del día ni añade una luna. */
+@media (prefers-color-scheme: dark) {
+  .auth-page .form-panel {
+    background:
+      radial-gradient(circle at 84% 12%, rgba(68, 176, 211, .13), transparent 28%),
+      radial-gradient(circle at 8% 90%, rgba(67, 179, 153, .08), transparent 24%),
+      #071b27 !important;
+    color-scheme: dark;
+  }
+
+  .auth-page .form-panel::before { border-color: rgba(111, 205, 231, .035); }
+  .auth-page .form-panel::after { border-color: rgba(87, 204, 178, .03); }
+
+  .auth-page .mobile-brand { color: #f2f8fa; }
+
+  .auth-page .auth-box {
+    border-color: #31515f;
+    background: rgba(16, 44, 58, .94);
+    color: #edf7fa;
+    box-shadow: 0 28px 72px rgba(0, 0, 0, .26);
+  }
+
+  .auth-page .auth-box :where(h2, label) { color: #edf7fa; }
+  .auth-page .auth-box > p,
+  .auth-page .form-footer { color: #b7cbd4; }
+  .auth-page .auth-box .back { color: #a9c7d2; }
+  .auth-page .auth-box .back:hover { color: #e7f7fb; }
+
+  .auth-page .auth-box :where(input, .secondary-action, .role-picker button) {
+    border-color: #31515f;
+    background: #153644;
+    color: #edf7fa;
+  }
+
+  .auth-page .auth-box input::placeholder { color: #86a2ae; }
+  .auth-page .role-picker button.selected {
+    border-color: #59c5e8;
+    background: #164758;
+    box-shadow: inset 0 0 0 1px #59c5e8;
+  }
+  .auth-page .role-picker small { color: #adc3cc; }
+
+  .auth-page .auth-assurance {
+    border-top-color: #31515f;
+    color: #9eb7c3;
+  }
+
+  .auth-page .notice {
+    border-color: #326556;
+    background: #153f36;
+    color: #9de5c9;
+  }
+
+  .auth-page .error {
+    border-color: #75433f;
+    background: #422725;
+    color: #ffb3ad;
+  }
+
+  .first-access {
+    background:
+      radial-gradient(circle at 80% 12%, rgba(68, 176, 211, .11), transparent 28%),
+      #071b27;
+    color-scheme: dark;
+  }
+
+  .first-access > section {
+    border-color: #31515f;
+    background: #102c3a;
+    color: #edf7fa;
+    box-shadow: 0 28px 72px rgba(0, 0, 0, .28);
+  }
+
+  .first-access :where(h1, label) { color: #edf7fa; }
+  .first-access p { color: #b7cbd4; }
+  .first-access input {
+    border-color: #31515f;
+    background: #153644;
+    color: #edf7fa;
+  }
+  .first-access .cancel-access { color: #b7cbd4; }
+}
+
+@media (hover: none) {
+  :where(.passenger-shell, .driver-shell, .admin-shell) :where(button, a):hover {
+    transform: none !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :where(.passenger-shell, .driver-shell, .admin-shell) {
+    --ride-panel-border: color-mix(in srgb, currentColor 38%, transparent);
+    --ride-panel-border-strong: color-mix(in srgb, currentColor 55%, transparent);
+  }
+}
