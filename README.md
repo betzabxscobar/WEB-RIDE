@@ -211,6 +211,31 @@ y aprobar al conductor sin exponer públicamente sus documentos.
 **Resultado:** el ciclo completo queda registrado y se refleja en tiempo real para
 el pasajero, la app móvil y la administración.
 
+### CU-W17. Atender casos de soporte
+
+**Actor:** administrador o superadministrador.
+
+1. El usuario entra en **Soporte** y filtra los casos abiertos, en proceso o resueltos.
+2. El sistema muestra primero los casos que llevan más tiempo esperando, junto
+   con la persona, el viaje relacionado y el mensaje.
+3. El usuario escribe una respuesta y selecciona el estado en que quedará el caso.
+4. El sistema guarda la respuesta mediante `responder_ticket`.
+
+**Resultado:** el pasajero o conductor puede leer en su panel una respuesta real
+de la administración.
+
+### CU-W18. Administrar tarifas y tipos de vehículo
+
+**Actor:** administrador o superadministrador.
+
+1. El usuario entra en **Tarifas** y consulta las franjas y tipos registrados en Supabase.
+2. Ajusta el arranque, costo por kilómetro, carrera mínima o porcentaje del conductor.
+3. Puede cambiar el multiplicador de un tipo de vehículo.
+4. La interfaz valida valores imposibles y la base vuelve a comprobar los permisos.
+
+**Resultado:** las cotizaciones nuevas usan la configuración guardada, sin tener
+que publicar otra versión de la web.
+
 ## Alcance actual
 
 - El panel de pasajero permite cotizar, solicitar, seguir, cancelar, consultar
@@ -222,8 +247,8 @@ el pasajero, la app móvil y la administración.
   disponibilidad, reportar la ubicación, aceptar solicitudes, completar el
   ciclo del viaje, consultar ganancias reales y calificar al pasajero.
 - El panel administrativo incluye **Resumen**, **Usuarios**, **Conductores**,
-  **Viajes**, **Mi cuenta** y **Configuración**, con el mismo sistema visual,
-  apariencia y navegación adaptable del panel de pasajero.
+  **Viajes**, **Tarifas**, **Soporte**, **Mi cuenta** y **Configuración**, con el
+  mismo sistema visual, apariencia y navegación adaptable del panel de pasajero.
 - Los mapas usan OpenStreetMap y las rutas por calles se obtienen con OSRM. El
   servidor público configurado por defecto es apropiado para desarrollo, no
   para una puesta en producción.
@@ -255,8 +280,25 @@ VITE_OSRM_URL=https://rutas.ejemplo.com
 npm run dev       # servidor de desarrollo
 npm run build     # comprobación de TypeScript y compilación de producción
 npm run lint      # análisis estático
+npm run test      # pruebas automáticas
 npm run preview   # vista previa de la compilación
 ```
+
+Cada envío o propuesta de cambio hacia `main` ejecuta estas tres comprobaciones
+en GitHub Actions: análisis estático, pruebas y compilación de producción.
+
+## Antes de producción
+
+- Aplicar y verificar todas las migraciones en el proyecto correcto de Supabase,
+  y revisar sus asesores de seguridad y rendimiento.
+- Sustituir el servidor público de OSRM por una instancia con capacidad y
+  condiciones de servicio apropiadas para producción.
+- Configurar notificaciones web cuando se necesiten avisos con la pestaña cerrada;
+  actualmente Realtime actualiza la interfaz mientras está abierta.
+- Comprimir o convertir las imágenes grandes y dividir la carga inicial para
+  mejorar el arranque en conexiones móviles.
+- Completar la integración de pagos reales. La interfaz no debe almacenar datos
+  de tarjeta sin una pasarela con tokenización.
 
 Los scripts administrativos requieren variables de servidor y nunca deben usar
 una clave `service_role` dentro de variables `VITE_*`. Consulta
