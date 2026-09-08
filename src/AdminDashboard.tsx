@@ -10,8 +10,10 @@ import DriversPanel from './DriversPanel'
 import { AppearanceSettings, useAppearance } from './components/AppearanceSettings'
 import { AccountSettings } from './components/AccountSettings'
 import { TripRows, UserRows } from './admin/AdminTables'
+import AdminSupportPanel from './admin/AdminSupportPanel'
+import AdminFaresPanel from './admin/AdminFaresPanel'
 import { initials } from './dashboard/formatters'
-import { Home as HomeIcon, Map as MapIcon, Users as UsersIcon, User as UserIcon, Settings as SettingsIcon, LogOut as LogOutIcon, Menu as MenuIcon, Navigation as NavigationIcon, Search as SearchIcon, SlidersHorizontal as FilterIcon, CalendarDays as CalendarIcon, ArrowDownUp as SortIcon, Route as RouteIcon, CircleDollarSign as DollarIcon, CarFront as CarIcon, CheckCircle2 as CheckIcon, Activity as ActivityIcon, ShieldCheck as ShieldIcon, Mail as MailIcon, BriefcaseBusiness as RoleIcon, Pencil as PencilIcon, Camera as CameraIcon, LockKeyhole as LockIcon, X as CloseIcon } from 'lucide-react'
+import { Home as HomeIcon, Map as MapIcon, Users as UsersIcon, User as UserIcon, Settings as SettingsIcon, LogOut as LogOutIcon, Menu as MenuIcon, Navigation as NavigationIcon, Search as SearchIcon, SlidersHorizontal as FilterIcon, CalendarDays as CalendarIcon, ArrowDownUp as SortIcon, Route as RouteIcon, CircleDollarSign as DollarIcon, CarFront as CarIcon, CheckCircle2 as CheckIcon, Activity as ActivityIcon, ShieldCheck as ShieldIcon, Mail as MailIcon, BriefcaseBusiness as RoleIcon, Pencil as PencilIcon, Camera as CameraIcon, LockKeyhole as LockIcon, X as CloseIcon, BadgeDollarSign as FaresIcon, LifeBuoy as SupportIcon } from 'lucide-react'
 
 type Props = {
   user: User
@@ -22,13 +24,15 @@ type Props = {
   onLogout: () => void
 }
 
-type Section = 'Resumen' | 'Usuarios' | 'Conductores' | 'Viajes' | 'Mi cuenta' | 'Configuración'
+type Section = 'Resumen' | 'Usuarios' | 'Conductores' | 'Viajes' | 'Tarifas' | 'Soporte' | 'Mi cuenta' | 'Configuración'
 
 const sections: { label: Section; group: 'Operación' | 'Gestión' }[] = [
   { label: 'Resumen', group: 'Operación' },
   { label: 'Viajes', group: 'Operación' },
   { label: 'Conductores', group: 'Gestión' },
   { label: 'Usuarios', group: 'Gestión' },
+  { label: 'Tarifas', group: 'Gestión' },
+  { label: 'Soporte', group: 'Gestión' },
   { label: 'Mi cuenta', group: 'Gestión' },
   { label: 'Configuración', group: 'Gestión' },
 ]
@@ -37,6 +41,8 @@ function NavIcon({ section }: { section: Section }) {
   if (section === 'Resumen') return <HomeIcon size={18} aria-hidden />
   if (section === 'Viajes') return <MapIcon size={18} aria-hidden />
   if (section === 'Conductores') return <UsersIcon size={18} aria-hidden />
+  if (section === 'Tarifas') return <FaresIcon size={18} aria-hidden />
+  if (section === 'Soporte') return <SupportIcon size={18} aria-hidden />
   if (section === 'Configuración') return <SettingsIcon size={18} aria-hidden />
   return <UserIcon size={18} aria-hidden />
 }
@@ -310,6 +316,8 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onUs
             </section>
           </div>
         )}
+        {activeSection === 'Tarifas' && <AdminFaresPanel />}
+        {activeSection === 'Soporte' && <AdminSupportPanel />}
         {activeSection === 'Mi cuenta' && <div className="admin-content admin-account-page">
           {(accountNotice || accountError) && <div className={`account-feedback ${accountError ? 'error' : 'success'}`} role="status">{accountError || accountNotice}</div>}
           <section className="admin-card account-profile-card">
