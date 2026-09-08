@@ -72,7 +72,7 @@ body {
 
 /* Superficies consistentes, sin decoraciones que compitan con el contenido. */
 :where(.passenger-shell, .driver-shell, .admin-shell) :where(
-  .start-ride-card, .active-trip, .recent-trip-list .trip-row,
+  .start-ride-card, .active-trip, .recent-trip-list .passenger-trip-row,
   .trip-history article, .notification-list article, .request-form,
   .quote-card, .address-form, .address-list > article, .payment-methods,
   .payment-history, .tracking-main, .tracking-driver, .account-details,
@@ -541,5 +541,325 @@ html[data-ride-theme='dark'] :where(.passenger-dialog, .driver-dialog, .ride-cha
   :where(.passenger-shell, .driver-shell, .admin-shell) {
     --ride-panel-border: color-mix(in srgb, currentColor 38%, transparent);
     --ride-panel-border-strong: color-mix(in srgb, currentColor 55%, transparent);
+  }
+}
+
+/* Fondo ambiental: conserva tarjetas claras, pero añade profundidad y color
+   al lienzo común de pasajero, conductor y administración. */
+:where(.passenger-workspace, .driver-workspace, .admin-main) {
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+  background:
+    url('./assets/PanelFondoClaro.svg') center top / 1600px 1000px repeat-y,
+    radial-gradient(circle at 88% 9%, rgba(73, 190, 226, .16), transparent 28rem),
+    radial-gradient(circle at 8% 88%, rgba(73, 194, 159, .11), transparent 25rem),
+    linear-gradient(145deg, #f8fbfc 0%, #f2f8fa 48%, #f7fbfa 100%);
+}
+
+:where(.passenger-workspace, .driver-workspace, .admin-main)::before,
+:where(.passenger-workspace, .driver-workspace, .admin-main)::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+}
+
+:where(.passenger-workspace, .driver-workspace, .admin-main)::before {
+  width: clamp(180px, 24vw, 360px);
+  aspect-ratio: 1;
+  top: 150px;
+  right: clamp(-150px, -8vw, -60px);
+  border: clamp(28px, 4vw, 58px) solid rgba(54, 180, 218, .055);
+  border-radius: 42% 58% 61% 39% / 48% 38% 62% 52%;
+  animation: ride-panel-float 14s ease-in-out infinite alternate;
+}
+
+:where(.passenger-workspace, .driver-workspace, .admin-main)::after {
+  width: clamp(150px, 20vw, 290px);
+  aspect-ratio: 1;
+  left: clamp(-120px, -7vw, -45px);
+  bottom: 7%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 35%, rgba(91, 203, 230, .16) 0 3px, transparent 4px) 0 0 / 24px 24px,
+    radial-gradient(circle, rgba(83, 202, 169, .08), transparent 68%);
+  animation: ride-panel-drift 18s ease-in-out infinite alternate;
+}
+
+:where(.passenger-content, .driver-content, .admin-content),
+:where(.passenger-workspace, .driver-workspace, .admin-main) > .viewing-as {
+  position: relative;
+  z-index: 1;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell).theme-dark
+  :where(.passenger-workspace, .driver-workspace, .admin-main) {
+  background:
+    url('./assets/PanelFondoOscuro.svg') center top / 1600px 1000px repeat-y,
+    radial-gradient(circle at 88% 8%, rgba(58, 181, 218, .14), transparent 30rem),
+    radial-gradient(circle at 7% 86%, rgba(66, 190, 153, .09), transparent 27rem),
+    linear-gradient(145deg, #071a26 0%, #092330 52%, #081e29 100%);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell).theme-dark
+  :where(.passenger-workspace, .driver-workspace, .admin-main)::before {
+  border-color: rgba(104, 213, 239, .06);
+  filter: drop-shadow(0 0 32px rgba(52, 181, 218, .08));
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell).theme-dark
+  :where(.passenger-workspace, .driver-workspace, .admin-main)::after {
+  background:
+    radial-gradient(circle at 35% 35%, rgba(112, 216, 239, .14) 0 3px, transparent 4px) 0 0 / 24px 24px,
+    radial-gradient(circle, rgba(83, 202, 169, .09), transparent 68%);
+}
+
+/* La fila de viajes del pasajero tiene nombre propio para que las reglas de
+   las tablas administrativas no puedan volver a comprimir sus direcciones. */
+.passenger-shell .passenger-trip-row {
+  display: grid;
+  grid-template-columns: minmax(100px, .7fr) minmax(320px, 2.4fr) auto auto;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  padding: 17px 19px;
+  border: 1px solid var(--ride-panel-border);
+  border-radius: 15px;
+  background:
+    radial-gradient(circle at 96% 12%, rgba(61, 185, 224, .09), transparent 90px),
+    var(--ride-panel-surface);
+  color: var(--ride-panel-ink);
+  box-shadow: var(--ride-shadow-sm);
+}
+
+.passenger-shell .passenger-trip-row .trip-route-card {
+  display: grid;
+  grid-area: auto;
+  grid-template-columns: minmax(0, 1fr) 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.passenger-shell .passenger-trip-row .trip-route-card > b {
+  width: 34px;
+  height: 0;
+  margin: 0;
+  border: 0;
+  border-top: 2px dashed color-mix(in srgb, var(--ride-brand-500) 42%, var(--ride-panel-border));
+}
+
+.passenger-shell .passenger-trip-row .trip-route-card :where(div, span) { min-width: 0; }
+.passenger-shell .passenger-trip-row .trip-route-card small { display: block; white-space: nowrap; }
+.passenger-shell .passenger-trip-row .trip-route-card strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.passenger-shell .passenger-trip-row .trip-date {
+  grid-area: auto;
+  justify-self: start;
+}
+.passenger-shell .passenger-trip-row .trip-status { justify-self: start; }
+.passenger-shell .passenger-trip-row .trip-amount {
+  grid-area: auto;
+  display: block;
+  align-self: center;
+  min-width: 68px;
+  padding: 0;
+  background: transparent;
+  text-align: right;
+}
+
+.passenger-shell.theme-dark .passenger-trip-row {
+  border-color: var(--ride-panel-border);
+  background:
+    radial-gradient(circle at 96% 12%, rgba(77, 193, 226, .08), transparent 95px),
+    var(--ride-panel-surface);
+}
+
+@media (max-width: 900px) {
+  .passenger-shell .passenger-trip-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'date status'
+      'route route'
+      'amount amount';
+    gap: 12px 14px;
+  }
+  .passenger-shell .passenger-trip-row .trip-date { grid-area: date; }
+  .passenger-shell .passenger-trip-row .trip-route-card { grid-area: route; }
+  .passenger-shell .passenger-trip-row .trip-status { grid-area: status; justify-self: end; }
+  .passenger-shell .passenger-trip-row .trip-amount { grid-area: amount; justify-self: end; }
+}
+
+@media (max-width: 520px) {
+  .passenger-shell .passenger-trip-row { padding: 15px; }
+  .passenger-shell .passenger-trip-row .trip-route-card {
+    grid-template-columns: minmax(0, 1fr) 20px minmax(0, 1fr);
+    gap: 7px;
+  }
+  .passenger-shell .passenger-trip-row .trip-route-card > b { width: 20px; }
+}
+
+@keyframes ride-panel-float {
+  to { transform: translate(-22px, 36px) rotate(13deg) scale(1.04); }
+}
+
+@keyframes ride-panel-drift {
+  to { transform: translate(34px, -28px) rotate(-8deg); }
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell).reduced-motion
+  :where(.passenger-workspace, .driver-workspace, .admin-main)::before,
+:where(.passenger-shell, .driver-shell, .admin-shell).reduced-motion
+  :where(.passenger-workspace, .driver-workspace, .admin-main)::after {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.passenger-workspace, .driver-workspace, .admin-main)::before,
+  :where(.passenger-workspace, .driver-workspace, .admin-main)::after { animation: none; }
+}
+
+/* Superficies con matices de la app: azul, menta y violeta aparecen como
+   reflejos suaves; el blanco continúa siendo el color principal. */
+.passenger-shell :where(
+  .start-ride-card, .active-trip, .passenger-trip-row, .trip-history article,
+  .notification-list article, .request-form, .quote-card, .address-form,
+  .address-list > article, .payment-methods, .payment-history,
+  .tracking-main, .tracking-driver, .account-details, .account-summary,
+  .settings-card, .support-form, .support-list article
+),
+.driver-shell :where(
+  .active-driver-trip, .driver-request-list article, .driver-summary article,
+  .vehicle-list article, .vehicle-form, .document-list article,
+  .driver-account-grid > section, .driver-account-grid > aside,
+  .settings-card, .earnings-grid article, .identity-form, .document-group,
+  .driver-tool-card, .bank-account-form, .bank-account-list article
+),
+.admin-shell :where(
+  .admin-card, .metric-strip article, .admin-metrics article,
+  .settings-card, .admin-account-card
+) {
+  background-image: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--ride-brand-100) 28%, var(--ride-panel-surface)) 0%,
+    var(--ride-panel-surface) 48%,
+    color-mix(in srgb, #e4faf3 24%, var(--ride-panel-surface)) 100%
+  );
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, .72),
+    0 1px 2px rgba(8, 38, 56, .035),
+    0 13px 32px rgba(8, 38, 56, .055);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell).theme-dark
+  :where(
+    .start-ride-card, .active-trip, .passenger-trip-row, .trip-history article,
+    .notification-list article, .request-form, .quote-card, .address-form,
+    .address-list > article, .payment-methods, .payment-history,
+    .tracking-main, .tracking-driver, .account-details, .account-summary,
+    .settings-card, .support-form, .support-list article,
+    .active-driver-trip, .driver-request-list article, .driver-summary article,
+    .vehicle-list article, .vehicle-form, .document-list article,
+    .driver-account-grid > section, .driver-account-grid > aside,
+    .earnings-grid article, .identity-form, .document-group, .driver-tool-card,
+    .bank-account-form, .bank-account-list article, .admin-card,
+    .metric-strip article, .admin-metrics article, .admin-account-card
+  ) {
+  background-image: linear-gradient(
+    145deg,
+    color-mix(in srgb, #173c50 42%, var(--ride-panel-surface)) 0%,
+    var(--ride-panel-surface) 52%,
+    color-mix(in srgb, #123d35 24%, var(--ride-panel-surface)) 100%
+  );
+  box-shadow:
+    inset 0 1px rgba(137, 219, 239, .055),
+    0 16px 38px rgba(0, 0, 0, .16);
+}
+
+/* Los encabezados de sección funcionan como pequeñas señales de ruta. */
+:where(.passenger-section-head, .driver-section-head, .overview-heading) {
+  position: relative;
+  padding-left: 16px;
+}
+
+:where(.passenger-section-head, .driver-section-head, .overview-heading)::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 3px;
+  width: 5px;
+  height: 34px;
+  border-radius: 99px;
+  background: linear-gradient(180deg, #269df3, #69d2f0 48%, #55cdb8);
+  box-shadow: 0 0 18px rgba(38, 157, 243, .2);
+}
+
+:where(.passenger-section-head, .driver-section-head) > span,
+.overview-heading > small,
+.overview-heading > div > small {
+  display: inline-flex;
+  width: max-content;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid color-mix(in srgb, var(--ride-brand-500) 18%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ride-brand-100) 42%, transparent);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell).theme-dark
+  :where(.passenger-section-head, .driver-section-head) > span,
+:where(.passenger-shell, .driver-shell, .admin-shell).theme-dark
+  .overview-heading > small,
+:where(.passenger-shell, .driver-shell, .admin-shell).theme-dark
+  .overview-heading > div > small {
+  border-color: rgba(105, 210, 240, .15);
+  background: rgba(38, 157, 243, .09);
+  color: #82dcf2;
+}
+
+/* Indicadores con un código cromático estable, igual al de la aplicación. */
+:where(.metric-strip, .admin-metrics, .driver-summary) > :nth-child(4n + 1) {
+  box-shadow: inset 0 3px #269df3, var(--ride-shadow-sm);
+}
+:where(.metric-strip, .admin-metrics, .driver-summary) > :nth-child(4n + 2) {
+  box-shadow: inset 0 3px #55cdb8, var(--ride-shadow-sm);
+}
+:where(.metric-strip, .admin-metrics, .driver-summary) > :nth-child(4n + 3) {
+  box-shadow: inset 0 3px #7c6bf5, var(--ride-shadow-sm);
+}
+:where(.metric-strip, .admin-metrics, .driver-summary) > :nth-child(4n + 4) {
+  box-shadow: inset 0 3px #69d2f0, var(--ride-shadow-sm);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :where(.passenger-shell, .driver-shell, .admin-shell):not(.reduced-motion)
+    :where(
+      .passenger-trip-row, .notification-list article, .address-list > article,
+      .driver-request-list article, .vehicle-list article,
+      .bank-account-list article, .admin-card, .metric-strip article,
+      .admin-metrics article
+    ):hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--ride-brand-500) 36%, var(--ride-panel-border));
+    box-shadow: 0 18px 40px rgba(14, 91, 122, .11);
+  }
+}
+
+@media (max-width: 520px) {
+  :where(.passenger-workspace, .driver-workspace, .admin-main) {
+    background-size: 1100px 688px, auto, auto, auto;
+  }
+  :where(.passenger-section-head, .driver-section-head, .overview-heading) {
+    padding-left: 13px;
+  }
+  :where(.passenger-section-head, .driver-section-head, .overview-heading)::before {
+    width: 4px;
+    height: 30px;
   }
 }

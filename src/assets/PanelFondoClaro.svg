@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" fill="none">
+  <defs>
+    <linearGradient id="route" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#269DF3"/>
+      <stop offset=".52" stop-color="#69D2F0"/>
+      <stop offset="1" stop-color="#55CDB8"/>
+    </linearGradient>
+    <linearGradient id="prism" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#269DF3" stop-opacity=".11"/>
+      <stop offset="1" stop-color="#7C6BF5" stop-opacity=".055"/>
+    </linearGradient>
+    <pattern id="grid" width="42" height="42" patternUnits="userSpaceOnUse">
+      <path d="M42 0H0V42" stroke="#168DB9" stroke-opacity=".045"/>
+    </pattern>
+  </defs>
+  <path d="M0 0H1600V1000H0z" fill="url(#grid)"/>
+  <circle cx="1450" cy="135" r="265" stroke="url(#route)" stroke-opacity=".08" stroke-width="66"/>
+  <circle cx="1450" cy="135" r="155" stroke="#7C6BF5" stroke-opacity=".055" stroke-width="2"/>
+  <path d="M-90 790C120 620 250 920 480 735S785 570 955 690s325 184 735-34" stroke="url(#route)" stroke-opacity=".15" stroke-width="3" stroke-dasharray="11 13"/>
+  <path d="M-90 810C120 640 250 940 480 755S785 590 955 710s325 184 735-34" stroke="#fff" stroke-opacity=".55" stroke-width="18"/>
+  <g stroke="#269DF3" stroke-width="3">
+    <circle cx="220" cy="750" r="10" fill="#F7FAFF"/><circle cx="220" cy="750" r="3" fill="#269DF3"/>
+    <circle cx="930" cy="680" r="10" fill="#F7FAFF"/><circle cx="930" cy="680" r="3" fill="#55CDB8"/>
+  </g>
+  <g opacity=".34">
+    <path d="M105 110l92-54 92 54v108l-92 54-92-54z" fill="url(#prism)"/>
+    <path d="M1310 735l95-55 95 55v110l-95 55-95-55z" fill="url(#prism)"/>
+    <circle cx="119" cy="423" r="4" fill="#269DF3"/><circle cx="143" cy="423" r="4" fill="#69D2F0"/><circle cx="167" cy="423" r="4" fill="#55CDB8"/>
+    <circle cx="1433" cy="496" r="4" fill="#7C6BF5"/><circle cx="1457" cy="496" r="4" fill="#69D2F0"/><circle cx="1481" cy="496" r="4" fill="#55CDB8"/>
+  </g>
+</svg>

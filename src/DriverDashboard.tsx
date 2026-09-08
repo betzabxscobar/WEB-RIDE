@@ -190,15 +190,6 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
         <DriverNav active={page === 'configuracion'} icon={<SettingsIcon size={18} />} label="Configuración" onClick={() => go('configuracion')}/>
       </nav>
       <div className="driver-profile"><span>{initials(user.name)}</span><div><strong>{user.name}</strong><small>{state.available ? 'En línea' : 'Fuera de línea'}</small></div></div>
-      {views.length > 1 && (
-        <label className="panel-switcher sidebar">
-          <span>Panel actual</span>
-          <select value={activeView} onChange={(event) => onSwitchView(event.target.value as Role)}>
-            {views.map((view) => <option key={view} value={view}>{panelLabel(view)}</option>)}
-          </select>
-
-        </label>
-      )}
       <button className="driver-logout" onClick={onLogout}><LogOutIcon size={17} aria-hidden /><span>Cerrar sesión</span></button>
     </aside>
     {sidebarOpen && <SidebarBackdrop onClose={() => setSidebarOpen(false)} />}

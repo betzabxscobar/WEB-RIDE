@@ -214,7 +214,7 @@ textarea { -webkit-tap-highlight-color: transparent; }
 
 /* Superficies principales. Se evita que cada pantalla parezca otro producto. */
 .passenger-shell :where(
-  .start-ride-card, .active-trip, .recent-trip-list .trip-row,
+  .start-ride-card, .active-trip, .recent-trip-list .passenger-trip-row,
   .trip-history article, .notification-list article, .request-form,
   .quote-card, .address-form, .address-list > article, .payment-methods,
   .payment-history, .tracking-main, .tracking-driver, .account-details,
@@ -240,7 +240,7 @@ textarea { -webkit-tap-highlight-color: transparent; }
 
 :where(.passenger-shell, .driver-shell, .admin-shell).theme-dark
   :where(
-    .start-ride-card, .active-trip, .recent-trip-list .trip-row,
+    .start-ride-card, .active-trip, .recent-trip-list .passenger-trip-row,
     .trip-history article, .notification-list article, .request-form,
     .quote-card, .address-form, .address-list > article, .payment-methods,
     .payment-history, .tracking-main, .tracking-driver, .account-details,

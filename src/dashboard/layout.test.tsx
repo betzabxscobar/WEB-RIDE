@@ -9,7 +9,11 @@ import type { Role, User } from '../lib/auth'
 
 vi.mock('../lib/trips', async (original) => ({
   ...await original<object>(),
-  listPassengerTrips: async () => [], listDriverTrips: async () => [],
+  listPassengerTrips: async () => [{ id: 'qa-passenger-trip', estado: 'FINALIZADO', montoCobrado: 12.4, tarifaFinal: 12.4, tarifaEstimada: 12.4,
+    pasajeroNombre: 'Alexandra Apellido Largo', conductorNombre: 'Conductor de prueba',
+    origenTexto: 'Avenida principal y calle de referencia, centro de la ciudad',
+    destinoTexto: 'Terminal terrestre, entrada principal', fechaSolicitud: '2026-09-07T12:00:00Z' }],
+  listDriverTrips: async () => [],
   listTrips: async () => [{ id: 'qa-trip', estado: 'FINALIZADO', montoCobrado: 12.4, tarifaFinal: 12.4, tarifaEstimada: 12.4,
     pasajeroNombre: 'Alexandra Apellido Largo', conductorNombre: 'Conductor de prueba',
     origenTexto: 'Avenida principal y calle de referencia, centro de la ciudad',
@@ -59,7 +63,7 @@ function capture(name: string, container: HTMLElement) {
       option.toggleAttribute('selected', option.value === select.value)
     })
   })
-  const styles = ['index', 'App', 'PassengerDashboard', 'DriverDashboard', 'AdminDashboard', 'passenger/RequestPage', 'design-system', 'layout']
+  const styles = ['index', 'App', 'PassengerDashboard', 'DriverDashboard', 'AdminDashboard', 'passenger/RequestPage', 'design-system', 'layout', 'visual-polish']
     .map((file) => `<link rel="stylesheet" href="/src/${file}.css">`).join('')
   writeFileSync(`.qa/${name}.html`, `<!doctype html><html lang="es" data-ride-theme="${document.documentElement.dataset.rideTheme}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800;900&display=swap">${styles}<title>Ride: revisión ${name}</title></head><body>${copy.innerHTML}</body></html>`)
 }
@@ -89,6 +93,14 @@ describe('panel navigation layout', () => {
       expect(workspace.querySelector('header button[aria-label="Alternar menú"]')).toBeTruthy()
       const sidebar = container.querySelector('aside')!
       expect(sidebar).toHaveAttribute('inert')
+      if (role === 'passenger' || role === 'driver') {
+        expect(sidebar.querySelector('.panel-switcher')).toBeNull()
+        expect(workspace.querySelector(`.${role}-view-select`)).toBeTruthy()
+      }
+      if (role === 'passenger') {
+        expect(workspace.querySelector('.passenger-trip-row .trip-route-card')).toBeTruthy()
+        expect(workspace.querySelector('.recent-trip-list .trip-row')).toBeNull()
+      }
       capture(`${capturePrefix}-closed`, container)
       fireEvent.click(screen.getByRole('button', { name: 'Alternar menú' }))
       expect(sidebar).not.toHaveAttribute('inert')
