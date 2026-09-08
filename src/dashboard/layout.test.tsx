@@ -28,7 +28,8 @@ vi.mock('../lib/auth', async (original) => ({ ...await original<object>(), listU
   { id: 'qa-user', name: 'Alexandra Apellido Largo', email: 'nombre.apellido.muy.largo@example.test', phone: '', role: 'passenger', createdAt: '2026-09-07T12:00:00Z' },
 ] }))
 vi.mock('../lib/drivers', async (original) => ({ ...await original<object>(), listDrivers: async () => [] }))
-vi.mock('../lib/support', async (original) => ({ ...await original<object>(), listMyTickets: async () => [] }))
+vi.mock('../lib/support', async (original) => ({ ...await original<object>(), listMyTickets: async () => [], listAllTickets: async () => [] }))
+vi.mock('../lib/fares', async (original) => ({ ...await original<object>(), listFares: async () => [], listVehicleCategories: async () => [] }))
 vi.mock('../lib/driver-account', async (original) => ({
   ...await original<object>(), prepareSuperadminDriver: async () => {},
   getDriverState: async () => ({ exists: true, approved: false, approvalStatus: 'pendiente', available: false, hasActiveVehicle: false, rating: null }),
@@ -97,7 +98,7 @@ describe('panel navigation layout', () => {
       const pages = role === 'passenger'
         ? ['Mis viajes', 'Direcciones', 'Pagos', 'Mi cuenta', 'Configuración', 'Soporte', 'Pedir viaje', 'Avisos']
         : role === 'driver' ? ['Viajes', 'Ganancias', 'Zonas de trabajo', 'Cuentas bancarias', 'Vehículos', 'Documentos', 'Mi cuenta', 'Configuración', 'Soporte']
-          : ['Viajes', 'Usuarios', 'Conductores', 'Mi cuenta', 'Configuración']
+          : ['Viajes', 'Usuarios', 'Conductores', 'Tarifas', 'Soporte', 'Mi cuenta', 'Configuración']
       for (const [index, label] of pages.entries()) {
         if (sidebar.hasAttribute('inert')) fireEvent.click(screen.getByRole('button', { name: 'Alternar menú' }))
         fireEvent.click(within(sidebar as HTMLElement).getByRole('button', { name: label }))
