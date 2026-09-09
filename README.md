@@ -301,13 +301,30 @@ npm run dev       # servidor de desarrollo
 npm run build     # comprobación de TypeScript y compilación de producción
 npm run lint      # análisis estático
 npm run test      # pruebas automáticas
+npm run quality   # seguridad estática, pruebas, build y presupuestos de carga
 npm run preview   # vista previa de la compilación
 ```
 
 Cada envío o propuesta de cambio hacia `main` ejecuta estas tres comprobaciones
 en GitHub Actions: análisis estático, pruebas y compilación de producción.
 
-Estado local comprobado el **8 de septiembre de 2026**: **27 pruebas aprobadas**,
+## Calidad, seguridad y despliegue
+
+- La interfaz se adapta a escritorio, tableta y móvil, mantiene objetivos
+  táctiles de al menos 44 px y respeta la preferencia de reducir movimiento.
+- React codifica el contenido mostrado y el control automático rechaza usos de
+  `innerHTML`, `eval` o secretos de servidor dentro del cliente.
+- La salida incluye una política CSP portable. En hosts compatibles con
+  `_headers` también activa protección contra marcos, política de referencia y
+  permisos restringidos para cámara, micrófono y geolocalización.
+- El JavaScript y CSS iniciales tienen presupuestos de peso verificados después
+  de cada compilación. Los mapas continúan cargándose bajo demanda.
+- `.github/workflows/deploy.yml` publica `main` en GitHub Pages solo después de
+  superar todas las comprobaciones. En el repositorio debe elegirse
+  **Settings > Pages > Source: GitHub Actions** y autorizar la URL publicada en
+  los Redirect URLs de Supabase Auth.
+
+Estado local comprobado el **9 de septiembre de 2026**: **27 pruebas aprobadas**,
 análisis estático aprobado y compilación de producción aprobada.
 
 ## Antes de producción

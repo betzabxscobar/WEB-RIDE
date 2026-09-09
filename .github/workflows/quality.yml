@@ -12,6 +12,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Descargar código
         uses: actions/checkout@v4
@@ -28,3 +29,5 @@ jobs:
         run: npm test
       - name: Compilar versión de producción
         run: npm run build
+      - name: Verificar seguridad y presupuestos de carga
+        run: npm run check:quality

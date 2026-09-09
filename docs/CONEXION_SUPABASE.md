@@ -112,8 +112,8 @@ sobreescribir con `--dart-define` para apuntar a otro proyecto.
    y subir el valor en **Rate Limits**. Pasos exactos: [`SMTP.md`](SMTP.md).
    Las dos apps ya avisan correctamente que hay que confirmar el correo.
 
-3. **`server.mjs` quedó sin uso.** Ninguna pantalla lo llama. Borrarlo junto con
-   `data/users.json` y el script `dev:api` cuando se confirme que no hace falta.
+3. **La API local antigua fue retirada.** La autenticación y los datos usan
+   exclusivamente Supabase; no debe volver a incorporarse un almacén local de usuarios.
 
 4. **Scripts `scripts/*.mjs`.** Fueron escritos contra el esquema viejo
    (`user_id`, `app_metadata.role`). Revisarlos antes de volver a usarlos.
