@@ -704,6 +704,19 @@ html[data-ride-theme='dark'] :where(.passenger-dialog, .driver-dialog, .ride-cha
   .passenger-shell .passenger-trip-row .trip-route-card > b { width: 20px; }
 }
 
+.ride-map-loading {
+  min-height: 260px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--ride-panel-border, var(--ride-border));
+  background:
+    linear-gradient(135deg, transparent 48%, rgba(38, 169, 220, .09) 49% 51%, transparent 52%) 0 0 / 46px 46px,
+    var(--ride-panel-surface-soft, var(--ride-surface-soft));
+  color: var(--ride-panel-muted, var(--ride-muted));
+  font-size: 12px;
+  font-weight: 700;
+}
+
 /* Señales de ruta flotantes: llenan el lienzo sin competir con formularios ni
    sumar PNG pesados. Cada rol conserva un matiz propio y el oscuro mantiene
    la misma intención —accesibilidad— en lugar de convertirlo en una noche. */

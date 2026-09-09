@@ -27,7 +27,7 @@
 .wordmark,.mobile-brand,.mini-brand,.brand-copy h1,.auth-box h2,.user-home h1{font-family:var(--ride-font-display)}.logo{font-family:var(--ride-font-display);background:linear-gradient(145deg,#a5e8f5,#4abde7);filter:drop-shadow(0 8px 20px rgba(74,190,231,.2));animation:logo-breathe 5s ease-in-out infinite}
 .brand-copy h1 em{color:var(--sky);text-shadow:0 0 32px rgba(138,220,240,.17)}.brand-copy>p{color:#b4c8d3}.moon{background:radial-gradient(circle at 38% 38%,rgba(181,237,247,.18),rgba(105,210,240,.035) 66%);animation:moon-glow 7s ease-in-out infinite alternate}
 .buildings i{background:linear-gradient(180deg,#123b50,#0c2d40);box-shadow:inset 0 1px rgba(153,225,240,.08);animation:city-rise .8s both}.buildings i:nth-child(2){animation-delay:.08s}.buildings i:nth-child(3){animation-delay:.16s}.buildings i:nth-child(4){animation-delay:.24s}.buildings i:nth-child(5){animation-delay:.32s}.buildings i:nth-child(6){animation-delay:.4s}
-.route{border-color:#69cde9;filter:drop-shadow(0 0 7px rgba(94,207,238,.36))}.route i{border-color:#8adff0;animation:route-pulse 2.6s ease-in-out infinite}.route i:nth-child(2){animation-delay:.5s}.route i:nth-child(3){animation-delay:1s}.car{color:#a5e8f4;animation:car-float 4s ease-in-out infinite}.form-panel{background: url('./assets/FondoBlancoRide.png') right calc(50% + 3cm)/contain no-repeat, linear-gradient(145deg,#fff,#f8fbfc)}.auth-box{animation:enter-refined .45s cubic-bezier(.22,1,.36,1)}
+.route{border-color:#69cde9;filter:drop-shadow(0 0 7px rgba(94,207,238,.36))}.route i{border-color:#8adff0;animation:route-pulse 2.6s ease-in-out infinite}.route i:nth-child(2){animation-delay:.5s}.route i:nth-child(3){animation-delay:1s}.car{color:#a5e8f4;animation:car-float 4s ease-in-out infinite}.form-panel{background: url('./assets/FondoBlancoRide.webp') right calc(50% + 3cm)/contain no-repeat, linear-gradient(145deg,#fff,#f8fbfc)}.auth-box{animation:enter-refined .45s cubic-bezier(.22,1,.36,1)}
 .primary-action,.secondary-action,.role-picker button,.auth-box input,.back{transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease,color .22s ease}.primary-action{background:linear-gradient(135deg,#9ae5f4,#58c3e8);box-shadow:0 10px 28px rgba(56,169,211,.18)}.primary-action:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 15px 34px rgba(56,169,211,.27)}.primary-action span{transition:transform .22s}.primary-action:hover span{transform:translateX(4px)}.secondary-action:hover,.role-picker button:hover{transform:translateY(-2px);border-color:#9ccfdb}.role-picker button.selected{border-color:#59bddc;background:#f0fbfd;box-shadow:inset 0 0 0 1px #59bddc,0 8px 22px rgba(62,173,211,.08)}
 .auth-box input:focus{border-color:#62bfdc;box-shadow:0 0 0 4px rgba(98,191,220,.12);transform:translateY(-1px)}.back:hover{transform:translateX(-3px);color:#157fa8}.user-home header{background:linear-gradient(110deg,#061823,#0d3449)}.user-home>section{animation:enter-refined .45s cubic-bezier(.22,1,.36,1)}.account-card div{transition:transform .22s,box-shadow .22s}.account-card div:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(21,60,78,.08)}
 @keyframes enter-refined{from{opacity:0;transform:translateY(12px) scale(.99)}to{opacity:1;transform:none}}@keyframes aurora{to{transform:translate(80px,45px) scale(1.15)}}@keyframes drift{to{transform:translate(-48px,64px) rotate(12deg)}}@keyframes moon-glow{to{transform:scale(1.09);box-shadow:0 0 60px rgba(120,215,235,.09)}}@keyframes city-rise{from{transform:translateY(55px);opacity:.2}to{transform:none;opacity:1}}@keyframes route-pulse{50%{box-shadow:0 0 0 8px rgba(121,218,239,0)}}@keyframes car-float{50%{transform:translate(10px,-5px) rotate(-4deg)}}@keyframes logo-breathe{50%{filter:drop-shadow(0 10px 24px rgba(74,190,231,.35));transform:translateY(-1px)}}
@@ -58,7 +58,7 @@
 .admin-main .viewing-as{padding:9px 20px}
 
 /* Remover elementos decorativos celestes del fondo del panel de marca */
-.brand-panel{background: url('./assets/FondoObscuroRide.png') center left/cover no-repeat !important; background-color:#071827 !important}
+.brand-panel{background: url('./assets/FondoObscuroRide.webp') center left/cover no-repeat !important; background-color:#071827 !important}
 .brand-panel:before,.brand-panel:after,.city-art,.moon,.route,.car,.buildings{display:none !important}
 
 
@@ -94,7 +94,7 @@ img.logo{width:100%;height:100%;object-fit:contain;display:block !important}
   padding:40px 24px;
   background:
     linear-gradient(115deg,rgba(4,20,32,.96),rgba(8,45,65,.88)),
-    url('./assets/FondoObscuroRide.png') center/cover no-repeat;
+    url('./assets/FondoObscuroRide.webp') center/cover no-repeat;
 }
 .first-access::before,.first-access::after{content:'';position:absolute;z-index:-1;border-radius:50%;pointer-events:none}
 .first-access::before{width:560px;height:560px;right:-210px;top:-280px;background:radial-gradient(circle,rgba(105,210,240,.2),transparent 68%)}

@@ -152,7 +152,7 @@ button, input, select, textarea { line-height: 1.4; }
 .auth-box input { font-weight: 400; }
 .form-panel {
   background: linear-gradient(180deg, rgba(255,255,255,.97), rgba(248,251,252,.88)),
-    url('./assets/FondoBlancoRide.png') center bottom / cover no-repeat;
+    url('./assets/FondoBlancoRide.webp') center bottom / cover no-repeat;
 }
 .passenger-dialog, .driver-dialog, .ride-dialog, .account-dialog, .admin-dialog {
   max-height: calc(100dvh - 32px);

@@ -1,12 +1,8 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { PanelPreview } from './components/PanelPreview'
 import './App.css'
-import logoTipo from './assets/LogoTipo.png'
-import AdminDashboard from './AdminDashboard'
-import PassengerDashboard from './PassengerDashboard'
-import DriverDashboard from './DriverDashboard'
-import './DriverDashboard.css'
+import logoTipo from './assets/LogoTipo.webp'
 import { ArrowRight, CheckCircle2, LockKeyhole, Mail, ShieldCheck } from 'lucide-react'
 import { supabase } from './lib/supabase'
 import { useRideBrowserNotifications } from './lib/browser-notifications'
@@ -26,8 +22,18 @@ import {
 
 type Screen = 'welcome' | 'login' | 'register' | 'forgot' | 'home'
 
+const AdminDashboard = lazy(() => import('./AdminDashboard'))
+const PassengerDashboard = lazy(() => import('./PassengerDashboard'))
+const DriverDashboard = lazy(() => import('./DriverDashboard'))
+
 function Logo() {
   return <img src={logoTipo} className="logo" alt="Ride" />
+}
+
+function DashboardFallback() {
+  return <main className="loading-screen" role="status" aria-live="polite" aria-label="Cargando panel de Ride">
+    <section className="loading-card"><div className="loading-logo-wrap" aria-hidden><img src={logoTipo} alt="" /></div><div className="loading-wordmark">Ride</div><h1>Abriendo tu panel</h1><p>Cargamos únicamente las herramientas que necesitas.</p><div className="loading-progress" aria-hidden><span /></div></section>
+  </main>
 }
 
 function App() {
@@ -210,11 +216,11 @@ function App() {
   // La pantalla la decide la vista activa, no el rol: un administrador puede
   // estar mirando la interfaz de usuario o de chofer con su propia cuenta.
   const viewIsAdministrative = activeView === 'admin' || activeView === 'superadmin'
-  if (screen === 'home' && user && viewIsAdministrative) return <AdminDashboard user={user} viewAs={activeView as Role} views={availableViews} onSwitchView={switchView} onUserUpdate={setUser} onLogout={logout} />
+  if (screen === 'home' && user && viewIsAdministrative) return <Suspense fallback={<DashboardFallback />}><AdminDashboard user={user} viewAs={activeView as Role} views={availableViews} onSwitchView={switchView} onUserUpdate={setUser} onLogout={logout} /></Suspense>
 
-  if (screen === 'home' && user && activeView === 'passenger') return <PassengerDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onUserUpdate={setUser} onLogout={logout} />
+  if (screen === 'home' && user && activeView === 'passenger') return <Suspense fallback={<DashboardFallback />}><PassengerDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onUserUpdate={setUser} onLogout={logout} /></Suspense>
 
-  if (screen === 'home' && user && activeView === 'driver') return <DriverDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onUserUpdate={setUser} onLogout={logout} />
+  if (screen === 'home' && user && activeView === 'driver') return <Suspense fallback={<DashboardFallback />}><DriverDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onUserUpdate={setUser} onLogout={logout} /></Suspense>
 
   if (loading && screen === 'welcome') return <main className="loading-screen" role="status" aria-live="polite" aria-label="Preparando Ride">
     <div className="loading-glow loading-glow-one" aria-hidden />
