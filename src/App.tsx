@@ -1,6 +1,7 @@
 import { Component, lazy, Suspense, useEffect, useState } from 'react'
 import type { ErrorInfo, FormEvent, ReactNode } from 'react'
 import { PanelPreview } from './components/PanelPreview'
+import { ReactBitsEffects } from './components/ReactBitsEffects'
 import './App.css'
 import logoTipo from './assets/LogoTipo.webp'
 import { AlertTriangle, ArrowRight, CarFront, CheckCircle2, Clock3, LockKeyhole, Mail, MapPin, Navigation, RotateCcw, ShieldCheck } from 'lucide-react'
@@ -30,9 +31,16 @@ function Logo() {
   return <img src={logoTipo} className="logo" alt="Ride" />
 }
 
+function loadingThemeClass() {
+  if (typeof window === 'undefined') return 'loading-theme-light'
+  const saved = localStorage.getItem('ride-theme')
+  const dark = saved === 'dark' || (saved !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+  return dark ? 'loading-theme-dark' : 'loading-theme-light'
+}
+
 function DashboardFallback() {
-  return <main className="loading-screen" role="status" aria-live="polite" aria-label="Cargando panel de Ride">
-    <LoadingExperience title="Preparando tus viajes" text="Sincronizamos rutas, actividad y herramientas de tu panel." detail="Tu información estará lista en un momento" />
+  return <main className={`loading-screen ${loadingThemeClass()}`} role="status" aria-live="polite" aria-label="Cargando Ride">
+    <LoadingExperience title="Preparando tus viajes" text="Sincronizamos rutas, actividad y herramientas de tu cuenta." detail="Tu información estará lista en un momento" />
   </main>
 }
 
@@ -259,7 +267,7 @@ function App() {
 
   if (screen === 'home' && user && activeView === 'driver') return <DashboardErrorBoundary key={activeView} onBack={activeView !== user.role ? () => switchView(user.role) : undefined}><Suspense fallback={<DashboardFallback />}><DriverDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onUserUpdate={setUser} onLogout={logout} /></Suspense></DashboardErrorBoundary>
 
-  if (loading && screen === 'welcome') return <main className="loading-screen" role="status" aria-live="polite" aria-label="Preparando Ride">
+  if (loading && screen === 'welcome') return <main className={`loading-screen ${loadingThemeClass()}`} role="status" aria-live="polite" aria-label="Preparando Ride">
     <LoadingExperience title="Tu próximo viaje comienza aquí" text="Conectamos tu cuenta con Ride y preparamos el camino." detail="Buscando la mejor ruta para ti" />
   </main>
 
@@ -269,7 +277,7 @@ function App() {
     <section><span className="success-mark">✓</span><p>Sesión iniciada correctamente</p><h1>Hola, {user.name.split(' ')[0]}</h1><p className="home-copy">{activeView !== user.role ? `Así ve la app una cuenta de ${activeView === 'driver' ? 'conductor' : 'pasajero'}.` : `Tu cuenta de ${activeView === 'driver' ? 'conductor' : 'pasajero'} está lista.`}</p><div className="account-card"><div><small>Correo</small><strong>{user.email}</strong></div><div><small>Teléfono</small><strong>{user.phone || 'Sin teléfono'}</strong></div><div><small>Modo</small><strong>{activeView === 'driver' ? 'Conduzco' : 'Viajo'}</strong></div></div></section>
   </main>
 
-  return <main className={`auth-page auth-page-${screen}`}>
+  return <main className={`auth-page auth-page-${screen}`}><ReactBitsEffects/>
     <section className="brand-panel">
       <div className="brand-copy"><div className="wordmark"><img src={logoTipo} className="wordmark-logo" alt="Ride" /><span>Ride</span></div><span className="brand-kicker">TU CIUDAD, A TU RITMO</span><h1>Muévete con<br/><em>libertad.</em></h1><p>Una forma más segura, transparente y humana de llegar a donde quieres.</p><div className="brand-benefits"><span><CheckCircle2 size={16} aria-hidden /> Viajes confiables</span><span><ShieldCheck size={16} aria-hidden /> Acceso protegido</span></div></div>
       <div className="brand-status"><span className="status-dot" aria-hidden /><div><strong>Ride está listo para ti</strong><small>Solicita, conduce o administra desde un solo lugar.</small></div></div>
