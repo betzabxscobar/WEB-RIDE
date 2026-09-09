@@ -5,13 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:api": "node server.mjs",
     "crear:cuentas-admin": "node scripts/crear-cuentas-administrativas.mjs",
     "provisionar:supabase": "node scripts/provisionar-usuarios-supabase.mjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "check:quality": "node scripts/verificar-calidad.mjs",
+    "quality": "npm run lint && npm test && npm run build && npm run check:quality",
     "preview": "vite preview"
   },
   "dependencies": {
