@@ -704,6 +704,88 @@ html[data-ride-theme='dark'] :where(.passenger-dialog, .driver-dialog, .ride-cha
   .passenger-shell .passenger-trip-row .trip-route-card > b { width: 20px; }
 }
 
+/* Tema claro con mayor presencia: el lienzo, las superficies y los iconos
+   forman capas visibles sin perder la limpieza de Ride. */
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.passenger-workspace, .driver-workspace, .admin-main) {
+  background:
+    url('./assets/PanelFondoClaro.svg') center top / 1450px 905px repeat-y,
+    radial-gradient(circle at 86% 7%, rgba(38, 157, 243, .24), transparent 29rem),
+    radial-gradient(circle at 7% 84%, rgba(85, 205, 184, .20), transparent 27rem),
+    radial-gradient(circle at 52% 52%, rgba(124, 107, 245, .075), transparent 34rem),
+    linear-gradient(145deg, #f8fcff 0%, #eaf7fc 48%, #effbf7 100%);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.passenger-topbar, .driver-topbar, .admin-main > header) {
+  border-bottom-color: rgba(82, 169, 199, .28);
+  background: rgba(255, 255, 255, .82);
+  box-shadow: 0 8px 26px rgba(12, 76, 103, .08);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark) .panel-atmosphere {
+  opacity: .94;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark) .atmosphere-route path {
+  stroke: color-mix(in srgb, var(--atmosphere-accent) 54%, transparent);
+  stroke-width: 2.6;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark) .atmosphere-route circle {
+  fill: #fff;
+  filter: drop-shadow(0 3px 7px color-mix(in srgb, var(--atmosphere-accent) 30%, transparent));
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark) .atmosphere-icon {
+  border-color: color-mix(in srgb, var(--atmosphere-accent) 42%, #fff);
+  background: linear-gradient(145deg, #fff, color-mix(in srgb, var(--atmosphere-accent) 18%, #fff));
+  color: color-mix(in srgb, var(--atmosphere-accent) 84%, #07556e);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, .9),
+    0 14px 34px color-mix(in srgb, var(--atmosphere-accent) 23%, transparent);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.atmosphere-icon.icon-2) {
+  background: linear-gradient(145deg, #fff, #e8fbf4);
+  color: #238f73;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.atmosphere-icon.icon-3) {
+  background: linear-gradient(145deg, #fff, #efedff);
+  color: #6658cf;
+}
+
+html :where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(
+    .start-ride-card, .active-trip, .passenger-trip-row, .trip-history article,
+    .notification-list article, .request-form, .quote-card, .address-form,
+    .address-list > article, .payment-methods, .payment-history,
+    .tracking-main, .tracking-driver, .account-details, .account-summary,
+    .settings-card, .support-form, .support-list article,
+    .active-driver-trip, .driver-request-list article, .driver-summary article,
+    .vehicle-list article, .vehicle-form, .document-list article,
+    .driver-account-grid > section, .driver-account-grid > aside,
+    .earnings-grid article, .identity-form, .document-group, .driver-tool-card,
+    .bank-account-form, .bank-account-list article, .admin-card,
+    .metric-strip article, .admin-metrics article, .admin-account-card
+  ) {
+  border-color: rgba(118, 185, 208, .42);
+  background-image: linear-gradient(145deg, #ffffff 0%, #f6fcff 54%, #f2fcf8 100%);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, .95),
+    0 2px 4px rgba(8, 66, 91, .04),
+    0 16px 38px rgba(8, 66, 91, .085);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.theme-options button, input, select, textarea) {
+  border-color: var(--ride-border-strong);
+  background-color: rgba(255, 255, 255, .9);
+}
+
 .ride-map-loading {
   min-height: 260px;
   display: grid;
@@ -972,5 +1054,544 @@ html[data-ride-theme='dark'] :where(.passenger-dialog, .driver-dialog, .ride-cha
   :where(.passenger-section-head, .driver-section-head, .overview-heading)::before {
     width: 4px;
     height: 30px;
+  }
+}
+
+/* Modo claro vibrante -----------------------------------------------------
+   Esta capa final gana a los estilos históricos de cada dashboard. */
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark) {
+  --light-accent: #159ed3;
+  --light-accent-soft: #dff6ff;
+  --light-accent-glow: rgba(25, 166, 218, .20);
+}
+
+.driver-shell:not(.theme-dark) {
+  --light-accent: #159f86;
+  --light-accent-soft: #def9f1;
+  --light-accent-glow: rgba(21, 159, 134, .18);
+}
+
+.admin-shell:not(.theme-dark) {
+  --light-accent: #487fe4;
+  --light-accent-soft: #e5f1ff;
+  --light-accent-glow: rgba(72, 127, 228, .19);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.passenger-workspace, .driver-workspace, .admin-main) {
+  background:
+    url('./assets/PanelFondoClaro.svg') center top / 1300px 812px repeat-y,
+    radial-gradient(circle at 82% 4%, rgba(38, 157, 243, .32), transparent 31rem),
+    radial-gradient(circle at 12% 72%, rgba(85, 205, 184, .25), transparent 29rem),
+    radial-gradient(circle at 55% 46%, rgba(124, 107, 245, .12), transparent 32rem),
+    linear-gradient(140deg, #f9fdff 0%, #dff4fc 48%, #e6faf4 100%) !important;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.passenger-topbar, .driver-topbar, .admin-main > header) {
+  border-bottom: 1px solid rgba(46, 153, 195, .30) !important;
+  background:
+    linear-gradient(105deg, rgba(255, 255, 255, .96), rgba(225, 247, 255, .90) 62%, rgba(226, 251, 243, .88)) !important;
+  box-shadow: 0 9px 30px rgba(12, 91, 124, .11) !important;
+}
+
+/* Menús laterales: selección luminosa e iconos fáciles de reconocer. */
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.passenger-sidebar, .driver-sidebar, .admin-sidebar) nav button {
+  border: 1px solid transparent;
+  transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.passenger-sidebar, .driver-sidebar, .admin-sidebar) nav button:hover {
+  border-color: rgba(105, 210, 240, .20);
+  background: linear-gradient(110deg, rgba(53, 177, 221, .20), rgba(85, 205, 184, .10)) !important;
+  color: #eaffff !important;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.passenger-sidebar, .driver-sidebar, .admin-sidebar) nav button.active {
+  border-color: rgba(121, 222, 246, .44) !important;
+  background: linear-gradient(110deg, #31b7e7, #55cdb8) !important;
+  color: #062d40 !important;
+  box-shadow: 0 10px 24px rgba(24, 173, 214, .24) !important;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.passenger-sidebar, .driver-sidebar, .admin-sidebar) nav button.active
+  :where(svg, span:first-child) {
+  color: #06384b !important;
+}
+
+/* Paneles principales con degradado visible y cabeceras teñidas. */
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(
+    .start-ride-card, .active-trip, .passenger-trip-row, .trip-history article,
+    .notification-list article, .request-form, .quote-card, .address-form,
+    .address-list > article, .payment-methods, .payment-history,
+    .tracking-main, .tracking-driver, .account-details, .account-summary,
+    .settings-card, .support-form, .support-list article,
+    .driver-status-card, .active-driver-trip, .driver-request-list article,
+    .driver-summary article, .vehicle-list article, .vehicle-form,
+    .document-list article, .driver-account-grid > section,
+    .driver-account-grid > aside, .earnings-hero, .earnings-grid article,
+    .identity-form, .document-group, .driver-tool-card, .bank-account-form,
+    .bank-account-list article, .admin-card, .metric-strip article,
+    .admin-metrics article, .admin-account-card
+  ) {
+  border-color: color-mix(in srgb, var(--light-accent) 28%, #c9e1eb) !important;
+  background:
+    radial-gradient(circle at 100% 0, var(--light-accent-glow), transparent 44%),
+    linear-gradient(135deg, #ffffff 0%, var(--light-accent-soft) 100%) !important;
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, .98),
+    0 3px 7px rgba(7, 71, 99, .05),
+    0 18px 42px rgba(7, 91, 126, .12) !important;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.admin-card-head, .passenger-section-head, .driver-section-head) {
+  border-bottom-color: color-mix(in srgb, var(--light-accent) 24%, #d5e9f0) !important;
+}
+
+.admin-shell:not(.theme-dark) .admin-card-head {
+  background: linear-gradient(105deg, rgba(220, 244, 255, .92), rgba(235, 249, 255, .80), rgba(226, 249, 242, .75)) !important;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.admin-card-head, .passenger-section-head, .driver-section-head, .overview-heading)
+  :where(h2, h3, strong) {
+  color: #092d3f !important;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.admin-card-head, .passenger-section-head, .driver-section-head, .overview-heading)
+  :where(p, small) {
+  color: #456b7c !important;
+}
+
+/* Métricas: alternancia cromática más marcada sin perder legibilidad. */
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.metric-strip, .admin-metrics, .driver-summary) > :nth-child(4n + 1) {
+  background: linear-gradient(135deg, #ffffff, #d9f4ff) !important;
+  box-shadow: inset 0 4px #20a8dd, 0 16px 36px rgba(32, 168, 221, .14) !important;
+}
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.metric-strip, .admin-metrics, .driver-summary) > :nth-child(4n + 2) {
+  background: linear-gradient(135deg, #ffffff, #dcf8ef) !important;
+  box-shadow: inset 0 4px #3dbf9e, 0 16px 36px rgba(61, 191, 158, .13) !important;
+}
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.metric-strip, .admin-metrics, .driver-summary) > :nth-child(4n + 3) {
+  background: linear-gradient(135deg, #ffffff, #e8edff) !important;
+  box-shadow: inset 0 4px #657fe5, 0 16px 36px rgba(101, 127, 229, .13) !important;
+}
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.metric-strip, .admin-metrics, .driver-summary) > :nth-child(4n + 4) {
+  background: linear-gradient(135deg, #ffffff, #fff0cd) !important;
+  box-shadow: inset 0 4px #e9ae32, 0 16px 36px rgba(214, 153, 32, .12) !important;
+}
+
+@media (max-width: 520px) {
+  :where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+    :where(.passenger-workspace, .driver-workspace, .admin-main) {
+    background-size: 920px 575px, auto, auto, auto, auto !important;
+  }
+}
+
+/* La franja de revisión queda deliberadamente neutra: es contexto, no
+   contenido principal. */
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark) .viewing-as {
+  min-height: 46px;
+  border-bottom-color: #d7e4e9 !important;
+  background: rgba(248, 251, 252, .96) !important;
+  color: #5c7480 !important;
+  box-shadow: none !important;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark) .viewing-as button {
+  border-color: #cbdde4;
+  background: #fff;
+  color: #426574;
+  box-shadow: none;
+}
+
+/* Más señales visuales alrededor del contenido, con ritmos diferentes para
+   que no parezcan elementos estáticos repetidos. */
+.atmosphere-icon.icon-4 {
+  top: clamp(205px, 21vw, 285px);
+  left: clamp(170px, 21vw, 330px);
+  transform: rotate(-5deg);
+}
+
+.atmosphere-icon.icon-5 {
+  top: clamp(18px, 3vw, 45px);
+  left: clamp(35%, 47vw, 58%);
+  transform: rotate(7deg);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark) .atmosphere-icon {
+  animation: ride-icon-breathe 4.8s ease-in-out infinite;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark) .atmosphere-icon:nth-of-type(2n) {
+  animation-delay: -1.6s;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark) .atmosphere-icon:nth-of-type(3n) {
+  animation-delay: -3.1s;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark) .atmosphere-route path {
+  animation: ride-route-flow 11s linear infinite;
+}
+
+/* El contenido gana energía en puntos concretos, sin convertir todo el
+   lienzo en un degradado continuo. */
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.passenger-section-head, .driver-section-head, .overview-heading)::after {
+  content: '';
+  position: absolute;
+  left: 16px;
+  bottom: -9px;
+  width: clamp(52px, 8vw, 104px);
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #21a9df, #55cdb8, transparent);
+  animation: ride-heading-glow 3.6s ease-in-out infinite;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.passenger-welcome, .driver-status-card, .earnings-hero) {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 82% 18%, rgba(72, 198, 235, .28), transparent 20rem),
+    linear-gradient(115deg, #062c42 0%, #084c66 58%, #087b78 100%) !important;
+  box-shadow: 0 22px 46px rgba(4, 75, 104, .22) !important;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.passenger-welcome, .driver-status-card, .earnings-hero)::after {
+  content: '';
+  position: absolute;
+  width: 220px;
+  aspect-ratio: 1;
+  right: -56px;
+  top: -88px;
+  border: 30px solid rgba(105, 210, 240, .10);
+  border-radius: 50%;
+  animation: ride-hero-orbit 8s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.passenger-welcome, .driver-status-card, .earnings-hero)
+  :where(h2, strong) {
+  color: #fff !important;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.passenger-welcome, .driver-status-card, .earnings-hero)
+  :where(p, small, span) {
+  color: #bdebf5 !important;
+}
+
+/* Iconos funcionales: fondo con color y reacción breve al interactuar. */
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(
+    .overview-metric-icon, .metric-icon, .driver-metric-icon, .user-metric-icon,
+    .driver-avatar, .address-pin, .payment-method-list article > span,
+    .account-detail-grid > div > span, .account-password-row > span,
+    .category-grid article > span
+  ) {
+  border: 1px solid rgba(255, 255, 255, .75);
+  box-shadow: 0 9px 22px rgba(20, 139, 181, .16);
+  transition: transform .22s ease, box-shadow .22s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+    :where(article, .admin-card, .settings-card):hover
+    :where(.overview-metric-icon, .metric-icon, .driver-metric-icon,
+      .user-metric-icon, .address-pin) {
+    transform: translateY(-3px) rotate(-3deg) scale(1.06);
+    box-shadow: 0 13px 28px rgba(20, 139, 181, .22);
+  }
+}
+
+@keyframes ride-icon-breathe {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -8px; }
+}
+
+@keyframes ride-route-flow {
+  to { stroke-dashoffset: -170; }
+}
+
+@keyframes ride-heading-glow {
+  0%, 100% { opacity: .62; transform: scaleX(.72); transform-origin: left; }
+  50% { opacity: 1; transform: scaleX(1); transform-origin: left; }
+}
+
+@keyframes ride-hero-orbit {
+  to { transform: translate(-34px, 30px) rotate(22deg) scale(1.08); }
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell).reduced-motion
+  :where(.atmosphere-icon, .atmosphere-route path),
+:where(.passenger-shell, .driver-shell, .admin-shell).reduced-motion
+  :where(.passenger-welcome, .driver-status-card, .earnings-hero,
+    .passenger-section-head, .driver-section-head, .overview-heading)::after {
+  animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.atmosphere-icon, .atmosphere-route path),
+  :where(.passenger-welcome, .driver-status-card, .earnings-hero,
+    .passenger-section-head, .driver-section-head, .overview-heading)::after {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .atmosphere-icon.icon-4 { left: 20%; top: 150px; }
+  .atmosphere-icon.icon-5 { left: 48%; top: 18px; }
+}
+
+@media (max-width: 430px) {
+  .atmosphere-icon.icon-4,
+  .atmosphere-icon.icon-5 { display: none; }
+}
+
+/* Dirección 2026: mesh limpio, cristal nítido y acentos con intención. */
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.passenger-workspace, .driver-workspace, .admin-main) {
+  background:
+    radial-gradient(ellipse 54% 34% at 78% 2%, rgba(71, 185, 255, .24), transparent 72%),
+    radial-gradient(ellipse 42% 28% at 17% 39%, rgba(60, 220, 190, .15), transparent 72%),
+    radial-gradient(ellipse 38% 30% at 72% 82%, rgba(129, 118, 255, .11), transparent 72%),
+    #f4f9fc !important;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.passenger-workspace, .driver-workspace, .admin-main)::before {
+  width: 360px;
+  top: 8%;
+  right: -170px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(55, 194, 236, .11);
+  filter: blur(2px);
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.passenger-workspace, .driver-workspace, .admin-main)::after {
+  opacity: .55;
+}
+
+/* Las señales flotan por encima del fondo y de las tarjetas. Su ubicación
+   evita las zonas principales de lectura en escritorio. */
+.panel-atmosphere {
+  z-index: 4;
+  inset: 104px 0 auto;
+  height: 430px;
+  overflow: visible;
+  opacity: 1;
+}
+
+.atmosphere-route {
+  top: 86px;
+  right: 1.5%;
+  width: min(48vw, 690px);
+  opacity: .42;
+}
+
+.atmosphere-icon {
+  width: 48px;
+  border-radius: 15px;
+  backdrop-filter: blur(14px);
+}
+
+.atmosphere-icon.icon-1 { top: 12px; right: 5%; }
+.atmosphere-icon.icon-2 { top: 215px; right: 3%; }
+.atmosphere-icon.icon-3 { top: 350px; left: 3%; }
+.atmosphere-icon.icon-4 { top: 300px; left: 34%; }
+.atmosphere-icon.icon-5 { top: 20px; left: 37%; }
+
+:where(.passenger-content, .driver-content, .admin-content) {
+  z-index: 3;
+}
+
+/* Superficies modernas: se abandona el degradado completo repetido. */
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(
+    .start-ride-card, .active-trip, .passenger-trip-row, .trip-history article,
+    .notification-list article, .request-form, .quote-card, .address-form,
+    .address-list > article, .payment-methods, .payment-history,
+    .tracking-main, .tracking-driver, .account-details, .account-summary,
+    .settings-card, .support-form, .support-list article,
+    .active-driver-trip, .driver-request-list article, .driver-summary article,
+    .vehicle-list article, .vehicle-form, .document-list article,
+    .driver-account-grid > section, .driver-account-grid > aside,
+    .earnings-grid article, .identity-form, .document-group, .driver-tool-card,
+    .bank-account-form, .bank-account-list article, .admin-card,
+    .metric-strip article, .admin-metrics article, .admin-account-card
+  ) {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(116, 177, 202, .30) !important;
+  background: rgba(255, 255, 255, .88) !important;
+  backdrop-filter: blur(18px) saturate(125%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, .96) inset,
+    0 18px 44px rgba(18, 81, 109, .09) !important;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(
+    .start-ride-card, .active-trip, .passenger-trip-row, .trip-history article,
+    .notification-list article, .request-form, .quote-card, .address-form,
+    .address-list > article, .payment-methods, .payment-history,
+    .tracking-main, .tracking-driver, .account-details, .account-summary,
+    .settings-card, .support-form, .support-list article,
+    .active-driver-trip, .driver-request-list article, .driver-summary article,
+    .vehicle-list article, .vehicle-form, .document-list article,
+    .driver-account-grid > section, .driver-account-grid > aside,
+    .earnings-grid article, .identity-form, .document-group, .driver-tool-card,
+    .bank-account-form, .bank-account-list article, .admin-card,
+    .metric-strip article, .admin-metrics article, .admin-account-card
+  )::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, #25b9ed, #54d5b5 62%, #8277f4);
+  opacity: .86;
+  pointer-events: none;
+}
+
+/* Bento superior: cada dato tiene un acento, pero mantiene una base blanca. */
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.metric-strip, .admin-metrics, .driver-summary) > article {
+  min-height: 108px;
+  border-radius: 20px !important;
+  background: rgba(255, 255, 255, .91) !important;
+  box-shadow: 0 16px 38px rgba(19, 93, 124, .10) !important;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.metric-strip, .admin-metrics, .driver-summary) > article::after {
+  content: '';
+  position: absolute;
+  width: 105px;
+  aspect-ratio: 1;
+  right: -38px;
+  top: -46px;
+  border-radius: 50%;
+  background: var(--metric-orb, rgba(32, 168, 221, .13));
+  pointer-events: none;
+}
+
+:where(.metric-strip, .admin-metrics, .driver-summary) > article:nth-child(4n + 2) { --metric-orb: rgba(61, 191, 158, .15); }
+:where(.metric-strip, .admin-metrics, .driver-summary) > article:nth-child(4n + 3) { --metric-orb: rgba(101, 127, 229, .14); }
+:where(.metric-strip, .admin-metrics, .driver-summary) > article:nth-child(4n + 4) { --metric-orb: rgba(233, 174, 50, .15); }
+
+/* Hero claro: gradiente eléctrico, brillo móvil y composición menos pesada. */
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.passenger-welcome, .driver-status-card, .earnings-hero) {
+  border: 1px solid rgba(112, 222, 244, .40) !important;
+  border-radius: 25px !important;
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, .08), transparent 34%),
+    linear-gradient(112deg, #08618a 0%, #079fc0 52%, #29b99f 100%) !important;
+  box-shadow: 0 24px 52px rgba(4, 112, 145, .25) !important;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.passenger-welcome, .driver-status-card, .earnings-hero)::before {
+  content: '';
+  position: absolute;
+  inset: -70% auto -70% -28%;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+  transform: skewX(-18deg);
+  animation: ride-modern-shine 7s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Navegación sobria en reposo y viva únicamente en la opción activa. */
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.passenger-sidebar, .driver-sidebar, .admin-sidebar) nav button.active {
+  border-color: rgba(87, 220, 236, .38) !important;
+  background: linear-gradient(110deg, rgba(27, 179, 218, .88), rgba(72, 205, 174, .88)) !important;
+  box-shadow: 0 12px 28px rgba(10, 175, 202, .20) !important;
+}
+
+/* Entrada escalonada y hover de profundidad, no de color excesivo. */
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.passenger-page, .driver-page, .admin-content) > * {
+  animation: ride-modern-enter .48s cubic-bezier(.2,.8,.2,1) both;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.passenger-page, .driver-page, .admin-content) > :nth-child(2) { animation-delay: .06s; }
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.passenger-page, .driver-page, .admin-content) > :nth-child(3) { animation-delay: .11s; }
+:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :where(.passenger-page, .driver-page, .admin-content) > :nth-child(4) { animation-delay: .16s; }
+
+@media (hover: hover) and (pointer: fine) {
+  :where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+    :where(.passenger-trip-row, .notification-list article,
+      .address-list > article, .driver-request-list article,
+      .vehicle-list article, .bank-account-list article,
+      .metric-strip article, .admin-metrics article):hover {
+    transform: translateY(-5px) scale(1.006);
+    border-color: rgba(40, 174, 219, .48) !important;
+    box-shadow: 0 24px 48px rgba(18, 104, 139, .15) !important;
+  }
+}
+
+@keyframes ride-modern-enter {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ride-modern-shine {
+  0%, 68% { left: -34%; opacity: 0; }
+  76% { opacity: 1; }
+  100% { left: 132%; opacity: 0; }
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell).reduced-motion
+  :where(.passenger-page, .driver-page, .admin-content) > *,
+:where(.passenger-shell, .driver-shell, .admin-shell).reduced-motion
+  :where(.passenger-welcome, .driver-status-card, .earnings-hero)::before {
+  animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.passenger-page, .driver-page, .admin-content) > *,
+  :where(.passenger-welcome, .driver-status-card, .earnings-hero)::before {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .panel-atmosphere { z-index: 2; overflow: hidden; }
+  .atmosphere-icon.icon-3,
+  .atmosphere-icon.icon-4 { display: none; }
+  .atmosphere-icon.icon-5 { left: 28%; }
+}
+
+@media (max-width: 560px) {
+  .panel-atmosphere { height: 250px; }
+  .atmosphere-icon.icon-1 { right: 18px; }
+  .atmosphere-icon.icon-2 { top: 178px; right: 20px; }
+  .atmosphere-icon.icon-5 { display: none; }
+  :where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+    :where(.metric-strip, .admin-metrics, .driver-summary) > article {
+    min-height: 94px;
   }
 }
