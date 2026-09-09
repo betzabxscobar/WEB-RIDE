@@ -15,7 +15,7 @@
 }
 
 :where(.passenger-shell, .driver-shell, .admin-shell)
-  :where(p, li, dd, td, th, label, button, a) {
+  :where(p, li, dd, td, th) {
   overflow-wrap: anywhere;
 }
 
