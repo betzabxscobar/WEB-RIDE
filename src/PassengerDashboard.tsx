@@ -1,4 +1,5 @@
 import { PanelPreview, SidebarDismiss, SidebarBackdrop } from './components/PanelPreview'
+import { PanelAtmosphere } from './components/PanelAtmosphere'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import './PassengerDashboard.css'
@@ -546,7 +547,8 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onUserUpdat
     </aside>
 
     {sidebarOpen && <SidebarBackdrop onClose={() => setSidebarOpen(false)} />}
-    <section className="passenger-workspace">
+      <section className="passenger-workspace">
+        <PanelAtmosphere kind="passenger" />
       <PanelPreview role={user.role} activeView={activeView} onSwitchView={onSwitchView} />
       <header className="passenger-topbar">
         <button type="button" aria-controls="passenger-sidebar" aria-expanded={sidebarOpen} aria-label="Alternar menú" className="hamburger-button" onClick={() => setSidebarOpen((v) => !v)}>

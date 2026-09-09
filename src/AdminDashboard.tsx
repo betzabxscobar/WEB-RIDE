@@ -1,4 +1,5 @@
 import { PanelPreview, SidebarDismiss, SidebarBackdrop } from './components/PanelPreview'
+import { PanelAtmosphere } from './components/PanelAtmosphere'
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import './AdminDashboard.css'
@@ -225,6 +226,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onUs
       {sidebarOpen && <SidebarBackdrop onClose={() => setSidebarOpen(false)} />}
 
       <section className="admin-main">
+        <PanelAtmosphere kind="admin" />
         <PanelPreview role={user.role} activeView={viewAs} onSwitchView={onSwitchView} />
         <header>
           <button aria-controls="admin-sidebar" aria-expanded={sidebarOpen} aria-label="Alternar menú" className="hamburger-button" onClick={() => setSidebarOpen((v) => !v)}>

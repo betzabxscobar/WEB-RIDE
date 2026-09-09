@@ -7,8 +7,8 @@
  */
 
 :root {
-  --ride-font-body: 'Montserrat', system-ui, -apple-system, sans-serif;
-  --ride-font-display: 'Josefin Sans', var(--ride-font-body);
+  --ride-font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --ride-font-display: 'Sora', var(--ride-font-body);
 
   --ride-brand-50: #effaff;
   --ride-brand-100: #d9f4fc;

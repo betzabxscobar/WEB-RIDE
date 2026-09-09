@@ -1,4 +1,5 @@
 import { PanelPreview, SidebarDismiss, SidebarBackdrop } from './components/PanelPreview'
+import { PanelAtmosphere } from './components/PanelAtmosphere'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { SupportPage, TripChat } from './components/RideExtras'
 import logoTipo from './assets/LogoTipo.png'
@@ -193,7 +194,8 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
       <button className="driver-logout" onClick={onLogout}><LogOutIcon size={17} aria-hidden /><span>Cerrar sesión</span></button>
     </aside>
     {sidebarOpen && <SidebarBackdrop onClose={() => setSidebarOpen(false)} />}
-    <section className="driver-workspace">
+      <section className="driver-workspace">
+        <PanelAtmosphere kind="driver" />
       <PanelPreview role={user.role} activeView={activeView} onSwitchView={onSwitchView} />
       <header className="driver-topbar"><button type="button" className="driver-hamburger" aria-controls="driver-sidebar" aria-expanded={sidebarOpen} aria-label="Alternar menú" onClick={() => setSidebarOpen((value) => !value)}><MenuIcon size={18} aria-hidden /></button><div><span>PANEL DE CONDUCTOR</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'viajes' ? 'Tus viajes' : page === 'ganancias' ? 'Tus ganancias' : page === 'zonas' ? 'Zonas de trabajo' : page === 'bancos' ? 'Cuentas bancarias' : page === 'vehiculos' ? 'Tus vehículos' : page === 'documentos' ? 'Tus documentos' : page === 'soporte' ? 'Soporte' : page === 'configuracion' ? 'Configuración' : 'Tu cuenta'}</h1></div><div className="driver-top-actions">{views.length > 1 && <label className="driver-view-select"><span>Vista</span><select value={activeView} onChange={(event) => onSwitchView(event.target.value as Role)}>{views.map((view) => <option key={view} value={view}>{panelLabel(view)}</option>)}</select></label>}<button className="driver-avatar" onClick={() => go('cuenta')}>{initials(user.name)}</button></div></header>
       <div className="driver-content">
