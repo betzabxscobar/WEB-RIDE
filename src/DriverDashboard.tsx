@@ -24,7 +24,6 @@ import {
   listOwnVehicles,
   listWorkZones,
   ownDocumentUrl,
-  prepareSuperadminDriver,
   saveVehicle,
   saveDriverIdentity,
   saveBankAccount,
@@ -96,10 +95,17 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
 
   const load = useCallback(async () => {
     try {
-      if (user.role === 'superadmin') await prepareSuperadminDriver()
+      // La vista administrativa es una demostración segura del panel. No debe
+      // consultar ni crear una identidad operativa de conductor para el admin.
+      if (user.role !== 'driver') {
+        setState(EMPTY_STATE); setTrips([]); setRequests([]); setVehicles([]); setDocuments([])
+        setEarnings({}); setIdentity(EMPTY_IDENTITY); setMissingRequirements([]); setZones([])
+        setBanks([]); setBankAccounts([]); setPosition(null); setError('')
+        return
+      }
       const [nextState, nextTrips, nextVehicles, nextDocuments, nextEarnings, nextIdentity, nextMissing, nextZones, nextBanks, nextAccounts] = await Promise.all([
-        getDriverState(user.id), listDriverTrips(user.id), listOwnVehicles(user.id), listOwnDocuments(user.id), user.role === 'admin' ? Promise.resolve({}) : getDriverEarnings(), getDriverIdentity(user.id), user.role === 'admin' ? Promise.resolve([]) : getMissingDriverRequirements(),
-        user.role === 'admin' ? Promise.resolve([]) : listWorkZones(), user.role === 'admin' ? Promise.resolve([]) : listBanks(), user.role === 'admin' ? Promise.resolve([]) : listOwnBankAccounts(user.id),
+        getDriverState(user.id), listDriverTrips(user.id), listOwnVehicles(user.id), listOwnDocuments(user.id), getDriverEarnings(), getDriverIdentity(user.id), getMissingDriverRequirements(),
+        listWorkZones(), listBanks(), listOwnBankAccounts(user.id),
       ])
       const active = nextTrips.find((trip) => !esFinal(trip.estado))
       const nextRequests = !active && nextState.approved && nextState.hasActiveVehicle && nextState.available ? await listOpenTripRequests() : []
@@ -111,7 +117,9 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
 
   useEffect(() => { queueMicrotask(() => void load()); return watchTrips(() => void load()) }, [load])
 
-  const isReviewOnly = user.role === 'admin'
+  // Las cuentas administrativas pueden revisar la experiencia, pero la base
+  // solo permite operar viajes y publicar ubicación al rol conductor real.
+  const isReviewOnly = user.role !== 'driver'
   const reportPosition = useCallback((tripId?: string) => {
     if (isReviewOnly) { setError('La vista de conductor es solo de revisión para una cuenta administradora.'); return }
     if (!navigator.geolocation) { setError('Tu navegador no permite obtener la ubicación.'); return }
@@ -202,7 +210,7 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
       <div className="driver-content">
         {isReviewOnly && <div className="driver-review-notice">Vista de revisión: puedes recorrer el panel, pero una cuenta administradora no puede ponerse en línea, aceptar ni finalizar viajes.</div>}
         {notice && <div className="driver-feedback success">✓ {notice}</div>}{error && <div className="driver-feedback failure">! {error}<button onClick={() => setError('')}>Cerrar</button></div>}
-        {loading ? <div className="driver-loading">Actualizando tu información…</div> : page === 'inicio' ? <DriverHome state={state} active={activeTrip} requests={requests} position={position} busy={busy} reviewOnly={isReviewOnly} onAvailability={toggleAvailability} onTrips={() => go('viajes')} onProfile={() => go('documentos')} onReport={() => reportPosition(activeTrip?.id)}/>
+        {loading ? <div className="driver-loading"><span><MapPinIcon size={22} aria-hidden /></span><div><strong>Actualizando tu ruta de trabajo</strong><small>Sincronizando viajes, vehículo y disponibilidad…</small></div><i aria-hidden /></div> : page === 'inicio' ? <DriverHome state={state} active={activeTrip} requests={requests} position={position} busy={busy} reviewOnly={isReviewOnly} onAvailability={toggleAvailability} onTrips={() => go('viajes')} onProfile={() => go('documentos')} onReport={() => reportPosition(activeTrip?.id)}/>
           : page === 'viajes' ? <DriverTrips active={activeTrip} requests={requests} history={trips} position={position} busy={busy} canWork={canWork} available={state.available} onAccept={(trip) => void action(() => acceptTrip(trip.id), 'Solicitud aceptada.')} onAdvance={advance} onFinish={finalize} onCancel={(trip) => { setCancelReason(''); setCancelingTrip(trip) }} onConfirmPayment={(trip) => void action(() => confirmPaymentReceived(trip.id), 'Pago recibido y registrado.')} onChat={setChatTrip}/>
           : page === 'ganancias' ? <EarningsPage earnings={earnings} reviewOnly={isReviewOnly}/>
           : page === 'zonas' ? <WorkZonesPage zones={zones} busy={busy} reviewOnly={isReviewOnly} onSave={(ids) => void action(() => saveWorkZones(ids), 'Tus zonas de trabajo quedaron actualizadas.')}/>

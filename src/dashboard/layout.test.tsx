@@ -63,7 +63,8 @@ function capture(name: string, container: HTMLElement) {
       option.toggleAttribute('selected', option.value === select.value)
     })
   })
-  const styles = ['index', 'App', 'PassengerDashboard', 'DriverDashboard', 'AdminDashboard', 'passenger/RequestPage', 'design-system', 'layout', 'visual-polish']
+  const styles = ['index', 'App', 'PassengerDashboard', 'DriverDashboard', 'AdminDashboard', 'passenger/RequestPage',
+    'components/AppearanceSettings', 'components/RideExtras', 'design-system', 'layout', 'visual-polish', 'quality', 'dashboard-harmony']
     .map((file) => `<link rel="stylesheet" href="/src/${file}.css">`).join('')
   writeFileSync(`.qa/${name}.html`, `<!doctype html><html lang="es" data-ride-theme="${document.documentElement.dataset.rideTheme}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap">${styles}<title>Ride: revisión ${name}</title></head><body>${copy.innerHTML}</body></html>`)
 }

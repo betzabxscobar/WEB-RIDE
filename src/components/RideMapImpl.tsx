@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import maplibregl, { type GeoJSONSource, type Map as MapLibreMap, type StyleSpecification } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import type { Coordinates, Place, TripPosition } from '../lib/trips'
@@ -37,25 +37,38 @@ export default function RideMap({ origin, destination, driver, route, onPick, cl
   const container = useRef<HTMLDivElement>(null)
   const map = useRef<MapLibreMap | null>(null)
   const markers = useRef<maplibregl.Marker[]>([])
+  const [unavailable, setUnavailable] = useState(false)
   const onPickRef = useRef(onPick)
   useEffect(() => { onPickRef.current = onPick }, [onPick])
 
   useEffect(() => {
-    if (!container.current) return
-    const instance = new maplibregl.Map({
-      container: container.current,
-      style: darkTheme() ? '/mapa/oscuro.json' : '/mapa/claro.json',
-      center: ECUADOR_CENTER, zoom: 6, minZoom: 3, maxZoom: 21,
-      attributionControl: false,
-    })
-    map.current = instance
-    instance.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
-    instance.addControl(new maplibregl.AttributionControl({ compact: true, customAttribution: '© OpenMapTiles © OpenStreetMap' }))
-    instance.on('click', (event) => onPickRef.current?.(event.lngLat.lat, event.lngLat.lng))
-    const resize = new ResizeObserver(() => instance.resize())
-    resize.observe(container.current)
-    return () => { resize.disconnect(); markers.current.forEach((item) => item.remove()); instance.remove(); map.current = null }
-  }, [])
+    if (!container.current || unavailable) return
+    let instance: MapLibreMap | null = null
+    let resize: ResizeObserver | null = null
+    try {
+      instance = new maplibregl.Map({
+        container: container.current,
+        style: darkTheme() ? '/mapa/oscuro.json' : '/mapa/claro.json',
+        center: ECUADOR_CENTER, zoom: 6, minZoom: 3, maxZoom: 21,
+        attributionControl: false,
+      })
+      map.current = instance
+      instance.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
+      instance.addControl(new maplibregl.AttributionControl({ compact: true, customAttribution: '© OpenMapTiles © OpenStreetMap' }))
+      instance.on('click', (event) => onPickRef.current?.(event.lngLat.lat, event.lngLat.lng))
+      if (typeof ResizeObserver !== 'undefined') {
+        resize = new ResizeObserver(() => instance?.resize())
+        resize.observe(container.current)
+      }
+    } catch (error) {
+      console.error('No se pudo iniciar el mapa de Ride.', error)
+      try { instance?.remove() } catch { /* El contexto gráfico ya estaba dañado. */ }
+      map.current = null
+      queueMicrotask(() => setUnavailable(true))
+      return
+    }
+    return () => { resize?.disconnect(); markers.current.forEach((item) => item.remove()); instance?.remove(); map.current = null }
+  }, [unavailable])
 
   useEffect(() => {
     const instance = map.current
@@ -107,5 +120,6 @@ export default function RideMap({ origin, destination, driver, route, onPick, cl
     return () => { instance.off('style.load', render) }
   }, [destination, driver, origin, route])
 
+  if (unavailable) return <div className={`ride-map ride-map-unavailable ${className}`} role="status"><span aria-hidden>⌖</span><strong>El mapa no está disponible</strong><small>Puedes continuar usando el panel y volver a intentarlo al recargar.</small></div>
   return <div className={`ride-map ${className}`}><div ref={container} className="ride-map-canvas"/></div>
 }
