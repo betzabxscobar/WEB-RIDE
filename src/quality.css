@@ -1,0 +1,83 @@
+/* Calidad transversal: responsividad, accesibilidad y renderizado eficiente. */
+:where(.passenger-shell, .driver-shell, .admin-shell) {
+  overflow-x: clip;
+}
+
+:where(.passenger-content, .driver-content, .admin-content) {
+  width: min(100%, 1320px);
+  margin-inline: auto;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell)
+  :where(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ride-brand-500) 72%, white);
+  outline-offset: 3px;
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell)
+  :where(p, li, dd, td, th, label, button, a) {
+  overflow-wrap: anywhere;
+}
+
+:where(.recent-trip-list, .trip-history, .notification-list,
+  .driver-history, .driver-request-list, .vehicle-list,
+  .document-list, .bank-account-list, .trips-table) > * {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 92px;
+}
+
+@media (max-width: 1024px) {
+  :where(.passenger-content, .driver-content, .admin-content) {
+    padding-inline: clamp(18px, 4vw, 34px);
+  }
+
+  :where(.metric-strip, .admin-metrics, .driver-summary) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  :where(.passenger-content, .driver-content, .admin-content) {
+    padding-inline: 16px;
+    padding-bottom: calc(32px + env(safe-area-inset-bottom));
+  }
+
+  :where(.passenger-topbar, .driver-topbar, .admin-main > header) {
+    padding-inline: 16px;
+  }
+
+  :where(.passenger-shell, .driver-shell, .admin-shell)
+    :where(button, input, select, textarea) {
+    min-height: 44px;
+  }
+
+  :where(.support-layout, .payment-layout, .account-layout,
+    .driver-account-grid, .fare-grid, .account-detail-grid) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  :where(.metric-strip, .admin-metrics, .driver-summary) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :where(.passenger-content, .driver-content, .admin-content) {
+    padding-inline: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  :where(button, input, select, textarea, article, section) {
+    border-color: CanvasText !important;
+  }
+}
