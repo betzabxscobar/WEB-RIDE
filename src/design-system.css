@@ -25,22 +25,22 @@
   --ride-danger-50: #fff0ee;
   --ride-danger-500: #b64c45;
 
-  --ride-ink: #102a38;
-  --ride-ink-soft: #526a77;
-  --ride-muted: #526a77;
-  --ride-canvas: #f3f7f9;
+  --ride-ink: #0b2a3a;
+  --ride-ink-soft: #405f6f;
+  --ride-muted: #4d6977;
+  --ride-canvas: #edf7fb;
   --ride-surface: #ffffff;
-  --ride-surface-soft: #f7fafb;
-  --ride-border: #d8e5eb;
-  --ride-border-strong: #b9d6df;
+  --ride-surface-soft: #f2f9fc;
+  --ride-border: #cce3ec;
+  --ride-border-strong: #a7cfdd;
 
   --ride-radius-sm: 9px;
   --ride-radius-md: 13px;
   --ride-radius-lg: 18px;
   --ride-radius-xl: 24px;
-  --ride-shadow-sm: 0 3px 12px rgba(12, 48, 65, .05);
-  --ride-shadow-md: 0 12px 34px rgba(12, 48, 65, .075);
-  --ride-shadow-lg: 0 22px 58px rgba(12, 48, 65, .1);
+  --ride-shadow-sm: 0 5px 16px rgba(12, 76, 103, .075);
+  --ride-shadow-md: 0 14px 38px rgba(12, 76, 103, .105);
+  --ride-shadow-lg: 0 24px 62px rgba(12, 76, 103, .14);
   --ride-focus: 0 0 0 3px rgba(38, 169, 220, .24);
   --ride-transition: 180ms cubic-bezier(.2, .8, .2, 1);
 }
