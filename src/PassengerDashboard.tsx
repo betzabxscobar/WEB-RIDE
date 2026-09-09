@@ -4,15 +4,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import './PassengerDashboard.css'
 import logoTipo from './assets/LogoTipo.webp'
-import seguroImg from './assets/seguro.webp'
-import sostenibleImg from './assets/sostenible.webp'
-import confiableImg from './assets/confiable.webp'
 import RideMap from './components/RideMap'
 import RequestPage from './passenger/RequestPage'
 import { dateTime as date, initials, money } from './dashboard/formatters'
 import { AppearanceSettings } from './components/AppearanceSettings'
 import { AccountSettings } from './components/AccountSettings'
-import { Home as HomeIcon, CarFront as RideRequestIcon, List as ListIcon, Bell as BellIcon, MapPin as MapPinIcon, DollarSign as DollarSignIcon, HelpCircle as HelpCircleIcon, User as UserIcon, Settings as SettingsIcon, CheckCircle2, AlertCircle, ArrowRight, Search, LogOut, Menu as MenuIcon } from 'lucide-react'
+import { Home as HomeIcon, CarFront as RideRequestIcon, List as ListIcon, Bell as BellIcon, MapPin as MapPinIcon, DollarSign as DollarSignIcon, HelpCircle as HelpCircleIcon, User as UserIcon, Settings as SettingsIcon, CheckCircle2, AlertCircle, LogOut, Menu as MenuIcon } from 'lucide-react'
 import { SupportPage, TripChat } from './components/RideExtras'
 import { convertPassengerToDriver, panelLabel, type Role, type User } from './lib/auth'
 import { routeBetween, type RoadRoute } from './lib/routing'
@@ -43,6 +40,8 @@ import {
   type RidePayment,
 } from './lib/payments'
 import { listDriverBankAccountsForTrip, type BankAccount } from './lib/driver-account'
+import { EmptyState, HomePage, Route, TripRow } from './passenger/PassengerTripComponents'
+import { STATUS_HINT, vehicle } from './passenger/tripPresentation'
 import {
   cancelTrip,
   esFinal,
@@ -64,7 +63,6 @@ import {
   type Quote,
   type Trip,
   type TripPosition,
-  type TripStatus,
   type VehicleCategoryQuote,
 } from './lib/trips'
 
@@ -78,23 +76,6 @@ type Props = {
   onSwitchView: (view: Role) => void
   onUserUpdate: (user: User) => void
   onLogout: () => void
-}
-
-const STATUS_HINT: Record<TripStatus, string> = {
-  SOLICITADO: 'Estamos registrando tu solicitud.',
-  BUSCANDO_CONDUCTOR: 'Buscando un conductor disponible cerca de ti.',
-  ACEPTADO: 'Tu conductor aceptó el viaje.',
-  CONDUCTOR_EN_CAMINO: 'El conductor va hacia el punto de partida.',
-  CONDUCTOR_EN_ORIGEN: 'Tu conductor ya llegó al punto de partida.',
-  EN_CURSO: 'Vas rumbo a tu destino.',
-  FINALIZADO: 'Llegaste a tu destino.',
-  CANCELADO: 'Este viaje fue cancelado.',
-  SIN_CONDUCTOR: 'No encontramos un conductor disponible.',
-}
-
-function vehicle(trip: Trip): string {
-  const model = [trip.vehiculoMarca, trip.vehiculoModelo].filter(Boolean).join(' ')
-  return [model || 'Vehículo asignado', trip.vehiculoColor, trip.vehiculoPlaca].filter(Boolean).join(' · ')
 }
 
 function PassengerDashboard({ user, views, activeView, onSwitchView, onUserUpdate, onLogout }: Props) {
@@ -606,46 +587,6 @@ function LoadingPanel() {
   return <div className="passenger-loading"><i/><span>Actualizando tu información…</span></div>
 }
 
-function HomePage({ user, activeTrip, trips, onRequest, onTrips, onCancel, onTrack }: { user: User; activeTrip: Trip | null; trips: Trip[]; onRequest: () => void; onTrips: () => void; onCancel: (trip: Trip) => void; onTrack: (trip: Trip) => void }) {
-  const recent = trips.filter((trip) => esFinal(trip.estado)).slice(0, 3)
-  return <div className="passenger-page home-page">
-
-    <section className="passenger-welcome"><div><span>{activeTrip ? 'VIAJE ACTIVO' : 'LISTO PARA SALIR'}</span><h2>{activeTrip ? STATUS_HINT[activeTrip.estado] : '¿A dónde vamos hoy?'}</h2><p>{activeTrip ? `Destino: ${activeTrip.destinoTexto}` : 'Elige tu punto de partida y destino. Ride calcula la tarifa antes de confirmar.'}</p></div>{activeTrip ? <button onClick={() => onTrack(activeTrip)}>Ver seguimiento</button> : <button onClick={onRequest}>Pedir un viaje <ArrowRight size={16} aria-hidden /></button>}</section>
-
-    {/* Tres tarjetas de características: Seguro / Sostenible / Confiable */}
-    <section className="home-features">
-      <article className="feature-card feature-seguro">
-        <img src={seguroImg} alt="Seguro" />
-        <div>
-          <h4>Seguro</h4>
-          <p>Tecnología que te cuida</p>
-        </div>
-      </article>
-      <article className="feature-card feature-sostenible">
-        <img src={sostenibleImg} alt="Sostenible" />
-        <div>
-          <h4>Sostenible</h4>
-          <p>Menos emisiones, más futuro</p>
-        </div>
-      </article>
-      <article className="feature-card feature-confiable">
-        <img src={confiableImg} alt="Confiable" />
-        <div>
-          <h4>Confiable</h4>
-          <p>Personas reales, viajes memorables</p>
-        </div>
-      </article>
-    </section>
-    {activeTrip ? <ActiveTrip trip={activeTrip} onCancel={onCancel}/> : <section className="start-ride-card"><div className="route-mark"><i/><span/><b/></div><div><small>NUEVA SOLICITUD</small><h3>Tu viaje empieza con dos puntos</h3><p>Usa tu ubicación actual o elige una dirección en Ecuador.</p></div><button className="define-route-button" onClick={onRequest}>Definir ruta</button></section>}
-    <section className="passenger-section-head"><div><span>ACTIVIDAD</span><h2>Viajes recientes</h2></div>{trips.length > 0 && <button onClick={onTrips}>Ver todos <ArrowRight size={16} aria-hidden /></button>}</section>
-    {recent.length === 0 ? <EmptyState title="Aún no tienes viajes" text={`Cuando pidas el primero, ${user.name.split(' ')[0]}, podrás consultarlo aquí.`} action="Pedir mi primer viaje" onAction={onRequest}/> : <div className="recent-trip-list">{recent.map((trip) => <TripRow key={trip.id} trip={trip}/>)}</div>}
-  </div>
-}
-
-function ActiveTrip({ trip, onCancel }: { trip: Trip; onCancel: (trip: Trip) => void }) {
-  return <section className="active-trip" id="active-trip"><div className="active-trip-head"><div><span className={`trip-status ${trip.estado.toLowerCase()}`}>{ESTADO_LABEL[trip.estado]}</span><h2>{STATUS_HINT[trip.estado]}</h2></div><strong>{money(trip.tarifaFinal ?? trip.tarifaEstimada)}</strong></div><div className="trip-progress"><span style={{ width: `${progresoViaje(trip.estado)}%` }}/></div><div className="active-trip-grid"><Route trip={trip}/><div className="driver-card">{trip.conductorId ? <><span className="driver-avatar">{initials(trip.conductorNombre ?? 'Conductor')}</span><div><small>TU CONDUCTOR</small><strong>{trip.conductorNombre}</strong><p>{vehicle(trip)}</p>{trip.conductorCalificacion != null && <em>★ {trip.conductorCalificacion.toFixed(1)}</em>}</div></> : <><span className="searching-driver"><Search size={22} aria-hidden /></span><div><small>CONDUCTOR</small><strong>Buscando disponibilidad</strong><p>La asignación aparecerá aquí automáticamente.</p></div></>}</div></div>{puedeCancelar(trip.estado) && <button className="cancel-trip" onClick={() => onCancel(trip)}>Cancelar viaje</button>}</section>
-}
-
 function TrackingPage({ trip, position, canPayDeuna, canPayTransfer, busy, onPayDeuna, onCancel, onChat, onBack }: { trip: Trip | null; position: TripPosition | null; canPayDeuna: boolean; canPayTransfer: boolean; busy: boolean; onPayDeuna: (trip: Trip) => void; onCancel: (trip: Trip) => void; onChat: (trip: Trip) => void; onBack: () => void }) {
   if (!trip) return <EmptyState title="No hay un viaje para seguir" text="Cuando tengas un viaje activo podrás ver aquí cada cambio." action="Volver al inicio" onAction={onBack}/>
   return <div className="passenger-page tracking-page"><button className="tracking-back" onClick={onBack}>← Volver al inicio</button><section className="tracking-hero"><div><span className={`trip-status ${trip.estado.toLowerCase()}`}>{ESTADO_LABEL[trip.estado]}</span><h2>{STATUS_HINT[trip.estado]}</h2><p>Los cambios se muestran automáticamente.</p></div><strong>{money(trip.tarifaFinal ?? trip.tarifaEstimada)}</strong></section><div className="trip-progress tracking-progress"><span style={{ width: `${progresoViaje(trip.estado)}%` }}/></div>{trip.estado === 'CONDUCTOR_EN_ORIGEN' && <TripSecurityCode tripId={trip.id}/>}<TripTrackingMap trip={trip} position={position}/><div className="tracking-layout"><section className="tracking-main"><h3>Recorrido</h3><Route trip={trip}/>{trip.origenReferencia && <div className="pickup-note"><small>REFERENCIA DE RECOGIDA</small><strong>{trip.origenReferencia}</strong></div>}<div className="tracking-position"><span>⌖</span><div><small>UBICACIÓN DEL CONDUCTOR</small>{position ? <><strong>Actualizada {date(position.recordedAt)}</strong><p>{position.lat.toFixed(5)}, {position.lng.toFixed(5)}</p></> : <><strong>{trip.conductorId ? 'Esperando la primera actualización' : 'Se mostrará cuando se asigne un conductor'}</strong><p>Ride solo enseña una posición que el conductor haya enviado realmente.</p></>}</div></div></section><aside className="tracking-driver"><h3>Conductor y vehículo</h3>{trip.conductorId ? <><div className="tracking-driver-profile"><span>{initials(trip.conductorNombre ?? 'Conductor')}</span><div><strong>{trip.conductorNombre}</strong>{trip.conductorCalificacion != null && <small>★ {trip.conductorCalificacion.toFixed(1)}</small>}</div></div><p>{vehicle(trip)}</p><div className="tracking-contact">{trip.conductorTelefono && <a href={`tel:${trip.conductorTelefono}`}>Llamar</a>}<button onClick={() => onChat(trip)}>Abrir chat</button></div></> : <div className="tracking-search"><span>⌁</span><strong>Buscando conductor</strong><p>Cuando alguien acepte, aquí aparecerán sus datos y los del vehículo.</p></div>}</aside></div>{trip.estado === 'FINALIZADO' && canPayTransfer && trip.pagoEstado !== 'completado' && <TransferAccounts tripId={trip.id}/>} {trip.estado === 'FINALIZADO' && canPayDeuna && trip.pagoEstado !== 'completado' && <button className="tracking-pay" disabled={busy} onClick={() => onPayDeuna(trip)}>{busy ? 'Generando QR…' : 'Pagar con DeUna'}</button>}{puedeCancelar(trip.estado) && <button className="tracking-cancel" onClick={() => onCancel(trip)}>Cancelar este viaje</button>}</div>
@@ -712,18 +653,6 @@ function AccountPage({ user, trips, addresses, methods, onAddresses, onPayments,
 function SettingsPage({ user, onUserUpdate, theme, reducedMotion, canBecomeDriver, busy, onTheme, onReducedMotion, onBecomeDriver }: { user: User; onUserUpdate: (user: User) => void; theme: ThemePreference; reducedMotion: boolean; canBecomeDriver: boolean; busy: boolean; onTheme: (theme: ThemePreference) => void; onReducedMotion: (enabled: boolean) => void; onBecomeDriver: () => Promise<boolean> }) {
   const [confirmingDriver, setConfirmingDriver] = useState(false)
   return <div className="passenger-page settings-page"><section className="passenger-section-head"><div><span>PREFERENCIAS</span><h2>Configuración</h2><p>Personaliza cómo se ve y se comporta Ride en este navegador.</p></div></section><AccountSettings user={user} onUserUpdate={onUserUpdate}/><AppearanceSettings theme={theme} reducedMotion={reducedMotion} onTheme={onTheme} onReducedMotion={onReducedMotion}/>{canBecomeDriver && <section className="driver-conversion-card"><span><RideRequestIcon size={22} aria-hidden /></span><div><small>CONDUCIR CON RIDE</small><h3>Quiero ser chofer</h3><p>Usa esta misma cuenta, correo, teléfono e historial para comenzar tu registro como conductor.</p></div><button type="button" onClick={() => setConfirmingDriver(true)}>Comenzar registro</button></section>}{confirmingDriver && <Dialog title="¿Pasarte a chofer?" text="Tu cuenta conservará los viajes anteriores. Después deberás registrar un vehículo, subir tus documentos y esperar la aprobación administrativa antes de recibir solicitudes." onClose={() => setConfirmingDriver(false)}><button className="dialog-secondary" disabled={busy} onClick={() => setConfirmingDriver(false)}>Ahora no</button><button className="dialog-primary" disabled={busy} onClick={() => void onBecomeDriver().then((changed) => { if (changed) setConfirmingDriver(false) })}>{busy ? 'Actualizando…' : 'Sí, quiero conducir'}</button></Dialog>}</div>
-}
-
-function Route({ trip }: { trip: Trip }) {
-  return <div className="trip-route-card"><div><i className="origin"/><span><small>ORIGEN</small><strong>{trip.origenTexto}</strong></span></div><b/><div><i className="destination"/><span><small>DESTINO</small><strong>{trip.destinoTexto}</strong></span></div></div>
-}
-
-function TripRow({ trip }: { trip: Trip }) {
-  return <div className="passenger-trip-row"><span className="trip-date">{date(trip.fechaSolicitud)}</span><Route trip={trip}/><span className={`trip-status ${trip.estado.toLowerCase()}`}>{ESTADO_LABEL[trip.estado]}</span><strong className="trip-amount">{money(trip.tarifaFinal ?? trip.tarifaEstimada)}</strong></div>
-}
-
-function EmptyState({ title, text, action, onAction }: { title: string; text: string; action?: string; onAction?: () => void }) {
-  return <section className="passenger-empty"><span>↗</span><h3>{title}</h3><p>{text}</p>{action && onAction && <button onClick={onAction}>{action}</button>}</section>
 }
 
 function Dialog({ title, text, children, onClose }: { title: string; text: string; children: React.ReactNode; onClose: () => void }) {

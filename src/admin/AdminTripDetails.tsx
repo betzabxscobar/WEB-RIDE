@@ -15,6 +15,7 @@ import RideMap from '../components/RideMap'
 import { money, shortDate } from '../dashboard/formatters'
 import { routeBetween, type RoadRoute } from '../lib/routing'
 import { ESTADO_LABEL, type Coordinates, type Place, type Trip } from '../lib/trips'
+import './AdminTripDetails.css'
 
 type Props = { trip: Trip; onClose: () => void }
 
