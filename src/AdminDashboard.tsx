@@ -11,6 +11,7 @@ import DriversPanel from './DriversPanel'
 import { AppearanceSettings, useAppearance } from './components/AppearanceSettings'
 import { AccountSettings } from './components/AccountSettings'
 import { TripRows, UserRows } from './admin/AdminTables'
+import AdminTripDetails from './admin/AdminTripDetails'
 import AdminSupportPanel from './admin/AdminSupportPanel'
 import AdminFaresPanel from './admin/AdminFaresPanel'
 import { initials } from './dashboard/formatters'
@@ -69,6 +70,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onUs
   const [tripStatus, setTripStatus] = useState('')
   const [tripDate, setTripDate] = useState('')
   const [tripSort, setTripSort] = useState<'date-desc' | 'date-asc' | 'status' | 'value-desc'>('date-desc')
+  const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null)
   const [userQuery, setUserQuery] = useState('')
   const [userRole, setUserRole] = useState('')
   const [editingAccount, setEditingAccount] = useState(false)
@@ -226,7 +228,6 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onUs
       {sidebarOpen && <SidebarBackdrop onClose={() => setSidebarOpen(false)} />}
 
       <section className="admin-main">
-        <PanelAtmosphere kind="admin" />
         <PanelPreview role={user.role} activeView={viewAs} onSwitchView={onSwitchView} />
         <header>
           <button aria-controls="admin-sidebar" aria-expanded={sidebarOpen} aria-label="Alternar menú" className="hamburger-button" onClick={() => setSidebarOpen((v) => !v)}>
@@ -235,6 +236,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onUs
           <div><small className="admin-panel-label">{accessName}</small><h1>{activeSection}</h1></div>
           <div className="admin-profile"><span>{initials(user.name)}</span><div><strong>{user.name}</strong><small>{profileName}</small></div></div>
         </header>
+        <PanelAtmosphere kind="admin" />
 
         {activeSection === 'Resumen' && (
           <div className="admin-content">
@@ -252,7 +254,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onUs
             <div className="operations-grid">
               <section className="admin-card recent-trips">
                 <div className="admin-card-head"><div><h3>Viajes recientes</h3><p>Últimos movimientos registrados.</p></div><button onClick={() => setActiveSection('Viajes')}>Ver todos</button></div>
-                <TripRows trips={trips} loading={tripsLoading} error={tripsError} limit={5} />
+                <TripRows trips={trips} loading={tripsLoading} error={tripsError} limit={5} onSelect={setSelectedTrip} />
               </section>
 
               <section className="admin-card review-queue">
@@ -314,7 +316,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onUs
                 <label><CalendarIcon size={15} aria-hidden /><input value={tripDate} onChange={(event) => setTripDate(event.target.value)} type="date" aria-label="Filtrar por fecha" /></label>
                 <label><SortIcon size={15} aria-hidden /><select value={tripSort} onChange={(event) => setTripSort(event.target.value as typeof tripSort)} aria-label="Ordenar viajes"><option value="date-desc">Más recientes</option><option value="date-asc">Más antiguos</option><option value="status">Estado</option><option value="value-desc">Mayor valor</option></select></label>
               </div>
-              <TripRows trips={filteredTrips} loading={tripsLoading} error={tripsError} />
+              <TripRows trips={filteredTrips} loading={tripsLoading} error={tripsError} onSelect={setSelectedTrip} />
             </section>
           </div>
         )}
@@ -353,6 +355,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onUs
           <form onSubmit={saveAccount}><label>Nombre completo<input required minLength={3} name="name" defaultValue={user.name} autoComplete="name" /></label><label>Teléfono<input name="phone" defaultValue={user.phone} autoComplete="tel" placeholder="Sin teléfono registrado" /></label>{accountError && <span className="account-form-error">{accountError}</span>}<footer><button type="button" onClick={() => setEditingAccount(false)}>Cancelar</button><button type="submit" disabled={accountBusy}>{accountBusy ? 'Guardando…' : 'Guardar cambios'}</button></footer></form>
         </section>
       </div>}
+      {selectedTrip && <AdminTripDetails trip={selectedTrip} onClose={() => setSelectedTrip(null)} />}
     </main>
   )
 }

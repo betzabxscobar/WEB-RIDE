@@ -45,6 +45,11 @@ export type Trip = {
   montoCobrado: number
   pagoEstado: 'pendiente' | 'completado' | 'fallido' | null
   multa: number
+  llegadaVerificada: boolean
+  desvioDetectado: boolean
+  distanciaRecorridaKm: number | null
+  canceladoPor: string | null
+  motivoCancelacion: string | null
 }
 
 export type Place = {
@@ -95,7 +100,8 @@ const COLUMNAS = `
   origen_lat, origen_lng, origen_texto, origen_referencia,
   destino_lat, destino_lng, destino_texto, destino_referencia,
   categoria, categoria_nombre, categoria_icono,
-  monto_cobrado, pago_estado, multa
+  monto_cobrado, pago_estado, multa, llegada_verificada, desvio_detectado,
+  distancia_recorrida_km, cancelado_por, motivo_cancelacion
 `
 
 export const ESTADO_LABEL: Record<TripStatus, string> = {
@@ -169,6 +175,11 @@ function toTrip(row: Row): Trip {
     montoCobrado: Number(row.monto_cobrado ?? 0),
     pagoEstado: (row.pago_estado as Trip['pagoEstado']) ?? null,
     multa: Number(row.multa ?? 0),
+    llegadaVerificada: Boolean(row.llegada_verificada),
+    desvioDetectado: Boolean(row.desvio_detectado),
+    distanciaRecorridaKm: row.distancia_recorrida_km == null ? null : Number(row.distancia_recorrida_km),
+    canceladoPor: (row.cancelado_por as string) ?? null,
+    motivoCancelacion: (row.motivo_cancelacion as string) ?? null,
   }
 }
 

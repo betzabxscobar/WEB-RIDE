@@ -548,7 +548,6 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onUserUpdat
 
     {sidebarOpen && <SidebarBackdrop onClose={() => setSidebarOpen(false)} />}
       <section className="passenger-workspace">
-        <PanelAtmosphere kind="passenger" />
       <PanelPreview role={user.role} activeView={activeView} onSwitchView={onSwitchView} />
       <header className="passenger-topbar">
         <button type="button" aria-controls="passenger-sidebar" aria-expanded={sidebarOpen} aria-label="Alternar menú" className="hamburger-button" onClick={() => setSidebarOpen((v) => !v)}>
@@ -565,6 +564,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onUserUpdat
           <button className="passenger-avatar" onClick={() => go('cuenta')} aria-label="Abrir mi cuenta">{initials(user.name)}</button>
         </div>
       </header>
+      <PanelAtmosphere kind="passenger" />
 
       <div className="passenger-content">
         {notice && <div className="passenger-feedback success"><CheckCircle2 size={18} aria-hidden />{notice}</div>}

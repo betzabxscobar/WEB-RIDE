@@ -65,7 +65,7 @@ function capture(name: string, container: HTMLElement) {
   })
   const styles = ['index', 'App', 'PassengerDashboard', 'DriverDashboard', 'AdminDashboard', 'passenger/RequestPage', 'design-system', 'layout', 'visual-polish']
     .map((file) => `<link rel="stylesheet" href="/src/${file}.css">`).join('')
-  writeFileSync(`.qa/${name}.html`, `<!doctype html><html lang="es" data-ride-theme="${document.documentElement.dataset.rideTheme}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800;900&display=swap">${styles}<title>Ride: revisión ${name}</title></head><body>${copy.innerHTML}</body></html>`)
+  writeFileSync(`.qa/${name}.html`, `<!doctype html><html lang="es" data-ride-theme="${document.documentElement.dataset.rideTheme}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap">${styles}<title>Ride: revisión ${name}</title></head><body>${copy.innerHTML}</body></html>`)
 }
 
 describe('panel navigation layout', () => {
@@ -75,6 +75,16 @@ describe('panel navigation layout', () => {
     expect(container.querySelector('.viewing-as')).toBeNull()
     expect(container.querySelector('.admin-main')?.firstElementChild?.tagName).toBe('HEADER')
     capture('superadmin-closed', container)
+  })
+
+  it('opens the full trip detail from the administrative summary', async () => {
+    render(<AdminDashboard user={user} views={views} viewAs="superadmin" onSwitchView={vi.fn()} onLogout={vi.fn()} onUserUpdate={vi.fn()} />)
+    const detailsButton = await screen.findByRole('button', { name: 'Ver detalles del viaje de Alexandra Apellido Largo' })
+    fireEvent.click(detailsButton)
+    expect(screen.getByRole('dialog', { name: /Avenida principal/ })).toBeInTheDocument()
+    expect(screen.getByText('Ruta sin coordenadas')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Cerrar detalle del viaje' }))
+    expect(screen.queryByRole('dialog')).toBeNull()
   })
   for (const role of ['passenger', 'driver', 'admin'] as const) {
     it.each(['dark', 'light'])(`${role}: keeps preview in the workspace and closes the drawer (%s)`, async (theme) => {
