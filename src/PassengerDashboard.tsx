@@ -1,5 +1,6 @@
 import { PanelPreview, SidebarDismiss, SidebarBackdrop } from './components/PanelPreview'
 import { PanelAtmosphere } from './components/PanelAtmosphere'
+import { ReactBitsEffects } from './components/ReactBitsEffects'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import './PassengerDashboard.css'
@@ -505,7 +506,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onUserUpdat
     } finally { setBusy(false) }
   }
 
-  return <main className={`passenger-shell ${darkMode ? 'theme-dark' : 'theme-light'} ${reducedMotion ? 'reduced-motion' : ''} ${sidebarOpen ? 'sidebar-open' : ''}`}>
+  return <main className={`passenger-shell ${darkMode ? 'theme-dark' : 'theme-light'} ${reducedMotion ? 'reduced-motion' : ''} ${sidebarOpen ? 'sidebar-open' : ''}`}><ReactBitsEffects/>
     <div className="passenger-sidebar-trigger" aria-hidden="true"/>
     <aside id="passenger-sidebar" className={`passenger-sidebar ${sidebarOpen ? '' : 'collapsed'}`} inert={!sidebarOpen}><SidebarDismiss onClose={() => setSidebarOpen(false)} />
       <div className="passenger-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
@@ -528,7 +529,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onUserUpdat
     </aside>
 
     {sidebarOpen && <SidebarBackdrop onClose={() => setSidebarOpen(false)} />}
-      <section className="passenger-workspace">
+      <section className={`passenger-workspace passenger-workspace-${page}`}>
       <PanelPreview role={user.role} activeView={activeView} onSwitchView={onSwitchView} />
       <header className="passenger-topbar">
         <button type="button" aria-controls="passenger-sidebar" aria-expanded={sidebarOpen} aria-label="Alternar menú" className="hamburger-button" onClick={() => setSidebarOpen((v) => !v)}>
@@ -536,7 +537,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onUserUpdat
         </button>
         <div className="passenger-mobile-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
         <div className="passenger-title">
-          <span className="passenger-kicker">PANEL DE PASAJERO</span>
+          <span className="passenger-kicker">PASAJERO</span>
           <h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'pedir' ? 'Pide un viaje' : page === 'seguimiento' ? 'Seguimiento del viaje' : page === 'viajes' ? 'Tus viajes' : page === 'avisos' ? 'Tus avisos' : page === 'direcciones' ? 'Tus direcciones' : page === 'pagos' ? 'Tus pagos' : page === 'soporte' ? 'Soporte' : page === 'configuracion' ? 'Configuración' : 'Tu cuenta'}</h1>
         </div>
         <div className="passenger-top-actions">
