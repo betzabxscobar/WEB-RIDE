@@ -1,0 +1,228 @@
+/* Armoniza conductor y administración con el lenguaje visual del pasajero. */
+:where(.driver-shell, .admin-shell):not(.theme-dark) {
+  background:
+    linear-gradient(135deg, rgba(242, 251, 254, .9), rgba(232, 248, 252, .76)),
+    url('./assets/FondoBlancoRide.webp') center top / cover fixed;
+}
+
+:where(.driver-shell, .admin-shell):not(.theme-dark) :where(.driver-topbar, .admin-main > header) {
+  border-bottom-color: rgba(157, 211, 226, .72);
+  background: rgba(250, 254, 255, .84);
+  box-shadow: 0 8px 28px rgba(22, 112, 144, .06);
+  backdrop-filter: blur(18px) saturate(1.18);
+}
+
+:where(.driver-shell, .admin-shell) :where(.driver-content, .admin-content) {
+  position: relative;
+  z-index: 1;
+}
+
+:where(.driver-shell, .admin-shell) :where(.driver-section-head, .overview-heading) {
+  position: relative;
+  padding-left: 17px;
+}
+
+:where(.driver-shell, .admin-shell) :where(.driver-section-head, .overview-heading)::before {
+  content: '';
+  position: absolute;
+  inset: 3px auto 3px 0;
+  width: 4px;
+  border-radius: 99px;
+  background: linear-gradient(180deg, #24b6e2, #65dcc3);
+  box-shadow: 0 0 18px rgba(36, 182, 226, .34);
+}
+
+:where(.driver-shell, .admin-shell) :where(.driver-section-head > span, .overview-heading small) {
+  color: #1286ac;
+  font-weight: 800;
+  letter-spacing: .12em;
+}
+
+:where(.driver-shell, .admin-shell):not(.theme-dark) :where(
+  .driver-summary article, .driver-request-list article, .driver-history article,
+  .vehicle-list article, .document-list article, .vehicle-form,
+  .driver-account-grid > section, .driver-account-grid > aside,
+  .driver-tool-card, .bank-account-form, .bank-account-list article,
+  .admin-card, .metric-strip article, .admin-metrics article,
+  .admin-account-card, .settings-card
+) {
+  border-color: #b9dfe9;
+  background:
+    radial-gradient(circle at 94% 8%, rgba(75, 190, 224, .13) 0 24px, transparent 25px),
+    linear-gradient(145deg, rgba(255, 255, 255, .97), rgba(237, 249, 252, .95));
+  box-shadow: 0 15px 38px rgba(22, 105, 135, .08), inset 0 1px rgba(255, 255, 255, .88);
+}
+
+:where(.driver-shell, .admin-shell):not(.theme-dark) :where(
+  .driver-summary article, .driver-request-list article, .vehicle-list article,
+  .document-list article, .admin-card, .metric-strip article, .admin-metrics article
+) {
+  transition: transform 220ms cubic-bezier(.22, 1, .36, 1), border-color 220ms ease, box-shadow 220ms ease;
+}
+
+@media (hover: hover) {
+  :where(.driver-shell, .admin-shell):not(.theme-dark) :where(
+    .driver-summary article, .driver-request-list article, .vehicle-list article,
+    .document-list article, .metric-strip article, .admin-metrics article
+  ):hover {
+    z-index: 2;
+    transform: translateY(-3px);
+    border-color: #72cbe2;
+    box-shadow: 0 20px 45px rgba(19, 122, 158, .13), inset 0 1px #fff;
+  }
+}
+
+:where(.driver-summary, .metric-strip, .admin-metrics) article {
+  position: relative;
+  overflow: hidden;
+}
+
+:where(.driver-summary, .metric-strip, .admin-metrics) article::after {
+  content: '';
+  position: absolute;
+  right: -22px;
+  bottom: -29px;
+  width: 72px;
+  height: 72px;
+  border: 13px solid rgba(48, 181, 218, .075);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+:where(.metric-strip, .admin-metrics) article:nth-child(2)::after { border-color: rgba(44, 190, 146, .08); }
+:where(.metric-strip, .admin-metrics) article:nth-child(3)::after { border-color: rgba(105, 104, 229, .075); }
+:where(.metric-strip, .admin-metrics) article:nth-child(4)::after { border-color: rgba(224, 163, 46, .09); }
+
+:where(.admin-shell, .driver-shell) :where(
+  .overview-metric-icon, .user-metric-icon, .metric-icon,
+  .vehicle-list article > span, .doc-state
+) {
+  box-shadow: 0 8px 20px rgba(22, 130, 164, .11);
+}
+
+.admin-shell:not(.theme-dark) .trips-hero {
+  overflow: hidden;
+  border: 1px solid #9dd9e8;
+  background:
+    radial-gradient(circle at 86% 28%, rgba(96, 220, 195, .22), transparent 22%),
+    radial-gradient(circle at 72% 110%, rgba(72, 183, 226, .3), transparent 32%),
+    linear-gradient(115deg, #082d40, #0a4960);
+  box-shadow: 0 20px 48px rgba(9, 76, 103, .18);
+}
+
+.admin-shell:not(.theme-dark) .trips-hero :where(h2, p, span) { color: #fff; }
+.admin-shell:not(.theme-dark) .trips-hero span { color: #7ce1f3; }
+
+.driver-shell:not(.theme-dark) .driver-status-card {
+  border: 1px solid #1c6178;
+  background:
+    radial-gradient(circle at 90% 20%, rgba(84, 216, 190, .18), transparent 24%),
+    linear-gradient(115deg, #082b3e, #0a4b62);
+  box-shadow: 0 20px 48px rgba(9, 76, 103, .18);
+}
+
+.driver-loading {
+  min-height: 260px;
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) 38px;
+  align-items: center;
+  gap: 16px;
+  box-sizing: border-box;
+  padding: 26px;
+  border: 1px solid var(--ride-panel-border, #b9dfe9);
+  border-radius: 20px;
+  background: var(--ride-panel-surface, rgba(255, 255, 255, .94));
+  box-shadow: var(--ride-shadow-md, 0 14px 38px rgba(12, 76, 103, .105));
+}
+
+.driver-loading > span {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 17px;
+  background: linear-gradient(145deg, #dff7fc, #c9f3eb);
+  color: #118aad;
+}
+
+.driver-loading > div { min-width: 0; display: grid; gap: 5px; }
+.driver-loading strong { font: 700 16px var(--ride-font-display); }
+.driver-loading small { color: var(--ride-panel-muted, #4d6977); font-size: 12px; }
+.driver-loading > i {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(47, 183, 220, .18);
+  border-top-color: #2fb7dc;
+  border-radius: 50%;
+  animation: ride-data-spin .8s linear infinite;
+}
+
+:where(.driver-shell, .admin-shell).theme-dark :where(
+  .driver-summary article, .driver-request-list article, .driver-history article,
+  .vehicle-list article, .document-list article, .driver-tool-card,
+  .admin-card, .metric-strip article, .admin-metrics article, .settings-card
+) {
+  border-color: #315564;
+  box-shadow: 0 16px 40px rgba(0, 8, 14, .18), inset 0 1px rgba(141, 219, 238, .035);
+}
+
+@keyframes ride-data-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 760px) {
+  :where(.driver-shell, .admin-shell) :where(.driver-section-head, .overview-heading) { padding-left: 13px; }
+  .driver-loading { min-height: 210px; grid-template-columns: 48px minmax(0, 1fr); padding: 20px; }
+  .driver-loading > span { width: 48px; height: 48px; }
+  .driver-loading > i { grid-column: 1 / -1; justify-self: stretch; width: auto; height: 4px; border: 0; border-radius: 99px; background: linear-gradient(90deg, #28b6df 0 35%, rgba(40, 182, 223, .14) 35%); animation: ride-data-bar 1.2s ease-in-out infinite alternate; }
+}
+
+@keyframes ride-data-bar { to { transform: scaleX(.58); transform-origin: left; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .driver-loading > i { animation: none; }
+}
+
+.ride-map-unavailable {
+  min-height: 320px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  padding: 28px;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(61, 190, 224, .17), transparent 34%),
+    var(--ride-panel-surface-soft, #edf8fb);
+  color: var(--ride-panel-ink, #0b2a3a);
+  text-align: center;
+}
+.ride-map-unavailable > span { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 15px; background: #d9f4fc; color: #1688ad; font-size: 24px; }
+.ride-map-unavailable strong { font: 700 15px var(--ride-font-display); }
+.ride-map-unavailable small { max-width: 330px; color: var(--ride-panel-muted, #4d6977); font-size: 12px; line-height: 1.5; }
+.theme-dark .ride-map-unavailable > span { background: #164758; color: #8ee0f2; }
+
+.driver-map-preview {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  align-content: center;
+  padding: 34px;
+  box-sizing: border-box;
+  border: 1px solid var(--ride-panel-border, #b9dfe9);
+  border-radius: 19px;
+  background:
+    linear-gradient(rgba(63, 173, 207, .08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(63, 173, 207, .08) 1px, transparent 1px),
+    radial-gradient(circle at 75% 30%, rgba(87, 214, 190, .23), transparent 22%),
+    linear-gradient(145deg, #e5f7fb, #d8f2f7);
+  background-size: 38px 38px, 38px 38px, auto, auto;
+}
+.driver-preview-route { width: min(68%, 570px); height: 120px; position: relative; display: flex; align-items: center; justify-content: space-between; margin: 0 auto 34px; color: #138cac; }
+.driver-preview-route::before { content: ''; position: absolute; left: 25px; right: 25px; top: 58px; border-top: 3px dashed rgba(24, 148, 181, .4); transform: rotate(-4deg); }
+.driver-preview-route span,.driver-preview-route b { z-index: 1; width: 48px; height: 48px; display: grid; place-items: center; border: 5px solid rgba(255,255,255,.9); border-radius: 50%; background: #35b9dc; color: #073047; box-shadow: 0 10px 24px rgba(20, 126, 157, .2); }
+.driver-preview-route b { background: #62d6ba; }
+.driver-preview-route i { z-index: 1; width: 9px; height: 9px; border: 4px solid #fff; border-radius: 50%; background: #1d9fc3; box-shadow: 0 7px 16px rgba(20, 126, 157, .18); }
+.driver-preview-copy { display: flex; align-items: center; justify-self: center; gap: 11px; padding: 13px 16px; border: 1px solid rgba(119, 197, 217, .65); border-radius: 14px; background: rgba(255,255,255,.76); color: #137f9f; box-shadow: 0 12px 26px rgba(23, 108, 137, .09); backdrop-filter: blur(10px); }
+.driver-preview-copy>span { display: grid; gap: 3px; }.driver-preview-copy strong { color: #12384a; font-size: 12px; }.driver-preview-copy small { color: #5b7785; font-size: 11px; }
+.theme-dark .driver-map-preview { background: linear-gradient(rgba(102,190,214,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(102,190,214,.055) 1px,transparent 1px),radial-gradient(circle at 75% 30%,rgba(64,194,167,.12),transparent 22%),linear-gradient(145deg,#102f3e,#123846); background-size:38px 38px,38px 38px,auto,auto; }
+.theme-dark .driver-preview-copy { border-color:#315564;background:rgba(16,44,58,.84) }.theme-dark .driver-preview-copy strong{color:#edf8fb}.theme-dark .driver-preview-copy small{color:#abc4ce}
+@media(max-width:600px){.driver-map-preview{padding:22px}.driver-preview-route{width:88%;height:90px;margin-bottom:24px}.driver-preview-copy{align-items:flex-start}.driver-preview-copy small{line-height:1.4}}

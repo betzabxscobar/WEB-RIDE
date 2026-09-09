@@ -1,9 +1,9 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
-import type { FormEvent, ReactNode } from 'react'
+import { Component, lazy, Suspense, useEffect, useState } from 'react'
+import type { ErrorInfo, FormEvent, ReactNode } from 'react'
 import { PanelPreview } from './components/PanelPreview'
 import './App.css'
 import logoTipo from './assets/LogoTipo.webp'
-import { ArrowRight, CheckCircle2, LockKeyhole, Mail, ShieldCheck } from 'lucide-react'
+import { AlertTriangle, ArrowRight, CarFront, CheckCircle2, Clock3, LockKeyhole, Mail, MapPin, Navigation, RotateCcw, ShieldCheck } from 'lucide-react'
 import { supabase } from './lib/supabase'
 import { useRideBrowserNotifications } from './lib/browser-notifications'
 import {
@@ -32,8 +32,45 @@ function Logo() {
 
 function DashboardFallback() {
   return <main className="loading-screen" role="status" aria-live="polite" aria-label="Cargando panel de Ride">
-    <section className="loading-card"><div className="loading-logo-wrap" aria-hidden><img src={logoTipo} alt="" /></div><div className="loading-wordmark">Ride</div><h1>Abriendo tu panel</h1><p>Cargamos únicamente las herramientas que necesitas.</p><div className="loading-progress" aria-hidden><span /></div></section>
+    <LoadingExperience title="Preparando tus viajes" text="Sincronizamos rutas, actividad y herramientas de tu panel." detail="Tu información estará lista en un momento" />
   </main>
+}
+
+class DashboardErrorBoundary extends Component<{ children: ReactNode; onBack?: () => void }, { failed: boolean }> {
+  state = { failed: false }
+  static getDerivedStateFromError() { return { failed: true } }
+  componentDidCatch(error: Error, info: ErrorInfo) { console.error('No se pudo abrir el panel de Ride.', error, info) }
+  render() {
+    if (!this.state.failed) return this.props.children
+    return <main className="dashboard-error-screen" role="alert">
+      <section><span><AlertTriangle size={25} aria-hidden /></span><small>RIDE SIGUE DISPONIBLE</small><h1>No pudimos abrir este panel</h1><p>Una herramienta del panel dejó de responder. Puedes intentarlo otra vez sin cerrar tu sesión.</p><div><button type="button" onClick={() => window.location.reload()}><RotateCcw size={17} aria-hidden />Reintentar</button>{this.props.onBack && <button type="button" onClick={this.props.onBack}>Volver a mi panel</button>}</div></section>
+    </main>
+  }
+}
+
+function LoadingExperience({ title, text, detail }: { title: string; text: string; detail: string }) {
+  return <>
+    <div className="loading-glow loading-glow-one" aria-hidden />
+    <div className="loading-glow loading-glow-two" aria-hidden />
+    <div className="loading-route-art" aria-hidden><span /><span /><span /></div>
+    <section className="loading-card">
+      <div className="loading-brand"><img src={logoTipo} alt="" /><b>Ride</b><span>EN RUTA</span></div>
+      <div className="loading-journey" aria-hidden>
+        <span className="loading-vehicle"><CarFront size={24} /></span>
+        <div className="loading-road"><i /><i /><i /></div>
+        <span className="loading-destination"><MapPin size={22} /></span>
+      </div>
+      <h1>{title}</h1>
+      <p>{text}</p>
+      <div className="loading-signals" aria-hidden>
+        <span><Navigation size={15} />Ruta</span>
+        <span><ShieldCheck size={15} />Viaje seguro</span>
+        <span><Clock3 size={15} />Llegada</span>
+      </div>
+      <div className="loading-progress" aria-hidden><span /></div>
+      <small><i />{detail}</small>
+    </section>
+  </>
 }
 
 function App() {
@@ -216,26 +253,14 @@ function App() {
   // La pantalla la decide la vista activa, no el rol: un administrador puede
   // estar mirando la interfaz de usuario o de chofer con su propia cuenta.
   const viewIsAdministrative = activeView === 'admin' || activeView === 'superadmin'
-  if (screen === 'home' && user && viewIsAdministrative) return <Suspense fallback={<DashboardFallback />}><AdminDashboard user={user} viewAs={activeView as Role} views={availableViews} onSwitchView={switchView} onUserUpdate={setUser} onLogout={logout} /></Suspense>
+  if (screen === 'home' && user && viewIsAdministrative) return <DashboardErrorBoundary key={activeView} onBack={activeView !== user.role ? () => switchView(user.role) : undefined}><Suspense fallback={<DashboardFallback />}><AdminDashboard user={user} viewAs={activeView as Role} views={availableViews} onSwitchView={switchView} onUserUpdate={setUser} onLogout={logout} /></Suspense></DashboardErrorBoundary>
 
-  if (screen === 'home' && user && activeView === 'passenger') return <Suspense fallback={<DashboardFallback />}><PassengerDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onUserUpdate={setUser} onLogout={logout} /></Suspense>
+  if (screen === 'home' && user && activeView === 'passenger') return <DashboardErrorBoundary key={activeView} onBack={activeView !== user.role ? () => switchView(user.role) : undefined}><Suspense fallback={<DashboardFallback />}><PassengerDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onUserUpdate={setUser} onLogout={logout} /></Suspense></DashboardErrorBoundary>
 
-  if (screen === 'home' && user && activeView === 'driver') return <Suspense fallback={<DashboardFallback />}><DriverDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onUserUpdate={setUser} onLogout={logout} /></Suspense>
+  if (screen === 'home' && user && activeView === 'driver') return <DashboardErrorBoundary key={activeView} onBack={activeView !== user.role ? () => switchView(user.role) : undefined}><Suspense fallback={<DashboardFallback />}><DriverDashboard user={user} views={availableViews} activeView={activeView} onSwitchView={switchView} onUserUpdate={setUser} onLogout={logout} /></Suspense></DashboardErrorBoundary>
 
   if (loading && screen === 'welcome') return <main className="loading-screen" role="status" aria-live="polite" aria-label="Preparando Ride">
-    <div className="loading-glow loading-glow-one" aria-hidden />
-    <div className="loading-glow loading-glow-two" aria-hidden />
-    <section className="loading-card">
-      <div className="loading-logo-wrap" aria-hidden>
-        <span className="loading-orbit"><i /><i /><i /></span>
-        <img src={logoTipo} alt="" />
-      </div>
-      <div className="loading-wordmark">Ride</div>
-      <h1>Preparando tu experiencia</h1>
-      <p>Estamos conectando tu cuenta y dejando todo listo.</p>
-      <div className="loading-progress" aria-hidden><span /></div>
-      <small>Solo tomará un momento</small>
-    </section>
+    <LoadingExperience title="Tu próximo viaje comienza aquí" text="Conectamos tu cuenta con Ride y preparamos el camino." detail="Buscando la mejor ruta para ti" />
   </main>
 
   if (screen === 'home' && user) return <main className="user-home"><PanelPreview role={user.role} activeView={activeView ?? user.role} onSwitchView={switchView} />

@@ -218,6 +218,55 @@ html[data-ride-theme="dark"] .viewing-as button{background:#163746!important;col
 @keyframes loading-drift{to{transform:translate(35px,28px) scale(1.08)}}
 @keyframes loading-card-in{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
 @media(max-width:480px){.loading-card{padding:35px 22px 29px;border-radius:23px}.loading-logo-wrap{width:92px;height:92px}.loading-logo-wrap img{width:49px;height:57px}.loading-card h1{font-size:22px}}
+
+/* Carga inspirada en el recorrido principal del panel de pasajero. */
+.loading-screen{
+  background:
+    radial-gradient(circle at 75% 18%,rgba(63,193,229,.22),transparent 28%),
+    radial-gradient(circle at 18% 82%,rgba(83,215,187,.15),transparent 25%),
+    linear-gradient(145deg,#061925,#082e40 58%,#07384a);
+}
+.loading-route-art{position:absolute;z-index:-1;inset:8% 6%;opacity:.4;pointer-events:none}
+.loading-route-art:before{content:'';position:absolute;left:7%;right:7%;top:51%;height:36%;border:2px dashed rgba(115,215,237,.18);border-top:0;border-radius:0 0 45% 45%;transform:rotate(-5deg)}
+.loading-route-art span{position:absolute;width:10px;height:10px;border:3px solid #5acbe7;border-radius:50%;background:#082c3e;box-shadow:0 0 0 7px rgba(90,203,231,.07)}
+.loading-route-art span:first-child{left:7%;top:50%}.loading-route-art span:nth-child(2){left:51%;top:82%;border-color:#65d8bd}.loading-route-art span:last-child{right:7%;top:47%}
+.loading-card{width:min(100%,520px);padding:30px 34px 29px;border-color:rgba(145,222,239,.2);background:linear-gradient(145deg,rgba(15,59,77,.9),rgba(7,35,49,.84));box-shadow:0 38px 100px rgba(0,8,15,.4),inset 0 1px rgba(255,255,255,.06)}
+.loading-brand{width:100%;display:flex;align-items:center;gap:10px;margin-bottom:23px;text-align:left}
+.loading-brand img{width:35px;height:40px;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(76,203,235,.28))}
+.loading-brand b{color:#f0fbff;font:700 20px var(--ride-font-display)}
+.loading-brand>span{margin-left:auto;padding:6px 9px;border:1px solid rgba(117,219,237,.2);border-radius:999px;background:rgba(75,185,216,.08);color:#7edbef;font-size:10px;font-weight:800;letter-spacing:.13em}
+.loading-journey{width:100%;display:grid;grid-template-columns:52px minmax(0,1fr) 52px;align-items:center;gap:10px;margin:4px 0 25px}
+.loading-vehicle,.loading-destination{width:50px;height:50px;display:grid;place-items:center;border:1px solid rgba(127,220,238,.22);border-radius:16px;background:linear-gradient(145deg,rgba(36,148,181,.3),rgba(21,90,111,.24));color:#84e2f3;box-shadow:0 12px 24px rgba(0,18,29,.2)}
+.loading-vehicle{animation:loading-car-drive 2.2s ease-in-out infinite}
+.loading-destination{color:#71dfc3}
+.loading-road{height:24px;position:relative;display:flex;align-items:center;justify-content:space-between}
+.loading-road:before{content:'';position:absolute;left:4px;right:4px;top:11px;border-top:2px dashed rgba(120,215,235,.3)}
+.loading-road i{z-index:1;width:7px;height:7px;border-radius:50%;background:#6ed6ec;box-shadow:0 0 0 5px rgba(110,214,236,.06);animation:loading-waypoint 1.6s ease-in-out infinite}
+.loading-road i:nth-child(2){animation-delay:.25s}.loading-road i:nth-child(3){animation-delay:.5s;background:#66d9be}
+.loading-card h1{max-width:430px;margin:0 0 9px;font-size:clamp(24px,4vw,30px);letter-spacing:-.7px}
+.loading-card p{max-width:390px;font-size:14px}
+.loading-signals{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:23px}
+.loading-signals span{min-width:0;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 8px;border:1px solid rgba(139,213,230,.13);border-radius:11px;background:rgba(10,43,59,.62);color:#b9d6df;font-size:11px;font-weight:700}
+.loading-signals svg{flex:none;color:#6fd8ec}.loading-signals span:nth-child(2) svg{color:#66d9bd}
+.loading-progress{width:100%;height:6px;margin:20px 0 13px;background:rgba(163,216,230,.1)}
+.loading-card>small{display:flex;align-items:center;justify-content:center;gap:8px;color:#8fadb8;font-size:11px}
+.loading-card>small i{width:7px;height:7px;border-radius:50%;background:#64d7bd;box-shadow:0 0 0 5px rgba(100,215,189,.08);animation:loading-waypoint 1.7s ease-in-out infinite}
+@keyframes loading-car-drive{50%{transform:translateX(6px);box-shadow:0 14px 28px rgba(28,159,192,.24)}}
+@keyframes loading-waypoint{50%{opacity:.45;transform:scale(.72)}}
+@media(max-width:560px){
+  .loading-screen{padding:14px}
+  .loading-card{padding:25px 20px 24px;border-radius:23px}
+  .loading-brand{margin-bottom:19px}.loading-brand>span{font-size:9px}
+  .loading-journey{grid-template-columns:46px minmax(0,1fr) 46px;margin-bottom:22px}
+  .loading-vehicle,.loading-destination{width:44px;height:44px;border-radius:14px}
+  .loading-signals{grid-template-columns:1fr;margin-top:19px}
+  .loading-signals span:nth-child(2),.loading-signals span:nth-child(3){display:none}
+}
+
+.dashboard-error-screen{min-height:100dvh;display:grid;place-items:center;box-sizing:border-box;padding:24px;background:radial-gradient(circle at 70% 20%,rgba(64,194,228,.2),transparent 30%),linear-gradient(145deg,#061925,#093247);color:#edfaff}
+.dashboard-error-screen>section{width:min(100%,500px);display:grid;justify-items:start;padding:34px;box-sizing:border-box;border:1px solid rgba(139,218,237,.2);border-radius:24px;background:rgba(10,43,59,.88);box-shadow:0 30px 80px rgba(0,8,15,.36);backdrop-filter:blur(16px)}
+.dashboard-error-screen>section>span{width:50px;height:50px;display:grid;place-items:center;margin-bottom:20px;border-radius:15px;background:rgba(245,186,71,.13);color:#f2c66d}
+.dashboard-error-screen small{color:#75d9ed;font-size:11px;font-weight:800;letter-spacing:.13em}.dashboard-error-screen h1{margin:8px 0 10px;font-size:28px}.dashboard-error-screen p{margin:0;color:#aec7d1;font-size:14px;line-height:1.65}.dashboard-error-screen>section>div{display:flex;flex-wrap:wrap;gap:10px;margin-top:25px}.dashboard-error-screen button{min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:0 16px;border:1px solid #5bc9e5;border-radius:11px;background:#67d4eb;color:#072638;font-weight:800}.dashboard-error-screen button+button{background:transparent;color:#bcecf6}
 @media(prefers-reduced-motion:reduce){.loading-screen *{animation:none!important}.loading-progress span{width:65%;margin:auto}}
 
 /* Keep authentication inside the visible viewport. Each screen gets only the

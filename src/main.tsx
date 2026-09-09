@@ -6,6 +6,7 @@ import './design-system.css'
 import './layout.css'
 import './visual-polish.css'
 import './quality.css'
+import './dashboard-harmony.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
