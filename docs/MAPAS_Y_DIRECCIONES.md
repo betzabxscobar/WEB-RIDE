@@ -1,7 +1,7 @@
-# Mapas y direcciones de todo el mundo
+# Mapas y direcciones de Ecuador
 
-Búsqueda de cualquier calle del planeta y mapa visual, sustituyendo al catálogo
-de 15 lugares de Guayaquil.
+Búsqueda de calles y lugares dentro de Ecuador, selección directa sobre el mapa
+y rutas por calles, sustituyendo al catálogo fijo inicial de Guayaquil.
 
 ## Por qué no cabe en Supabase
 
@@ -72,7 +72,7 @@ Calles con número, barrios, negocios y nombres en alfabetos no latinos.
 
 **Elegir destino** — `PlacePickerScreen` ofrece tres caminos:
 
-1. **Buscar** cualquier dirección del mundo, con espera de 350 ms para no
+1. **Buscar** cualquier dirección de Ecuador, con espera de 350 ms para no
    disparar una petición por tecla.
 2. **Tocar el mapa**, que pregunta qué dirección es ese punto. Si el
    geocodificador no lo reconoce, se usa igual con sus coordenadas: un viaje

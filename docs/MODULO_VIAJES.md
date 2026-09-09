@@ -4,17 +4,17 @@ Ciclo completo pasajero ↔ chofer, más el monitoreo en el panel web.
 
 ## Direcciones y mapa
 
-**Actualizado el 2026-08-26.** El catálogo de 15 lugares quedó sustituido por
-búsqueda de direcciones de todo el mundo (Photon) y mapa visual (teselas de
-OpenStreetMap). Detalle en [`MAPAS_Y_DIRECCIONES.md`](MAPAS_Y_DIRECCIONES.md).
+**Actualizado el 2026-09-08.** El catálogo fijo quedó sustituido por búsqueda
+de direcciones limitada a Ecuador, selección directa en el mapa y lugares
+guardados. Detalle en [`MAPAS_Y_DIRECCIONES.md`](MAPAS_Y_DIRECCIONES.md).
 
-Lo único que sigue sin resolverse es la **ruta por calles**: la distancia se
-calcula en línea recta y `factor_trayecto_urbano()` (1.35) la ajusta. Una ruta
-real exigiría un motor de rutas.
+La web solicita a OSRM una ruta por calles y sus alternativas razonables. Si
+el servicio no responde, presenta una estimación inicial; el precio definitivo
+continúa calculándose y validándose en Postgres.
 
 Supabase mantiene las reglas del viaje, las tarifas, los pagos, las
-calificaciones, las direcciones guardadas y los cambios en tiempo real. Photon
-y OpenStreetMap aportan la búsqueda mundial y el mapa; el GPS sigue viniendo
+calificaciones, las direcciones guardadas y los cambios en tiempo real. Photon,
+OpenStreetMap y OSRM aportan búsqueda, mapa y ruta; el GPS sigue viniendo
 del dispositivo del usuario.
 
 ## Reparto de responsabilidades
@@ -59,7 +59,9 @@ cotización → solicitud → seguimiento en vivo con última posición reportad
 cancelación o calificación. También incorpora avisos, direcciones y pagos.
 
 **Panel web administrativo** — sección *Viajes*: métricas y monitoreo en vivo
-de todos los viajes. RLS da lectura global a las cuentas administrativas.
+de todos los viajes, con ficha detallada, mapa, participantes, cobro, multa,
+distancia, llegada, desvíos y cancelación. RLS da lectura global únicamente a
+las cuentas administrativas.
 
 ## Dónde vive cada cosa
 
@@ -74,9 +76,10 @@ de todos los viajes. RLS da lectura global a las cuentas administrativas.
   calificación, posición y suscripción
 - `src/lib/notifications.ts` — avisos del usuario y lectura en tiempo real
 - `src/lib/addresses.ts` — alta, favorito y eliminación de direcciones propias
-- `src/lib/payments.ts` — efectivo, método principal e historial de cobros
-- `src/PassengerDashboard.tsx` — panel funcional del pasajero
+- `src/lib/payments.ts` — efectivo, transferencia, DeUna e historial de cobros
+- `src/PassengerDashboard.tsx` y `src/passenger/` — panel funcional del pasajero
 - `src/AdminDashboard.tsx` — sección *Viajes*
+- `src/admin/AdminTripDetails.tsx` — seguimiento administrativo completo
 
 ## Un defecto que apareció al probar
 

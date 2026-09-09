@@ -102,7 +102,9 @@ por la base de datos.
 1. El usuario entra en **Viajes**.
 2. El sistema muestra totales, viajes activos, finalizados y monto facturado.
 3. El listado presenta ruta, participantes, vehículo, tarifa y estado.
-4. Los datos se recargan cuando Supabase Realtime informa un cambio.
+4. El usuario abre un viaje para revisar el mapa, referencias, distancia,
+   llegada, desvíos, pago, multa y datos de cancelación disponibles.
+5. Los datos se recargan cuando Supabase Realtime informa un cambio.
 
 **Resultado:** el equipo administrativo puede supervisar el ciclo de viajes.
 
@@ -166,7 +168,7 @@ para que cada usuario solo pueda consultar o modificar las suyas.
 **Actor:** pasajero autenticado.
 
 1. El usuario entra en **Pagos**.
-2. Puede registrar efectivo o DeUna y elegir su forma de pago principal.
+2. Puede registrar efectivo, transferencia o DeUna y elegir su forma de pago principal.
 3. Consulta los cobros y reembolsos registrados en sus propios viajes.
 4. Si terminó un viaje con DeUna como método principal, solicita al servidor el
    QR y el enlace de pago; la web nunca envía el importe ni conoce la clave de
@@ -255,6 +257,24 @@ que publicar otra versión de la web.
 - La configuración de Supabase y el orden de sus migraciones están documentados
   en [`docs/CONEXION_SUPABASE.md`](docs/CONEXION_SUPABASE.md).
 
+## Arquitectura y rendimiento actuales
+
+- La autenticación se entrega en el paquete inicial. Pasajero, conductor,
+  administración y el motor de mapas se cargan únicamente al abrirse.
+- El mapa vive detrás de un componente diferido, por lo que consultar un panel
+  sin mapa no descarga MapLibre innecesariamente.
+- Las imágenes visibles utilizan versiones WebP dimensionadas; los PNG
+  originales se conservan como archivos fuente para futuras ediciones.
+- La compilación verificada el **8 de septiembre de 2026** dejó el JavaScript
+  inicial en aproximadamente **429 KB** (122 KB comprimido), frente a los
+  aproximadamente 1,90 MB anteriores. El módulo de mapa, de aproximadamente
+  1,03 MB, queda separado y se descarga solo cuando se muestra un mapa.
+- `PassengerDashboard` comenzó a dividirse en componentes de presentación bajo
+  `src/passenger/`, y el detalle administrativo mantiene su estilo en
+  `src/admin/AdminTripDetails.css`. `AdminDashboard.css` sigue siendo la deuda
+  de modularización más grande y debe dividirse por Resumen, Viajes, Usuarios,
+  Conductores y Cuenta en cambios pequeños con pruebas visuales.
+
 ## Ejecución local
 
 Requisitos: Node.js 20 o posterior y npm.
@@ -287,6 +307,9 @@ npm run preview   # vista previa de la compilación
 Cada envío o propuesta de cambio hacia `main` ejecuta estas tres comprobaciones
 en GitHub Actions: análisis estático, pruebas y compilación de producción.
 
+Estado local comprobado el **8 de septiembre de 2026**: **27 pruebas aprobadas**,
+análisis estático aprobado y compilación de producción aprobada.
+
 ## Antes de producción
 
 - Aplicar y verificar todas las migraciones en el proyecto correcto de Supabase,
@@ -295,8 +318,9 @@ en GitHub Actions: análisis estático, pruebas y compilación de producción.
   condiciones de servicio apropiadas para producción.
 - Configurar notificaciones web cuando se necesiten avisos con la pestaña cerrada;
   actualmente Realtime actualiza la interfaz mientras está abierta.
-- Comprimir o convertir las imágenes grandes y dividir la carga inicial para
-  mejorar el arranque en conexiones móviles.
+- Continuar dividiendo los estilos administrativos y medir el módulo diferido
+  de mapas en teléfonos de gama media; la carga inicial y las imágenes visibles
+  ya fueron optimizadas.
 - Completar la integración de pagos reales. La interfaz no debe almacenar datos
   de tarjeta sin una pasarela con tokenización.
 
