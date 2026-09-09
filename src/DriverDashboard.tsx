@@ -1,5 +1,6 @@
 import { PanelPreview, SidebarDismiss, SidebarBackdrop } from './components/PanelPreview'
 import { PanelAtmosphere } from './components/PanelAtmosphere'
+import { ReactBitsEffects } from './components/ReactBitsEffects'
 import './DriverDashboard.css'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { SupportPage, TripChat } from './components/RideExtras'
@@ -184,7 +185,7 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
   const go = (next: Page) => { window.scrollTo({ top: 0, behavior: 'instant' }); setPage(next); setSidebarOpen(false); setError(''); setNotice('') }
   const canWork = !isReviewOnly && state.approved && state.hasActiveVehicle
 
-  return <main className={`driver-shell ${appearance.darkMode ? 'theme-dark' : ''} ${appearance.reducedMotion ? 'reduced-motion' : ''} ${sidebarOpen ? 'sidebar-open' : ''}`}>
+  return <main className={`driver-shell ${appearance.darkMode ? 'theme-dark' : ''} ${appearance.reducedMotion ? 'reduced-motion' : ''} ${sidebarOpen ? 'sidebar-open' : ''}`}><ReactBitsEffects/>
     <aside id="driver-sidebar" className="driver-sidebar" aria-hidden={!sidebarOpen} inert={!sidebarOpen}><SidebarDismiss onClose={() => setSidebarOpen(false)} />
       <div className="driver-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
       <nav aria-label="Panel del conductor">

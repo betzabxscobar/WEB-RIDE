@@ -1,5 +1,6 @@
 import { PanelPreview, SidebarDismiss, SidebarBackdrop } from './components/PanelPreview'
 import { PanelAtmosphere } from './components/PanelAtmosphere'
+import { ReactBitsEffects } from './components/ReactBitsEffects'
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import './AdminDashboard.css'
@@ -183,7 +184,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onUs
   }
 
   return (
-    <main className={`admin-shell ${appearance.darkMode ? 'theme-dark' : ''} ${appearance.reducedMotion ? 'reduced-motion' : ''} ${sidebarOpen ? 'sidebar-open' : ''}`}>
+    <main className={`admin-shell ${appearance.darkMode ? 'theme-dark' : ''} ${appearance.reducedMotion ? 'reduced-motion' : ''} ${sidebarOpen ? 'sidebar-open' : ''}`}><ReactBitsEffects/>
       <aside id="admin-sidebar" className="admin-sidebar" aria-hidden={!sidebarOpen} inert={!sidebarOpen}><SidebarDismiss onClose={() => setSidebarOpen(false)} />
         <div className="admin-brand">
           <img src={logoAsset} className="admin-brand-logo" alt="Ride" />
