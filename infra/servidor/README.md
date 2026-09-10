@@ -1,7 +1,13 @@
 # La web en un servidor propio
 
-Cómo dejar `ride.com.ec` sirviendo la web desde el Ubuntu Server de la red
+Cómo dejar `rideviajes.com.ec` sirviendo la web desde el Ubuntu Server de la red
 (`192.168.0.254`), con HTTPS.
+
+El servidor ya trae **nginx** instalado y ocupando el puerto 80, así que se usa
+ese y no se instala nada más. La configuración está en
+[`ride.nginx.conf`](ride.nginx.conf) y **no toca el sitio que ese nginx sirviera
+antes**: responde solo a los nombres de `server_name`, y nginx prefiere una
+coincidencia exacta de nombre sobre el `default_server`.
 
 ## Antes de nada: la dirección que diste es privada
 
@@ -10,21 +16,41 @@ Ningún equipo de fuera puede llegar a ella, y eso incluye a Let's Encrypt, que
 necesita alcanzar el servidor para comprobar que el dominio es tuyo antes de
 darte el certificado.
 
-Así que para que `ride.com.ec` funcione desde fuera hacen falta tres cosas que
-no se arreglan con ningún archivo de este repositorio:
+### Y hay dos routers, no uno
+
+Comprobado en el panel del TP-Link: su **WAN es `192.168.8.215`**, que también es
+privada, con puerta de enlace `192.168.8.1`. O sea que no está conectado a
+internet directamente, sino colgando de otro router:
+
+```
+Internet  (186.4.226.54)
+    ↓
+Router del proveedor      192.168.8.1
+    ↓
+TP-Link    WAN 192.168.8.215  ·  LAN 192.168.0.1
+    ↓
+Ubuntu Server             192.168.0.254
+```
+
+Eso es **doble NAT**: los puertos hay que abrirlos en los dos, no en uno.
 
 | Qué | Dónde se hace |
 |---|---|
-| **El dominio registrado** | NIC.ec — un `.com.ec` no se puede usar sin registrar |
-| **Una IP pública** | Tu proveedor de internet. Si es dinámica, hace falta DNS dinámico |
-| **Los puertos 80 y 443 hacia el servidor** | El router: redirección de puertos a `192.168.0.254` |
+| **El dominio registrado** | NIC.ec — `rideviajes.com.ec`, ya registrado |
+| **Que la IP de arriba sea pública** | Si el router de `192.168.8.1` tiene WAN `10.x` o `100.64.x`, es CGNAT y no hay nada que hacer sin hablar con el proveedor |
+| **Puertos 80 y 443 en el router de arriba** | Hacia `192.168.8.215` |
+| **Puertos 80 y 443 en el TP-Link** | Hacia `192.168.0.254` |
+
+El rango `192.168.8.x` es el típico de un router 4G/LTE. Si el internet entra
+por ahí, es muy probable que haya CGNAT y que la redirección no sirva de nada:
+compruébalo antes de configurar nada.
 
 Y en el DNS del dominio, dos registros `A` apuntando a **la IP pública** (no a
 la privada):
 
 ```
-ride.com.ec.       A    <tu IP pública>
-www.ride.com.ec.   A    <tu IP pública>
+rideviajes.com.ec.       A    <tu IP pública>
+www.rideviajes.com.ec.   A    <tu IP pública>
 ```
 
 > Con una conexión doméstica normal esto puede no ser viable: muchos proveedores
@@ -48,7 +74,7 @@ npm run build
 
 > **No compiles esto dentro de un flujo de GitHub Actions para el servidor.**
 > `vite.config.ts` pone `base: '/WEB-RIDE/'` cuando detecta `GITHUB_ACTIONS`,
-> porque es lo que necesita GitHub Pages. Ese build servido en `ride.com.ec`
+> porque es lo que necesita GitHub Pages. Ese build servido en `rideviajes.com.ec`
 > carga la página en blanco: busca los archivos en `/WEB-RIDE/assets/…`, que
 > ahí no existe.
 
@@ -56,35 +82,32 @@ Queda todo en `dist/`.
 
 ## Preparar el servidor
 
-Una sola vez:
+Una sola vez. nginx ya está instalado, así que solo hay que crear la carpeta y
+darle de alta el sitio:
 
 ```bash
-sudo apt update
-sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https curl
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
-sudo apt update && sudo apt install -y caddy
-
 sudo mkdir -p /var/www/ride
-sudo chown -R caddy:caddy /var/www/ride
+sudo chown -R www-data:www-data /var/www/ride
 ```
 
-Copia el `Caddyfile` de esta carpeta:
+Sube `ride.nginx.conf` al servidor y colócalo:
 
 ```bash
-sudo cp Caddyfile /etc/caddy/Caddyfile
-sudo caddy validate --config /etc/caddy/Caddyfile
-sudo systemctl reload caddy
+sudo cp ride.nginx.conf /etc/nginx/sites-available/ride
+sudo ln -sf /etc/nginx/sites-available/ride /etc/nginx/sites-enabled/ride
+sudo nginx -t
+sudo systemctl reload nginx
 ```
 
-`caddy validate` antes de recargar: si el archivo tiene un error, lo dice sin
-tirar el sitio que ya estaba sirviendo.
+`nginx -t` antes de recargar: si el archivo tiene un error, lo dice **sin tirar
+el sitio que ya estaba sirviendo**. Si `nginx -t` falla, no recargues; arregla
+primero.
 
 ## Subir una versión
 
 Dos formas. Las dos hacen lo mismo; usa la que te resulte más cómoda.
 
-En ninguna hace falta recargar Caddy: sirve archivos del disco, así que la
+En ninguna hace falta recargar nginx: sirve archivos del disco, así que la
 versión nueva entra sola en cuanto se copia.
 
 ### Con Bitvise (ventana gráfica, Windows)
@@ -111,7 +134,7 @@ terminal.
    ```bash
    sudo rm -rf /var/www/ride/*
    sudo cp -r /tmp/ride-nuevo/* /var/www/ride/
-   sudo chown -R caddy:caddy /var/www/ride
+   sudo chown -R www-data:www-data /var/www/ride
    rm -rf /tmp/ride-nuevo
    ```
 
@@ -129,7 +152,7 @@ Si prefieres no instalar nada, `scp` ya viene con Git Bash:
 
 ```bash
 scp -r dist/* usuario@192.168.0.254:/tmp/ride-nuevo/
-ssh usuario@192.168.0.254 'sudo rm -rf /var/www/ride/* && sudo cp -r /tmp/ride-nuevo/* /var/www/ride/ && sudo chown -R caddy:caddy /var/www/ride && rm -rf /tmp/ride-nuevo'
+ssh usuario@192.168.0.254 'sudo rm -rf /var/www/ride/* && sudo cp -r /tmp/ride-nuevo/* /var/www/ride/ && sudo chown -R www-data:www-data /var/www/ride && rm -rf /tmp/ride-nuevo'
 ```
 
 Crea `/tmp/ride-nuevo` en el servidor antes de la primera vez:
@@ -146,27 +169,54 @@ ssh usuario@192.168.0.254 'mkdir -p /tmp/ride-nuevo'
 > rsync -av --delete dist/ usuario@192.168.0.254:/tmp/ride-nuevo/
 > ```
 
+## El certificado HTTPS
+
+**Solo cuando el dominio resuelva desde internet y los puertos lleguen hasta
+aquí.** Antes de eso fallará, porque Let's Encrypt necesita alcanzar el servidor
+para comprobar que el dominio es tuyo.
+
+```bash
+sudo apt install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d rideviajes.com.ec -d www.rideviajes.com.ec
+```
+
+Certbot edita el archivo del sitio para añadir el `listen 443 ssl`, la
+redirección desde HTTP y la renovación automática. No hay que tocar nada a mano.
+
+Comprobar que renovará solo:
+
+```bash
+sudo certbot renew --dry-run
+systemctl list-timers | grep certbot
+```
+
 ## Comprobar que funciona
 
-```bash
-curl -I https://ride.com.ec
-```
-
-Tiene que dar `HTTP/2 200` y las cabeceras de seguridad. Y el certificado:
+Desde la red, sin dominio todavía:
 
 ```bash
-echo | openssl s_client -connect ride.com.ec:443 -servername ride.com.ec 2>/dev/null | openssl x509 -noout -issuer -dates
+curl -I http://192.168.0.254
 ```
 
-El emisor debe ser Let's Encrypt. Si sale un certificado con nombre `Caddy
-Local Authority`, es que Caddy no pudo validar el dominio contra internet y se
-puso uno interno: repasa la tabla del principio.
+Y con dominio y certificado:
+
+```bash
+curl -I https://rideviajes.com.ec
+echo | openssl s_client -connect rideviajes.com.ec:443 -servername rideviajes.com.ec 2>/dev/null | openssl x509 -noout -issuer -dates
+```
+
+Tiene que dar `200` y el emisor debe ser Let's Encrypt.
 
 ## Las cabeceras están en dos sitios
 
-`public/_headers` lo leen Netlify y Cloudflare Pages; el `Caddyfile` lo lee este
-servidor. Ninguno de los dos entiende el formato del otro, así que la lista está
-repetida.
+`public/_headers` lo leen Netlify y Cloudflare Pages; `ride.nginx.conf` lo lee
+este servidor. Ninguno de los dos entiende el formato del otro, así que la lista
+está repetida.
+
+Dentro del propio archivo de nginx también se repiten: `add_header` **no se
+hereda**, y en cuanto un bloque `location` declara uno, pierde todos los de
+arriba. Por eso los bloques de `assets/` y del index vuelven a declarar las
+suyas; si no, esos archivos se servirían sin ninguna cabecera de seguridad.
 
 `npm run check:quality` compara las dos y falla si se separan. Si añades una
 cabecera, va en los dos archivos.

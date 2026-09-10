@@ -43,24 +43,27 @@ for (const header of ['Content-Security-Policy', 'Referrer-Policy', 'X-Content-T
 }
 
 // Las mismas cabeceras estan escritas dos veces: `public/_headers` lo leen
-// Netlify y Cloudflare Pages, y el `Caddyfile` lo lee el servidor propio.
-// Ninguno entiende el formato del otro. Se comparan aqui para que nadie cambie
-// una y deje la otra atras, que es justo el fallo que no se ve hasta que
+// Netlify y Cloudflare Pages, y la configuracion de nginx la lee el servidor
+// propio. Ninguno entiende el formato del otro. Se comparan aqui para que nadie
+// cambie una y deje la otra atras, que es justo el fallo que no se ve hasta que
 // alguien mira las cabeceras del sitio en produccion.
-const caddyfile = await readFile(join(root, 'infra', 'servidor', 'Caddyfile'), 'utf8')
+const nginxConf = await readFile(join(root, 'infra', 'servidor', 'ride.nginx.conf'), 'utf8')
 // `\\s` y no `\s`: dentro de un template literal, `\s` se queda en `s` y el
 // patron deja de buscar espacios. El `\r?` es para cuando el archivo llega con
 // finales de linea de Windows.
 const valorEnHeaders = (nombre) => headers.match(new RegExp(`^[ \\t]*${nombre}:[ \\t]*(.+?)\\r?$`, 'm'))?.[1]?.trim()
-const valorEnCaddy = (nombre) => caddyfile.match(new RegExp(`^[ \\t]*${nombre}[ \\t]+"(.+)"\\r?$`, 'm'))?.[1]?.trim()
+// Solo el primero de cada cabecera: en nginx se repiten dentro de los bloques
+// `location`, porque `add_header` no se hereda y en cuanto un bloque declara
+// uno pierde todos los de arriba.
+const valorEnNginx = (nombre) => nginxConf.match(new RegExp(`^[ \\t]*add_header[ \\t]+${nombre}[ \\t]+"(.+?)"[ \\t]*(?:always)?[ \\t]*;`, 'm'))?.[1]?.trim()
 
 for (const header of ['Content-Security-Policy', 'Referrer-Policy', 'X-Content-Type-Options', 'X-Frame-Options', 'Permissions-Policy', 'Cross-Origin-Opener-Policy']) {
   const esperado = valorEnHeaders(header)
-  const enCaddy = valorEnCaddy(header)
-  requireCondition(enCaddy != null, `El Caddyfile no declara ${header}`)
+  const enNginx = valorEnNginx(header)
+  requireCondition(enNginx != null, `La configuracion de nginx no declara ${header}`)
   requireCondition(
-    esperado == null || enCaddy === esperado,
-    `${header} no coincide entre public/_headers y infra/servidor/Caddyfile`,
+    esperado == null || enNginx === esperado,
+    `${header} no coincide entre public/_headers y infra/servidor/ride.nginx.conf`,
   )
 }
 
