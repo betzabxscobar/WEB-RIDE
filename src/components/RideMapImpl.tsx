@@ -3,6 +3,7 @@ import { divIcon, latLngBounds, type Map as LeafletMap } from 'leaflet'
 import { MapContainer, Marker, Polyline, useMap, useMapEvents } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import './RideMap.css'
 import type { Coordinates, Place, TripPosition } from '../lib/trips'
 import type { RoadRoute } from '../lib/routing'
 

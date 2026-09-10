@@ -1,0 +1,25 @@
+/* Estilos del mapa.
+   Viven aqui y no en la hoja de una pantalla porque el mapa sale en cuatro
+   sitios distintos —inicio del chofer, viaje del chofer, solicitud y
+   seguimiento del pasajero, detalle de administracion— y cada uno carga su
+   propio CSS. Estaban en PassengerDashboard.css, asi que en el panel del
+   chofer el marcador de ubicacion se pintaba sin estilos: un div vacio,
+   invisible. Importado desde RideMapImpl, viajan con el componente. */
+
+.ride-leaflet-marker{background:transparent!important;border:0!important}.ride-leaflet-marker span{display:block;width:23px;height:23px;border:6px solid #fff;border-radius:50%;background:var(--pin);box-shadow:0 5px 14px rgba(3,33,45,.3)}.ride-leaflet-marker b{position:absolute;left:28px;top:4px;padding:5px 8px;border-radius:8px;background:#fff;color:#12313e;font-size:10px;box-shadow:0 5px 14px rgba(3,33,45,.16);white-space:nowrap}.ride-map .leaflet-control-zoom{overflow:hidden;border:0!important;border-radius:12px!important;box-shadow:0 8px 24px rgba(5,39,53,.16)!important}.ride-map .leaflet-control-zoom a{border:0!important}.ride-map .leaflet-control-attribution{font-size:8px;background:rgba(255,255,255,.72)!important}
+
+/* Credito del mapa. Va fuera del lienzo porque el control de atribucion de
+   Leaflet se queda por debajo de las teselas vectoriales de MapLibre. */
+.ride-map-credit{display:block;margin-top:6px;font-size:10px;opacity:.6;text-align:right}
+
+/* Donde esta quien mira el mapa: punto azul con halo, como en cualquier mapa.
+   No es un alfiler a proposito —un alfiler se lee como «un sitio del viaje» y
+   se confundia con el origen—. El halo late despacio para que se distinga de
+   los marcadores fijos sin robar atencion. */
+.ride-leaflet-me{background:transparent!important;border:0!important}
+.ride-leaflet-me i{position:absolute;inset:0;border-radius:50%;background:#1a9ee0;opacity:.28;animation:ride-me-pulso 2.4s ease-out infinite}
+.ride-leaflet-me span{position:absolute;left:5px;top:5px;width:12px;height:12px;border:2.5px solid #fff;border-radius:50%;background:#1a9ee0;box-shadow:0 2px 8px rgba(3,33,45,.45)}
+@keyframes ride-me-pulso{0%{transform:scale(.6);opacity:.4}70%{transform:scale(1.5);opacity:0}100%{transform:scale(1.5);opacity:0}}
+/* Con «reducir movimiento» activado el latido se queda quieto: el punto se ve
+   igual, solo deja de animarse. */
+@media(prefers-reduced-motion:reduce){.ride-leaflet-me i{animation:none;opacity:.3}}
