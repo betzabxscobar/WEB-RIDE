@@ -52,14 +52,17 @@ export function SubscriptionPage({ subscription, busy, reviewOnly, returned, onP
     <section className="driver-tool-card"><div className="driver-tool-card-title"><WalletCards size={22} aria-hidden /><div><h3>$15 USD al mes</h3><p>Lo que incluye mientras esté al día.</p></div></div>
       <ul className="subscription-perks"><li><Check size={16} aria-hidden /> Recibes las solicitudes de tu zona</li><li><Check size={16} aria-hidden /> Te puedes poner en línea cuando quieras</li><li><Check size={16} aria-hidden /> Sin límite de viajes: lo que ganes es tuyo</li></ul>
       <p className="subscription-note">Se cobra solo cada mes. Si la das de baja, sigues trabajando hasta que termine el mes que ya pagaste.</p>
+      {reviewOnly && <p className="subscription-warning"><Clock size={15} aria-hidden /> Estás viendo esto con una cuenta administradora, y esas no pagan cuota: no reciben viajes, y el servidor tampoco les aplica el corte. Para probar el pago hay que entrar con una cuenta de chofer.</p>}
       {aMedias && <p className="subscription-warning"><Clock size={15} aria-hidden /> Dejaste un pago a medias en PayPal ({subscription.unfinishedPayment}). Mientras no lo apruebes no cuenta como pagado.</p>}
       {returned && !subscription.active && <p className="subscription-warning"><Clock size={15} aria-hidden /> PayPal puede tardar unos segundos en confirmarnos el pago. Si acabas de pagar, toca «Ya pagué».</p>}
       <footer>{subscription.reference && <small>Referencia de PayPal: {subscription.reference}</small>}
-        {soloRevisar
+        {reviewOnly
           ? <button className="primary" disabled={busy} onClick={onRefresh}>Actualizar estado</button>
-          : returned
-            ? <button className="primary" disabled={busy} onClick={onRefresh}>Ya pagué</button>
-            : <button className="primary" disabled={busy || reviewOnly} onClick={onPay}>{busy ? 'Abriendo PayPal…' : aMedias ? 'Terminar el pago' : cortesia ? 'Pagar por adelantado' : vencida ? 'Renovar por $15' : 'Pagar $15 con PayPal'}</button>}
+          : soloRevisar
+            ? <button className="primary" disabled={busy} onClick={onRefresh}>Actualizar estado</button>
+            : returned
+              ? <button className="primary" disabled={busy} onClick={onRefresh}>Ya pagué</button>
+              : <button className="primary" disabled={busy} onClick={onPay}>{busy ? 'Abriendo PayPal…' : aMedias ? 'Terminar el pago' : cortesia ? 'Pagar por adelantado' : vencida ? 'Renovar por $15' : 'Pagar $15 con PayPal'}</button>}
       </footer>
     </section>
   </div>
