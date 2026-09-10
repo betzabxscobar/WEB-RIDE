@@ -119,21 +119,30 @@
 .driver-shell.theme-dark{--d-ink:#f2fbfd;--d-muted:#b7cbd3;--d-paper:#102d3b;--d-line:#345665;color:#f2fbfd;background:radial-gradient(circle at 14% 9%,rgba(36,194,222,.14),transparent 30%),radial-gradient(circle at 90% 70%,rgba(55,180,139,.1),transparent 32%),#071b27!important}.driver-shell.theme-dark .driver-workspace{background:transparent!important}.driver-shell.theme-dark :where(.active-driver-trip,.driver-request-list article,.vehicle-list article,.vehicle-form,.document-list article,.driver-account-grid>section,.driver-account-grid>aside,.settings-card,.earnings-grid article,.requirements-card,.identity-form,.driver-tool-card,.bank-account-form,.bank-account-list article){background:linear-gradient(145deg,rgba(18,51,65,.94),rgba(11,37,50,.9))!important;border-color:rgba(112,193,215,.18)!important;color:#f2fbfd!important}.driver-shell.theme-dark :where(h1,h2,h3,h4,strong,dd,label){color:#f3fbfd}.driver-shell.theme-dark :where(p,small,dt,time){color:#b7cbd3}.driver-shell.theme-dark :where(input,select,textarea){background:#123442!important;border-color:#365967!important;color:#eef9fc!important}.driver-shell.theme-dark :where(input,textarea)::placeholder{color:#8faab5!important}
 .driver-shell :where(.active-driver-trip,.driver-request-list article,.vehicle-list article,.vehicle-form,.document-list article,.driver-account-grid>section,.driver-account-grid>aside,.settings-card,.earnings-grid article,.requirements-card,.identity-form,.driver-tool-card,.bank-account-form,.bank-account-list article){border:0!important;outline:0!important;border-radius:24px!important;box-shadow:0 20px 55px rgba(8,75,96,.11)!important}.driver-shell :where(.driver-content,.driver-dialog) button:not(.driver-avatar):not(.dialog-close){border-radius:9999px!important}.driver-shell:not(.theme-dark) :where(p,small,dt,time){color:#496571!important}.driver-shell:not(.theme-dark) :where(h1,h2,h3,h4,strong,dd,label){color:#082e3f!important}
 
-/* Cuota mensual del chofer. El estado va con color porque es lo unico que
-   viene a mirar: si puede trabajar hoy o no. */
-.subscription-state{padding:20px 22px;border-radius:16px;margin-bottom:16px;border:1px solid}
-.subscription-state small{font-size:10px;letter-spacing:1.2px;font-weight:800;opacity:.9}
+/* Cuota mensual del chofer.
+   El bloque de estado se apoya en `.driver-tool-card`, que ya trae el fondo y
+   el borde de cada tema: asi se ve igual que el resto del panel en claro y en
+   oscuro. Aqui solo va el acento de color —la etiqueta y una banda lateral—,
+   porque el estado es lo unico que el chofer viene a mirar. Antes se pintaba
+   un fondo propio con `color-mix` y en oscuro quedaba un cuadro claro en medio
+   de un panel oscuro. */
+.subscription-state{position:relative;overflow:hidden;margin-bottom:16px}
+.subscription-state::before{content:"";position:absolute;inset:0 auto 0 0;width:4px}
+.subscription-state small{font-size:10px;letter-spacing:1.2px;font-weight:800}
 .subscription-state h3{margin:6px 0 6px;font-size:22px;letter-spacing:-.4px}
-.subscription-state p{margin:0;font-size:12px;line-height:1.5;opacity:.85}
-.subscription-state.ok{background:color-mix(in srgb,#1e7b4f 12%,transparent);border-color:color-mix(in srgb,#1e7b4f 38%,transparent)}
-.subscription-state.ok small{color:#1e7b4f}
-.subscription-state.info{background:color-mix(in srgb,#2f7ec4 12%,transparent);border-color:color-mix(in srgb,#2f7ec4 38%,transparent)}
-.subscription-state.info small{color:#2f7ec4}
-.subscription-state.danger{background:color-mix(in srgb,#b3261e 12%,transparent);border-color:color-mix(in srgb,#b3261e 38%,transparent)}
-.subscription-state.danger small{color:#b3261e}
+.subscription-state p{margin:0;font-size:12px;line-height:1.5;color:var(--d-muted)}
+.subscription-state.ok::before{background:#17a47b}
+.subscription-state.ok small{color:#17a47b}
+.subscription-state.info::before{background:#42bfe8}
+.subscription-state.info small{color:#1689ad}
+.subscription-state.danger::before{background:#e0574d}
+.subscription-state.danger small{color:#c8453a}
+.driver-shell.theme-dark .subscription-state.info small{color:#70d4f1}
+.driver-shell.theme-dark .subscription-state.ok small{color:#5fd6ac}
+.driver-shell.theme-dark .subscription-state.danger small{color:#ff9d94}
 .subscription-perks{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:9px}
 .subscription-perks li{display:flex;align-items:center;gap:9px;font-size:12.5px}
-.subscription-perks svg{color:#1e7b4f;flex:none}
-.subscription-note{margin:14px 0 0;font-size:11px;line-height:1.5;opacity:.7}
-.subscription-warning{display:flex;align-items:flex-start;gap:8px;margin:14px 0 0;padding:11px 13px;border-radius:10px;background:color-mix(in srgb,#2f7ec4 12%,transparent);font-size:11.5px;line-height:1.45}
-.subscription-warning svg{flex:none;margin-top:1px}
+.subscription-perks svg{color:#17a47b;flex:none}
+.subscription-note{margin:14px 0 0;font-size:11px;line-height:1.5;color:var(--d-muted)}
+.subscription-warning{display:flex;align-items:flex-start;gap:8px;margin:14px 0 0;padding:11px 13px;border-radius:10px;border:1px solid var(--d-line);font-size:11.5px;line-height:1.45}
+.subscription-warning svg{flex:none;margin-top:1px;color:#42bfe8}

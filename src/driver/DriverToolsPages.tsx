@@ -48,7 +48,7 @@ export function SubscriptionPage({ subscription, busy, reviewOnly, returned, onP
   const soloRevisar = subscription.active && !cortesia && !aMedias
 
   return <div className="driver-page"><section className="driver-section-head"><span>CUOTA MENSUAL</span><h2>Tu cuota</h2><p>15 USD al mes para recibir viajes. Se cobra solo, y puedes darla de baja desde PayPal cuando quieras.</p></section>
-    <section className={`subscription-state ${tono}`}><small>TU CUOTA</small><h3>{titulo}</h3><p>{detalle}</p></section>
+    <section className={`driver-tool-card subscription-state ${tono}`}><small>TU CUOTA</small><h3>{titulo}</h3><p>{detalle}</p></section>
     <section className="driver-tool-card"><div className="driver-tool-card-title"><WalletCards size={22} aria-hidden /><div><h3>$15 USD al mes</h3><p>Lo que incluye mientras esté al día.</p></div></div>
       <ul className="subscription-perks"><li><Check size={16} aria-hidden /> Recibes las solicitudes de tu zona</li><li><Check size={16} aria-hidden /> Te puedes poner en línea cuando quieras</li><li><Check size={16} aria-hidden /> Sin límite de viajes: lo que ganes es tuyo</li></ul>
       <p className="subscription-note">Se cobra solo cada mes. Si la das de baja, sigues trabajando hasta que termine el mes que ya pagaste.</p>
