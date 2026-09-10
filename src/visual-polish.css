@@ -1448,29 +1448,6 @@ html :where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
     0 18px 44px rgba(18, 81, 109, .09) !important;
 }
 
-:where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
-  :where(
-    .start-ride-card, .active-trip, .passenger-trip-row, .trip-history article,
-    .notification-list article, .request-form, .quote-card, .address-form,
-    .address-list > article, .payment-methods, .payment-history,
-    .tracking-main, .tracking-driver, .account-details, .account-summary,
-    .settings-card, .support-form, .support-list article,
-    .active-driver-trip, .driver-request-list article, .driver-summary article,
-    .vehicle-list article, .vehicle-form, .document-list article,
-    .driver-account-grid > section, .driver-account-grid > aside,
-    .earnings-grid article, .identity-form, .document-group, .driver-tool-card,
-    .bank-account-form, .bank-account-list article, .admin-card,
-    .metric-strip article, .admin-metrics article, .admin-account-card
-  )::before {
-  content: '';
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 4px;
-  background: linear-gradient(180deg, #25b9ed, #54d5b5 62%, #8277f4);
-  opacity: .86;
-  pointer-events: none;
-}
-
 /* Bento superior: cada dato tiene un acento, pero mantiene una base blanca. */
 :where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
   :where(.metric-strip, .admin-metrics, .driver-summary) > article {

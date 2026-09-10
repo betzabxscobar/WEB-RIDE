@@ -226,3 +226,27 @@
 .theme-dark .driver-map-preview { background: linear-gradient(rgba(102,190,214,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(102,190,214,.055) 1px,transparent 1px),radial-gradient(circle at 75% 30%,rgba(64,194,167,.12),transparent 22%),linear-gradient(145deg,#102f3e,#123846); background-size:38px 38px,38px 38px,auto,auto; }
 .theme-dark .driver-preview-copy { border-color:#315564;background:rgba(16,44,58,.84) }.theme-dark .driver-preview-copy strong{color:#edf8fb}.theme-dark .driver-preview-copy small{color:#abc4ce}
 @media(max-width:600px){.driver-map-preview{padding:22px}.driver-preview-route{width:88%;height:90px;margin-bottom:24px}.driver-preview-copy{align-items:flex-start}.driver-preview-copy small{line-height:1.4}}
+
+/* Contrato final de superficies: evita que reglas históricas o la carga
+   diferida hagan reaparecer contornos y franjas decorativas. */
+:where(.passenger-shell,.driver-shell,.admin-shell) :where(
+  article,[class$="-card"],[class*="-card "],.request-form,.address-form,
+  .payment-methods,.payment-history,.tracking-main,.tracking-driver,
+  .account-details,.account-summary,.account-settings,.support-form,
+  .vehicle-form,.driver-account-grid>section,.driver-account-grid>aside,
+  .identity-form,.document-group,.bank-account-form
+){border:0!important;border-image:none!important;outline:0!important}
+:where(.passenger-shell,.driver-shell,.admin-shell) :where(
+  article,[class$="-card"],[class*="-card "],.request-form,.address-form,
+  .payment-methods,.payment-history,.tracking-main,.tracking-driver,
+  .account-details,.account-summary,.account-settings,.support-form,
+  .vehicle-form,.driver-account-grid>section,.driver-account-grid>aside,
+  .identity-form,.document-group,.bank-account-form
+)::before,
+:where(.passenger-shell,.driver-shell,.admin-shell) :where(
+  article,[class$="-card"],[class*="-card "],.request-form,.address-form,
+  .payment-methods,.payment-history,.tracking-main,.tracking-driver,
+  .account-details,.account-summary,.account-settings,.support-form,
+  .vehicle-form,.driver-account-grid>section,.driver-account-grid>aside,
+  .identity-form,.document-group,.bank-account-form
+)::after{content:none!important;display:none!important;border:0!important;background:none!important;box-shadow:none!important}
