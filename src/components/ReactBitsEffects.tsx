@@ -7,7 +7,7 @@ type Spark = { id:number; x:number; y:number }
  * Click Spark, Spotlight Card, Aurora y Floating Lines, adaptadas a Ride. */
 export function ReactBitsEffects({ scene = 'panel' }: { scene?: 'auth' | 'panel' }){
   const [sparks,setSparks]=useState<Spark[]>([])
-  useEffect(()=>{void import('../motion-effects.css')},[])
+  useEffect(()=>{void Promise.all([import('../motion-effects.css'),import('../site-unification.css')])},[])
   useEffect(()=>{
     let id=0
     const move=(event:PointerEvent)=>{
@@ -20,7 +20,23 @@ export function ReactBitsEffects({ scene = 'panel' }: { scene?: 'auth' | 'panel'
       window.setTimeout(()=>setSparks(current=>current.filter(item=>item.id!==next.id)),620)
     }
     const magneticSelector='.passenger-sidebar nav button,.driver-sidebar nav button,.admin-sidebar .nav-group button,.passenger-mobile-nav button,.driver-mobile-nav button'
-    const spotlightSelector='.feature-card,.start-ride-card,.active-trip,.request-form,.quote-card,.settings-card,.account-settings-form,.driver-status-card,.driver-summary article,.driver-request-list article,.vehicle-list article,.document-list article,.admin-card,.metric-strip article,.admin-metrics article,.user-row,.trip-row,.driver-row,.queue-row'
+    const spotlightSelector=[
+      '.feature-card','.start-ride-card','.active-trip','.request-form','.quote-card',
+      '.settings-card','.account-settings-form','.account-summary','.account-details',
+      '.tracking-main','.tracking-driver','.address-form','.address-list > article',
+      '.payment-methods','.payment-history','.payment-method-list > article',
+      '.trip-history > article','.notification-list > article','.support-form',
+      '.support-list > article','.transfer-accounts > article','.driver-conversion-card',
+      '.driver-status-card','.active-driver-trip','.driver-summary article',
+      '.driver-request-list article','.driver-history article','.vehicle-form',
+      '.vehicle-list article','.document-list article','.driver-account-grid > section',
+      '.driver-account-grid > aside','.driver-tool-card','.bank-account-form',
+      '.bank-account-list article','.earnings-hero','.earnings-grid article',
+      '.requirements-card','.identity-form','.document-group','.driver-map-card',
+      '.admin-card','.admin-account-card','.metric-strip article','.admin-metrics article',
+      '.user-row','.trip-row','.driver-row','.queue-row','.support-row','.fare-card',
+      '.category-grid article'
+    ].join(',')
     const magnet=(event:PointerEvent)=>{
       const button=(event.target as Element | null)?.closest<HTMLButtonElement>(magneticSelector)
       if(!button)return

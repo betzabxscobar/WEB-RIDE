@@ -1,0 +1,60 @@
+/* Acabado transversal basado en el panel del pasajero. Los colores comunican
+   estados y acciones; las superficies se distinguen por profundidad, no borde. */
+:where(.passenger-shell,.driver-shell,.admin-shell){
+  --ride-card-background:linear-gradient(145deg,color-mix(in srgb,var(--ride-panel-surface) 97%,white),color-mix(in srgb,var(--ride-panel-surface-soft) 86%,transparent));
+  --ride-card-shadow:0 18px 48px rgba(8,74,98,.095),0 3px 10px rgba(8,74,98,.035),inset 0 1px rgba(255,255,255,.82);
+  --ride-card-shadow-hover:0 24px 58px rgba(8,91,119,.14),0 6px 16px rgba(8,74,98,.055),inset 0 1px rgba(255,255,255,.9)
+}
+:where(.passenger-shell,.driver-shell,.admin-shell).theme-dark{
+  --ride-card-background:linear-gradient(145deg,color-mix(in srgb,var(--ride-panel-surface) 94%,#183d4d),color-mix(in srgb,var(--ride-panel-surface) 88%,#071b27));
+  --ride-card-shadow:0 18px 48px rgba(0,8,14,.2),inset 0 1px rgba(190,235,245,.045);
+  --ride-card-shadow-hover:0 24px 58px rgba(0,6,12,.29),inset 0 1px rgba(190,235,245,.07)
+}
+
+/* Incluye artículos de listas y superficies que semánticamente son forms/asides. */
+:where(.passenger-shell,.driver-shell,.admin-shell) :where(
+  article,.feature-card,.start-ride-card,.active-trip,.request-form,.quote-card,
+  .settings-card,.account-settings-form,.account-summary,.account-details,
+  .tracking-main,.tracking-driver,.address-form,.payment-methods,.payment-history,
+  .support-form,.driver-conversion-card,.driver-status-card,.active-driver-trip,
+  .vehicle-form,.driver-account-grid>section,.driver-account-grid>aside,
+  .driver-tool-card,.bank-account-form,.earnings-hero,.requirements-card,
+  .identity-form,.document-group,.driver-map-card,.admin-card,.admin-account-card
+){
+  border:0!important;outline:0!important;background:var(--ride-card-background)!important;
+  color:var(--ride-panel-ink);box-shadow:var(--ride-card-shadow)!important;
+  transition:transform 220ms cubic-bezier(.22,1,.36,1),box-shadow 220ms ease,background 220ms ease!important
+}
+
+@media (hover:hover){
+  :where(.passenger-shell,.driver-shell,.admin-shell) :where(
+    article,.feature-card,.start-ride-card,.active-trip,.request-form,.quote-card,
+    .settings-card,.account-settings-form,.account-summary,.account-details,
+    .address-form,.payment-methods,.payment-history,.support-form,
+    .driver-conversion-card,.vehicle-form,.driver-account-grid>section,
+    .driver-account-grid>aside,.driver-tool-card,.bank-account-form,
+    .admin-card,.admin-account-card
+  ):hover{z-index:2;transform:translateY(-3px);box-shadow:var(--ride-card-shadow-hover)!important}
+}
+
+/* Spotlight homogéneo para toda superficie registrada por ReactBitsEffects. */
+:where(.passenger-shell,.driver-shell,.admin-shell) :where(
+  article,.feature-card,.start-ride-card,.active-trip,.request-form,.quote-card,
+  .settings-card,.account-settings-form,.account-summary,.account-details,
+  .tracking-main,.tracking-driver,.address-form,.payment-methods,.payment-history,
+  .support-form,.driver-conversion-card,.driver-status-card,.active-driver-trip,
+  .vehicle-form,.driver-account-grid>section,.driver-account-grid>aside,
+  .driver-tool-card,.bank-account-form,.earnings-hero,.requirements-card,
+  .identity-form,.document-group,.driver-map-card,.admin-card,.admin-account-card
+){position:relative;isolation:isolate;overflow:hidden}
+:where(.passenger-shell,.driver-shell,.admin-shell) .bits-card-glow{
+  position:absolute!important;z-index:0!important;inset:0!important;display:block!important;
+  pointer-events:none!important;background:radial-gradient(260px circle at var(--ride-card-x,50%) var(--ride-card-y,50%),rgba(80,218,235,.17),transparent 68%)!important;
+  opacity:0;transition:opacity 280ms ease
+}
+:where(.passenger-shell,.driver-shell,.admin-shell) .ride-spotlight-active>.bits-card-glow{opacity:1}
+:where(.passenger-shell,.driver-shell,.admin-shell) .bits-card-glow~*{position:relative;z-index:1}
+
+@media (max-width:760px),(prefers-reduced-motion:reduce){
+  :where(.passenger-shell,.driver-shell,.admin-shell) :where(article,.feature-card,.start-ride-card,.active-trip,.request-form,.quote-card,.settings-card,.driver-status-card,.admin-card):hover{transform:none}
+}
