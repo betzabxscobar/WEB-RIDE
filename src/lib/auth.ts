@@ -335,12 +335,54 @@ export async function listUsers(): Promise<User[]> {
   return (data ?? []).map(toUser)
 }
 
+/** El mismo que exige Supabase Auth. Si se cambia alli, se cambia aqui. */
+export const LARGO_MINIMO_PASSWORD = 10
+
+/** Los símbolos que Supabase da por buenos. La lista es suya, no nuestra. */
+export const SIMBOLOS_PASSWORD = String.raw`!@#$%^&*()_+-=[]{};'\:"|<>?,./` + '`~'
+
+/**
+ * Las cuatro condiciones de Supabase Auth, comprobadas por separado para poder
+ * decir **cuál** falta.
+ *
+ * Esto no es la seguridad: la de verdad la aplica el servidor. Sirve para no
+ * mandar al usuario a que le rechacen la contraseña con un mensaje que no
+ * explica nada. Devuelve null cuando la contraseña vale.
+ */
+export function validatePassword(value: string): string | null {
+  if (!value) return 'Escribe una contraseña.'
+  // El largo primero: si además es corta, decirle las cinco cosas a la vez no
+  // ayuda a nadie.
+  if (value.length < LARGO_MINIMO_PASSWORD) return `Usa al menos ${LARGO_MINIMO_PASSWORD} caracteres.`
+
+  const faltan = [
+    /[a-z]/.test(value) ? null : 'una minúscula',
+    /[A-Z]/.test(value) ? null : 'una mayúscula',
+    /[0-9]/.test(value) ? null : 'un número',
+    value.split('').some((char) => SIMBOLOS_PASSWORD.includes(char)) ? null : 'un símbolo',
+  ].filter((item): item is string => item != null)
+
+  if (faltan.length === 0) return null
+  if (faltan.length === 1) return `Falta ${faltan[0]}.`
+  return `Faltan ${faltan.slice(0, -1).join(', ')} y ${faltan[faltan.length - 1]}.`
+}
+
 function translateAuthError(message: string): string {
   const normalized = message.toLowerCase()
   if (normalized.includes('invalid login credentials')) return 'Correo o contraseña incorrectos.'
   if (normalized.includes('email not confirmed')) return 'Debes confirmar tu correo antes de entrar.'
   if (normalized.includes('user already registered')) return 'Este correo ya tiene una cuenta.'
-  if (normalized.includes('password should be at least')) return 'La contraseña es demasiado corta.'
+  // Supabase manda las dos quejas de contrasena juntas y en ingles, con la
+  // lista entera de caracteres permitidos pegada detras. Eso, tal cual, es
+  // ilegible para quien solo quiere entrar. Se traducen por separado porque
+  // pueden venir las dos a la vez.
+  if (normalized.includes('password should be at least') || normalized.includes('password should contain at least')) {
+    const corta = normalized.includes('password should be at least')
+    const tipos = normalized.includes('password should contain at least')
+    if (corta && tipos) return `Tu contraseña necesita ${LARGO_MINIMO_PASSWORD} caracteres e incluir mayúscula, minúscula, número y símbolo.`
+    if (corta) return `Tu contraseña necesita al menos ${LARGO_MINIMO_PASSWORD} caracteres.`
+    return 'Tu contraseña necesita una mayúscula, una minúscula, un número y un símbolo.'
+  }
   if (normalized.includes('for security purposes')) return 'Espera unos segundos antes de reintentar.'
   if (normalized.includes('not allowed')) return 'Este correo no puede registrarse con ese rol.'
   if (normalized.includes('should be different from the old password')) {
