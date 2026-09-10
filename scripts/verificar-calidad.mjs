@@ -42,6 +42,28 @@ for (const header of ['Content-Security-Policy', 'Referrer-Policy', 'X-Content-T
   requireCondition(headers.includes(`${header}:`), `Falta el encabezado ${header}`)
 }
 
+// Las mismas cabeceras estan escritas dos veces: `public/_headers` lo leen
+// Netlify y Cloudflare Pages, y el `Caddyfile` lo lee el servidor propio.
+// Ninguno entiende el formato del otro. Se comparan aqui para que nadie cambie
+// una y deje la otra atras, que es justo el fallo que no se ve hasta que
+// alguien mira las cabeceras del sitio en produccion.
+const caddyfile = await readFile(join(root, 'infra', 'servidor', 'Caddyfile'), 'utf8')
+// `\\s` y no `\s`: dentro de un template literal, `\s` se queda en `s` y el
+// patron deja de buscar espacios. El `\r?` es para cuando el archivo llega con
+// finales de linea de Windows.
+const valorEnHeaders = (nombre) => headers.match(new RegExp(`^[ \\t]*${nombre}:[ \\t]*(.+?)\\r?$`, 'm'))?.[1]?.trim()
+const valorEnCaddy = (nombre) => caddyfile.match(new RegExp(`^[ \\t]*${nombre}[ \\t]+"(.+)"\\r?$`, 'm'))?.[1]?.trim()
+
+for (const header of ['Content-Security-Policy', 'Referrer-Policy', 'X-Content-Type-Options', 'X-Frame-Options', 'Permissions-Policy', 'Cross-Origin-Opener-Policy']) {
+  const esperado = valorEnHeaders(header)
+  const enCaddy = valorEnCaddy(header)
+  requireCondition(enCaddy != null, `El Caddyfile no declara ${header}`)
+  requireCondition(
+    esperado == null || enCaddy === esperado,
+    `${header} no coincide entre public/_headers y infra/servidor/Caddyfile`,
+  )
+}
+
 const html = await readFile(join(root, 'dist', 'index.html'), 'utf8')
 requireCondition(/<html\s+lang="es"/.test(html), 'La salida no declara lang="es"')
 requireCondition(/name="viewport"/.test(html), 'La salida no incluye viewport responsivo')
