@@ -70,16 +70,65 @@ www.rideviajes.com.ec.   A    <tu IP pública>
 ## Cómo se despliega
 
 El repositorio está clonado en el propio servidor, en `/var/www/WEB-RIDE`, y se
-compila allí. No se sube nada por SFTP:
+compila allí. **Un temporizador de systemd lo hace solo cada dos minutos**: mira
+si hay algo nuevo en git y, si lo hay, recompila. No se sube nada por SFTP y no
+hay que entrar al servidor para publicar.
+
+Si hace falta lanzarlo a mano:
 
 ```bash
-cd /var/www/WEB-RIDE
-git pull
-npm ci
-npm run build
+sudo systemctl start ride-desplegar.service
+journalctl -u ride-desplegar.service -n 30 --no-pager
 ```
 
-Y ya está: nginx sirve `dist/` directamente, no hace falta recargarlo.
+### Por qué así y no con un runner de GitHub
+
+GitHub ofrece instalar un *runner* auto-alojado, y para un repositorio privado
+sería la opción cómoda: despliegue inmediato al hacer push. **Este repositorio es
+público**, y ahí GitHub lo desaconseja expresamente: cualquiera puede abrir un
+pull request que modifique el workflow y, al ejecutarse, correría sus comandos
+dentro de este servidor, que está en una red doméstica.
+
+El temporizador no tiene ese problema: es el servidor el que sale hacia GitHub.
+Nadie entra, no hay que abrir puertos —cosa nada menor con el doble NAT— y el
+precio es un retraso de hasta dos minutos.
+
+### Lo que hace el script
+
+[`desplegar.sh`](desplegar.sh), y merece la pena saber tres cosas:
+
+- **Compila a `dist.nuevo` y solo entonces la cambia por la buena.** `vite build`
+  vacía el destino antes de escribir: compilando directo sobre `dist`, un fallo
+  a mitad dejaría la web caída hasta el siguiente intento. Si la compilación
+  falla, se queda sirviendo la versión anterior y lo dice en el registro.
+- **Usa `git reset --hard`, no `git pull`.** Si alguien editó un archivo a mano
+  en el servidor, un `pull` se queda en un conflicto y el despliegue no vuelve a
+  funcionar hasta que alguien entra a arreglarlo. Lo que manda es git.
+- **Se protege con `flock`.** Dos despliegues a la vez dejarían el `dist` a
+  medias.
+
+### Instalarlo
+
+```bash
+sudo cp /var/www/WEB-RIDE/infra/servidor/ride-desplegar.* /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now ride-desplegar.timer
+systemctl list-timers ride-desplegar --no-pager
+```
+
+Sigue la rama `main`. Para que siga otra —por ejemplo mientras se prueba—, se
+cambia en el servicio:
+
+```bash
+sudo systemctl edit ride-desplegar.service
+```
+
+y se añade:
+
+```
+[Service]
+Environment=RAMA=Diego
+```
 
 > **Ojo con compilar esto desde un flujo de GitHub Actions.** `vite.config.ts`
 > pone `base: '/WEB-RIDE/'` cuando detecta ese entorno, porque es lo que
