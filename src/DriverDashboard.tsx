@@ -8,9 +8,10 @@ import logoTipo from './assets/LogoTipo.webp'
 import { panelLabel, type Role, type User } from './lib/auth'
 import { AppearanceSettings, useAppearance } from './components/AppearanceSettings'
 import { AccountSettings } from './components/AccountSettings'
-import { Home as HomeIcon, MapPin as MapPinIcon, MapPinned as ZonesIcon, Landmark as BankIcon, Truck as TruckIcon, FileText as FileTextIcon, HelpCircle as HelpCircleIcon, User as UserIcon, Settings as SettingsIcon, Menu as MenuIcon, WalletCards as WalletIcon, LogOut as LogOutIcon } from 'lucide-react'
+import { Home as HomeIcon, MapPin as MapPinIcon, MapPinned as ZonesIcon, Landmark as BankIcon, Truck as TruckIcon, FileText as FileTextIcon, HelpCircle as HelpCircleIcon, User as UserIcon, Settings as SettingsIcon, Menu as MenuIcon, WalletCards as WalletIcon, BadgeDollarSign as FeeIcon, LogOut as LogOutIcon } from 'lucide-react'
 import { DriverAccount, DriverHome, DriverNav, DriverTrips, DocumentsPage, EarningsPage, VehiclesPage } from './driver/DriverPages'
-import { BankAccountsPage, WorkZonesPage } from './driver/DriverToolsPages'
+import { BankAccountsPage, SubscriptionPage, WorkZonesPage } from './driver/DriverToolsPages'
+import { getMySubscription, openSubscriptionCheckout, UNPAID, type DriverSubscription } from './lib/subscription'
 import { initials, money } from './dashboard/formatters'
 import {
   activateVehicle,
@@ -57,7 +58,7 @@ import {
   type TripPosition,
 } from './lib/trips'
 
-type Page = 'inicio' | 'viajes' | 'ganancias' | 'zonas' | 'bancos' | 'vehiculos' | 'documentos' | 'soporte' | 'cuenta' | 'configuracion'
+type Page = 'inicio' | 'viajes' | 'ganancias' | 'cuota' | 'zonas' | 'bancos' | 'vehiculos' | 'documentos' | 'soporte' | 'cuenta' | 'configuracion'
 type Props = { user: User; views: Role[]; activeView: Role; onSwitchView: (view: Role) => void; onUserUpdate: (user: User) => void; onLogout: () => void }
 
 const EMPTY_STATE: DriverState = { exists: false, approved: false, approvalStatus: 'pendiente', available: false, hasActiveVehicle: false, rating: null }
@@ -75,6 +76,9 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
   const [identity, setIdentity] = useState<DriverIdentity>(EMPTY_IDENTITY)
   const [missingRequirements, setMissingRequirements] = useState<string[]>([])
   const [zones, setZones] = useState<WorkZone[]>([])
+  const [subscription, setSubscription] = useState<DriverSubscription>(UNPAID)
+  /** Se abrio PayPal y todavia no consta el pago: cambia el boton a «Ya pagué». */
+  const [backFromPaypal, setBackFromPaypal] = useState(false)
   const [banks, setBanks] = useState<Bank[]>([])
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([])
   const [position, setPosition] = useState<TripPosition | null>(null)
@@ -101,16 +105,16 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
       if (user.role !== 'driver') {
         setState(EMPTY_STATE); setTrips([]); setRequests([]); setVehicles([]); setDocuments([])
         setEarnings({}); setIdentity(EMPTY_IDENTITY); setMissingRequirements([]); setZones([])
-        setBanks([]); setBankAccounts([]); setPosition(null); setError('')
+        setBanks([]); setBankAccounts([]); setPosition(null); setSubscription(UNPAID); setError('')
         return
       }
-      const [nextState, nextTrips, nextVehicles, nextDocuments, nextEarnings, nextIdentity, nextMissing, nextZones, nextBanks, nextAccounts] = await Promise.all([
+      const [nextState, nextTrips, nextVehicles, nextDocuments, nextEarnings, nextIdentity, nextMissing, nextZones, nextBanks, nextAccounts, nextSubscription] = await Promise.all([
         getDriverState(user.id), listDriverTrips(user.id), listOwnVehicles(user.id), listOwnDocuments(user.id), getDriverEarnings(), getDriverIdentity(user.id), getMissingDriverRequirements(),
-        listWorkZones(), listBanks(), listOwnBankAccounts(user.id),
+        listWorkZones(), listBanks(), listOwnBankAccounts(user.id), getMySubscription(),
       ])
       const active = nextTrips.find((trip) => !esFinal(trip.estado))
       const nextRequests = !active && nextState.approved && nextState.hasActiveVehicle && nextState.available ? await listOpenTripRequests() : []
-      setState(nextState); setTrips(nextTrips); setVehicles(nextVehicles); setDocuments(nextDocuments); setEarnings(nextEarnings); setIdentity(nextIdentity); setMissingRequirements(nextMissing); setZones(nextZones); setBanks(nextBanks); setBankAccounts(nextAccounts); setRequests(nextRequests); setError('')
+      setState(nextState); setTrips(nextTrips); setVehicles(nextVehicles); setDocuments(nextDocuments); setEarnings(nextEarnings); setIdentity(nextIdentity); setMissingRequirements(nextMissing); setZones(nextZones); setBanks(nextBanks); setBankAccounts(nextAccounts); setRequests(nextRequests); setSubscription(nextSubscription); if (nextSubscription.active) setBackFromPaypal(false); setError('')
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'No pudimos actualizar tu panel.')
     } finally { setLoading(false) }
@@ -143,6 +147,27 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
     try { await operation(); await load(); if (success) setNotice(success) }
     catch (cause) { setError(cause instanceof Error ? cause.message : 'No se pudo completar la acción.'); await load() }
     finally { setBusy(false) }
+  }
+
+  /**
+   * Abre PayPal en otra pestaña para aprobar la cuota.
+   *
+   * No usa `action` porque no hay nada que recargar todavía: la suscripción
+   * queda abierta pero sin aprobar, y quien la activa es el webhook de PayPal
+   * cuando cobre. Por eso al volver se ofrece «Ya pagué» en lugar de dar el
+   * pago por hecho.
+   */
+  const payFee = () => {
+    setBusy(true); setError(''); setNotice('')
+    openSubscriptionCheckout()
+      .then((url) => {
+        // `noopener` a propósito: sin él, la pestaña de PayPal puede tocar la
+        // nuestra a través de `window.opener`.
+        window.open(url, '_blank', 'noopener,noreferrer')
+        setBackFromPaypal(true)
+      })
+      .catch((cause) => setError(cause instanceof Error ? cause.message : 'No pudimos abrir el pago.'))
+      .finally(() => setBusy(false))
   }
 
   const toggleAvailability = (available: boolean) => void action(async () => {
@@ -192,6 +217,7 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
         <DriverNav active={page === 'inicio'} icon={<HomeIcon size={18} />} label="Inicio" onClick={() => go('inicio')}/>
         <DriverNav active={page === 'viajes'} icon={<MapPinIcon size={18} />} label="Viajes" onClick={() => go('viajes')}/>
         <DriverNav active={page === 'ganancias'} icon={<WalletIcon size={18} />} label="Ganancias" onClick={() => go('ganancias')}/>
+        <DriverNav active={page === 'cuota'} icon={<FeeIcon size={18} />} label="Cuota mensual" onClick={() => go('cuota')}/>
         <DriverNav active={page === 'zonas'} icon={<ZonesIcon size={18} />} label="Zonas de trabajo" onClick={() => go('zonas')}/>
         <DriverNav active={page === 'bancos'} icon={<BankIcon size={18} />} label="Cuentas bancarias" onClick={() => go('bancos')}/>
         <DriverNav active={page === 'vehiculos'} icon={<TruckIcon size={18} />} label="Vehículos" onClick={() => go('vehiculos')}/>
@@ -206,7 +232,7 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
     {sidebarOpen && <SidebarBackdrop onClose={() => setSidebarOpen(false)} />}
       <section className="driver-workspace">
       <PanelPreview role={user.role} activeView={activeView} onSwitchView={onSwitchView} />
-      <header className="driver-topbar"><button type="button" className="driver-hamburger" aria-controls="driver-sidebar" aria-expanded={sidebarOpen} aria-label="Alternar menú" onClick={() => setSidebarOpen((value) => !value)}><MenuIcon size={18} aria-hidden /></button><div><span>PANEL DE CONDUCTOR</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'viajes' ? 'Tus viajes' : page === 'ganancias' ? 'Tus ganancias' : page === 'zonas' ? 'Zonas de trabajo' : page === 'bancos' ? 'Cuentas bancarias' : page === 'vehiculos' ? 'Tus vehículos' : page === 'documentos' ? 'Tus documentos' : page === 'soporte' ? 'Soporte' : page === 'configuracion' ? 'Configuración' : 'Tu cuenta'}</h1></div><div className="driver-top-actions">{views.length > 1 && <label className="driver-view-select"><span>Vista</span><select value={activeView} onChange={(event) => onSwitchView(event.target.value as Role)}>{views.map((view) => <option key={view} value={view}>{panelLabel(view)}</option>)}</select></label>}<button className="driver-avatar" onClick={() => go('cuenta')}>{initials(user.name)}</button></div></header>
+      <header className="driver-topbar"><button type="button" className="driver-hamburger" aria-controls="driver-sidebar" aria-expanded={sidebarOpen} aria-label="Alternar menú" onClick={() => setSidebarOpen((value) => !value)}><MenuIcon size={18} aria-hidden /></button><div><span>PANEL DE CONDUCTOR</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'viajes' ? 'Tus viajes' : page === 'ganancias' ? 'Tus ganancias' : page === 'cuota' ? 'Cuota mensual' : page === 'zonas' ? 'Zonas de trabajo' : page === 'bancos' ? 'Cuentas bancarias' : page === 'vehiculos' ? 'Tus vehículos' : page === 'documentos' ? 'Tus documentos' : page === 'soporte' ? 'Soporte' : page === 'configuracion' ? 'Configuración' : 'Tu cuenta'}</h1></div><div className="driver-top-actions">{views.length > 1 && <label className="driver-view-select"><span>Vista</span><select value={activeView} onChange={(event) => onSwitchView(event.target.value as Role)}>{views.map((view) => <option key={view} value={view}>{panelLabel(view)}</option>)}</select></label>}<button className="driver-avatar" onClick={() => go('cuenta')}>{initials(user.name)}</button></div></header>
       <PanelAtmosphere kind="driver" />
       <div className="driver-content">
         {isReviewOnly && <div className="driver-review-notice">Vista de revisión: puedes recorrer el panel, pero una cuenta administradora no puede ponerse en línea, aceptar ni finalizar viajes.</div>}
@@ -214,6 +240,7 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
         {loading ? <div className="driver-loading"><span><MapPinIcon size={22} aria-hidden /></span><div><strong>Actualizando tu ruta de trabajo</strong><small>Sincronizando viajes, vehículo y disponibilidad…</small></div><i aria-hidden /></div> : page === 'inicio' ? <DriverHome state={state} active={activeTrip} requests={requests} position={position} busy={busy} reviewOnly={isReviewOnly} onAvailability={toggleAvailability} onTrips={() => go('viajes')} onProfile={() => go('documentos')} onReport={() => reportPosition(activeTrip?.id)}/>
           : page === 'viajes' ? <DriverTrips active={activeTrip} requests={requests} history={trips} position={position} busy={busy} canWork={canWork} available={state.available} onAccept={(trip) => void action(() => acceptTrip(trip.id), 'Solicitud aceptada.')} onAdvance={advance} onFinish={finalize} onCancel={(trip) => { setCancelReason(''); setCancelingTrip(trip) }} onConfirmPayment={(trip) => void action(() => confirmPaymentReceived(trip.id), 'Pago recibido y registrado.')} onChat={setChatTrip}/>
           : page === 'ganancias' ? <EarningsPage earnings={earnings} reviewOnly={isReviewOnly}/>
+          : page === 'cuota' ? <SubscriptionPage subscription={subscription} busy={busy} reviewOnly={isReviewOnly} returned={backFromPaypal} onPay={payFee} onRefresh={() => void load()}/>
           : page === 'zonas' ? <WorkZonesPage zones={zones} busy={busy} reviewOnly={isReviewOnly} onSave={(ids) => void action(() => saveWorkZones(ids), 'Tus zonas de trabajo quedaron actualizadas.')}/>
           : page === 'bancos' ? <BankAccountsPage banks={banks} accounts={bankAccounts} busy={busy} reviewOnly={isReviewOnly} onSave={(input) => void action(() => saveBankAccount(input).then(() => undefined), 'Cuenta bancaria guardada.')} onDelete={(id) => void action(() => deleteBankAccount(id), 'Cuenta bancaria eliminada.')}/>
           : page === 'vehiculos' ? <VehiclesPage vehicles={vehicles} busy={busy} onSave={(input) => void action(() => saveVehicle(input).then(() => undefined), 'Vehículo guardado.')} onActivate={(id) => void action(() => activateVehicle(id), 'Vehículo activado.')}/>
