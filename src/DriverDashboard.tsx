@@ -1,4 +1,5 @@
 import { PanelPreview, SidebarDismiss, SidebarBackdrop } from './components/PanelPreview'
+import { PanelAtmosphere } from './components/PanelAtmosphere'
 import { ReactBitsEffects } from './components/ReactBitsEffects'
 import './DriverDashboard.css'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -206,6 +207,7 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
       <section className="driver-workspace">
       <PanelPreview role={user.role} activeView={activeView} onSwitchView={onSwitchView} />
       <header className="driver-topbar"><button type="button" className="driver-hamburger" aria-controls="driver-sidebar" aria-expanded={sidebarOpen} aria-label="Alternar menú" onClick={() => setSidebarOpen((value) => !value)}><MenuIcon size={18} aria-hidden /></button><div><span>PANEL DE CONDUCTOR</span><h1>{page === 'inicio' ? `Hola, ${user.name.split(' ')[0]}` : page === 'viajes' ? 'Tus viajes' : page === 'ganancias' ? 'Tus ganancias' : page === 'zonas' ? 'Zonas de trabajo' : page === 'bancos' ? 'Cuentas bancarias' : page === 'vehiculos' ? 'Tus vehículos' : page === 'documentos' ? 'Tus documentos' : page === 'soporte' ? 'Soporte' : page === 'configuracion' ? 'Configuración' : 'Tu cuenta'}</h1></div><div className="driver-top-actions">{views.length > 1 && <label className="driver-view-select"><span>Vista</span><select value={activeView} onChange={(event) => onSwitchView(event.target.value as Role)}>{views.map((view) => <option key={view} value={view}>{panelLabel(view)}</option>)}</select></label>}<button className="driver-avatar" onClick={() => go('cuenta')}>{initials(user.name)}</button></div></header>
+      <PanelAtmosphere kind="driver" />
       <div className="driver-content">
         {isReviewOnly && <div className="driver-review-notice">Vista de revisión: puedes recorrer el panel, pero una cuenta administradora no puede ponerse en línea, aceptar ni finalizar viajes.</div>}
         {notice && <div className="driver-feedback success">✓ {notice}</div>}{error && <div className="driver-feedback failure">! {error}<button onClick={() => setError('')}>Cerrar</button></div>}

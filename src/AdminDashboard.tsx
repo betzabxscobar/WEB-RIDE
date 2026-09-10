@@ -1,4 +1,5 @@
 import { PanelPreview, SidebarDismiss, SidebarBackdrop } from './components/PanelPreview'
+import { PanelAtmosphere } from './components/PanelAtmosphere'
 import { ReactBitsEffects } from './components/ReactBitsEffects'
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
@@ -236,6 +237,7 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onUs
           <div><small className="admin-panel-label">{accessName}</small><h1>{activeSection}</h1></div>
           <div className="admin-profile"><span>{initials(user.name)}</span><div><strong>{user.name}</strong><small>{profileName}</small></div></div>
         </header>
+        <PanelAtmosphere kind="admin" />
 
         {activeSection === 'Resumen' && (
           <div className="admin-content">

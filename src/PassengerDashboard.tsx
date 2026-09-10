@@ -1,4 +1,5 @@
 import { PanelPreview, SidebarDismiss, SidebarBackdrop } from './components/PanelPreview'
+import { PanelAtmosphere } from './components/PanelAtmosphere'
 import { ReactBitsEffects } from './components/ReactBitsEffects'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -545,6 +546,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onUserUpdat
           <button className="passenger-avatar" onClick={() => go('cuenta')} aria-label="Abrir mi cuenta">{initials(user.name)}</button>
         </div>
       </header>
+      <PanelAtmosphere kind="passenger" />
 
       <div className="passenger-content">
         {notice && <div className="passenger-feedback success"><CheckCircle2 size={18} aria-hidden />{notice}</div>}

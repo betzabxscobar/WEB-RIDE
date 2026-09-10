@@ -55,53 +55,10 @@
 :where(.passenger-shell,.driver-shell,.admin-shell) .ride-spotlight-active>.bits-card-glow{opacity:1}
 :where(.passenger-shell,.driver-shell,.admin-shell) .bits-card-glow~*{position:relative;z-index:1}
 
-/* Algunas versiones históricas dibujaban la franja de color con ::before en
-   vez de usar border. Se neutralizan ambos mecanismos para cualquier tarjeta,
-   incluso las nuevas que se añadan después y todavía no estén en la lista. */
+/* Las tarjetas se separan por profundidad, no mediante contornos de color. */
 :where(.passenger-shell,.driver-shell,.admin-shell) :where(
   article,[class$="-card"],[class*="-card "],.passenger-empty,.driver-empty,.tool-empty
 ){border:none!important;border-image:none!important;outline:none!important}
-:where(.passenger-shell,.driver-shell,.admin-shell) :where(
-  article,[class$="-card"],[class*="-card "],.passenger-empty,.driver-empty,.tool-empty
-)::before,
-:where(.passenger-shell,.driver-shell,.admin-shell) :where(
-  article,[class$="-card"],[class*="-card "],.passenger-empty,.driver-empty,.tool-empty
-)::after{
-  content:none!important;display:none!important;border:0!important;
-  background:none!important;box-shadow:none!important
-}
-
-/* Formularios, resúmenes y paneles no siempre usan el sufijo `-card`. Estas
-   son todas las superficies del producto que heredaron la antigua franja. */
-:where(.passenger-shell,.driver-shell,.admin-shell) :where(
-  .start-ride-card,.active-trip,.passenger-trip-row,.request-form,.quote-card,
-  .address-form,.address-list>article,.payment-methods,.payment-history,
-  .tracking-main,.tracking-driver,.account-details,.account-summary,
-  .settings-card,.support-form,.support-list>article,.transfer-accounts>article,
-  .driver-status-card,.active-driver-trip,.driver-request-list>article,
-  .driver-history>article,.vehicle-list>article,.vehicle-form,
-  .document-list>article,.driver-account-grid>section,.driver-account-grid>aside,
-  .earnings-hero,.earnings-grid>article,.requirements-card,.identity-form,
-  .document-group,.driver-tool-card,.bank-account-form,.bank-account-list>article,
-  .admin-card,.admin-account-card,.metric-strip>article,.admin-metrics>article,
-  .user-row,.trip-row,.driver-row,.queue-row,.support-row,.fare-card,
-  .category-grid>article
-)::before,
-:where(.passenger-shell,.driver-shell,.admin-shell) :where(
-  .start-ride-card,.active-trip,.passenger-trip-row,.request-form,.quote-card,
-  .address-form,.address-list>article,.payment-methods,.payment-history,
-  .tracking-main,.tracking-driver,.account-details,.account-summary,
-  .settings-card,.support-form,.support-list>article,.transfer-accounts>article,
-  .driver-status-card,.active-driver-trip,.driver-request-list>article,
-  .driver-history>article,.vehicle-list>article,.vehicle-form,
-  .document-list>article,.driver-account-grid>section,.driver-account-grid>aside,
-  .earnings-hero,.earnings-grid>article,.requirements-card,.identity-form,
-  .document-group,.driver-tool-card,.bank-account-form,.bank-account-list>article,
-  .admin-card,.admin-account-card,.metric-strip>article,.admin-metrics>article,
-  .user-row,.trip-row,.driver-row,.queue-row,.support-row,.fare-card,
-  .category-grid>article
-)::after{content:none!important;display:none!important;border:0!important;background:none!important;box-shadow:none!important}
-
 @media (max-width:760px),(prefers-reduced-motion:reduce){
   :where(.passenger-shell,.driver-shell,.admin-shell) :where(article,.feature-card,.start-ride-card,.active-trip,.request-form,.quote-card,.settings-card,.driver-status-card,.admin-card):hover{transform:none}
 }
