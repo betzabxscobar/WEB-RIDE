@@ -1685,6 +1685,13 @@ html :where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
 .loading-theme-dark .loading-signals span{border:1px solid rgba(112,201,222,.18)!important}
 .loading-theme-dark .loading-progress{background:#173b49!important}
 
+/* Alcance compartido: misma profundidad, contraste y ausencia de marcos en
+   pasajero, conductor y administración. Los controles conservan sus bordes
+   funcionales para que foco y selección sigan siendo evidentes. */
+:where(.passenger-shell,.driver-shell,.admin-shell) :where(.start-ride-card,.active-trip,.passenger-trip-row,.request-form,.quote-card,.settings-card,.account-settings,.account-settings-form,.driver-status-card,.active-driver-trip,.driver-request-list article,.vehicle-list article,.document-list article,.driver-account-grid>section,.driver-account-grid>aside,.earnings-grid article,.admin-card,.metric-strip article,.admin-metrics article,.user-row,.trip-row,.driver-row,.queue-row){border:0!important;outline:0!important}
+:where(.passenger-shell,.driver-shell,.admin-shell):not(.theme-dark) :where(p,small,dt,time){color:#405f6c}
+:where(.passenger-shell,.driver-shell,.admin-shell).theme-dark :where(p,small,dt,time){color:#c0d5dd}
+
 /* More saturated light appearance across authentication, driver and admin. */
 :where(.driver-shell,.admin-shell):not(.theme-dark) :where(.driver-workspace,.admin-main){background:radial-gradient(circle at 9% 8%,rgba(12,197,226,.2),transparent 29%),radial-gradient(circle at 88% 17%,rgba(111,89,229,.15),transparent 27%),radial-gradient(circle at 58% 86%,rgba(38,200,155,.13),transparent 32%),#f3fafb!important}
 :where(.driver-shell,.admin-shell):not(.theme-dark){color:#082c3c}:where(.driver-shell,.admin-shell):not(.theme-dark) :where(h1,h2,h3,h4,strong,dd,label){color:#082c3c}:where(.driver-shell,.admin-shell):not(.theme-dark) :where(p,small,dt,time){color:#4c6874!important}

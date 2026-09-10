@@ -1,4 +1,4 @@
-import { ArrowRight, Clock3, MapPin, Navigation, Search, ShieldCheck } from 'lucide-react'
+import { ArrowRight, Clock3, Navigation, Search, ShieldCheck } from 'lucide-react'
 import confiableImg from '../assets/confiable.webp'
 import seguroImg from '../assets/seguro.webp'
 import sostenibleImg from '../assets/sostenible.webp'
@@ -6,11 +6,12 @@ import { dateTime as date, initials, money } from '../dashboard/formatters'
 import type { User } from '../lib/auth'
 import { esFinal, ESTADO_LABEL, progresoViaje, puedeCancelar, type Trip } from '../lib/trips'
 import { STATUS_HINT, vehicle } from './tripPresentation'
+import { RideJourneyVisual } from '../components/RideJourneyVisual'
 
 export function HomePage({ user, activeTrip, trips, onRequest, onTrips, onCancel, onTrack }: { user: User; activeTrip: Trip | null; trips: Trip[]; onRequest: () => void; onTrips: () => void; onCancel: (trip: Trip) => void; onTrack: (trip: Trip) => void }) {
   const recent = trips.filter((trip) => esFinal(trip.estado)).slice(0, 3)
   return <div className="passenger-page home-page">
-    <section className="home-intro"><div className="intro-orbit" aria-hidden><span><MapPin size={20}/></span><i/><span><Navigation size={20}/></span></div><div className="command-copy"><span>{activeTrip ? 'VIAJE ACTIVO' : 'LISTA PARA MOVERTE'}</span><h2>{activeTrip ? STATUS_HINT[activeTrip.estado] : <>¿A dónde quieres<br/><em>llegar hoy?</em></>}</h2><p>{activeTrip ? `Destino: ${activeTrip.destinoTexto}` : 'Elige dos puntos, revisa el valor y encuentra un conductor.'}</p>{activeTrip ? <button className="command-action" onClick={() => onTrack(activeTrip)}>Ver seguimiento <ArrowRight size={16}/></button> : <button className="command-action" onClick={onRequest}>Pedir un viaje <ArrowRight size={16}/></button>}</div><aside className="intro-status"><small>DISPONIBLE AHORA</small><strong><i/> Conductores conectados</strong><p>La tarifa se calcula antes de confirmar.</p></aside></section>
+    <section className="home-intro"><RideJourneyVisual/><div className="command-copy"><span>{activeTrip ? 'VIAJE ACTIVO' : 'LISTA PARA MOVERTE'}</span><h2>{activeTrip ? STATUS_HINT[activeTrip.estado] : <>¿A dónde quieres<br/><em>llegar hoy?</em></>}</h2><p>{activeTrip ? `Destino: ${activeTrip.destinoTexto}` : 'Elige dos puntos, revisa el valor y encuentra un conductor.'}</p>{activeTrip ? <button className="command-action" onClick={() => onTrack(activeTrip)}>Ver seguimiento <ArrowRight size={16}/></button> : <button className="command-action" onClick={onRequest}>Pedir un viaje <ArrowRight size={16}/></button>}</div><aside className="intro-status"><small>DISPONIBLE AHORA</small><strong><i/> Conductores conectados</strong><p>La tarifa se calcula antes de confirmar.</p></aside></section>
     <section className="home-features" aria-label="Beneficios de Ride">
       <article className="feature-card feature-seguro"><img src={seguroImg} alt="" /><ShieldCheck className="feature-symbol"/><div><h4>Viaje protegido</h4><p>Seguimiento durante todo el trayecto</p></div></article>
       <article className="feature-card feature-sostenible"><img src={sostenibleImg} alt="" /><Clock3 className="feature-symbol"/><div><h4>Tarifa al instante</h4><p>Conoce precio y tiempo antes de salir</p></div></article>

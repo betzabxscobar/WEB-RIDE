@@ -62,23 +62,33 @@
 .auth-page .welcome-box .primary-action svg { position: absolute; right: 18px; margin: 0 !important; }
 
 /* Magnet y Electric Border para los iconos de navegación de todos los paneles. */
-:where(.passenger-sidebar nav button,.driver-sidebar nav button) > span:first-child,
+:where(.passenger-sidebar nav button,.driver-sidebar nav button,.passenger-mobile-nav button,.driver-mobile-nav button) > span:first-child,
 .admin-sidebar .nav-group button > svg {
   transition: transform .24s cubic-bezier(.22,1,.36,1), filter .24s ease, color .24s ease, background .24s ease !important;
   transform: translate(var(--ride-magnet-x,0),var(--ride-magnet-y,0));
 }
-:where(.passenger-sidebar nav button,.driver-sidebar nav button).ride-magnetic-active > span:first-child,
+:where(.passenger-sidebar nav button,.driver-sidebar nav button,.passenger-mobile-nav button,.driver-mobile-nav button).ride-magnetic-active > span:first-child,
 .admin-sidebar .nav-group button.ride-magnetic-active > svg {
   transform: translate(var(--ride-magnet-x,0),var(--ride-magnet-y,0)) scale(1.13) rotate(-4deg);
   filter: drop-shadow(0 0 9px rgba(62, 221, 238, .58));
 }
-:where(.passenger-sidebar nav button,.driver-sidebar nav button).active > span:first-child,
+:where(.passenger-sidebar nav button,.driver-sidebar nav button,.passenger-mobile-nav button,.driver-mobile-nav button).active > span:first-child,
 .admin-sidebar .nav-group button.active > svg {
   color: #7ce9f3 !important;
   background: radial-gradient(circle at 30% 25%, rgba(103,233,243,.24), rgba(45,177,205,.1)) !important;
   box-shadow: 0 0 0 1px rgba(109, 226, 239, .28), 0 0 22px rgba(46, 201, 224, .22), inset 0 1px rgba(255,255,255,.1) !important;
   animation: ride-nav-electric 3.2s ease-in-out infinite;
 }
+
+/* Spotlight Card + Glare Hover, aplicado a superficies de los tres paneles. */
+:where(.feature-card,.start-ride-card,.active-trip,.request-form,.quote-card,.settings-card,.account-settings-form,.driver-status-card,.driver-summary article,.driver-request-list article,.vehicle-list article,.document-list article,.admin-card,.metric-strip article,.admin-metrics article,.user-row,.trip-row,.driver-row,.queue-row){position:relative;isolation:isolate;overflow:hidden}
+:where(.feature-card,.start-ride-card,.active-trip,.request-form,.quote-card,.settings-card,.account-settings-form,.driver-status-card,.driver-summary article,.driver-request-list article,.vehicle-list article,.document-list article,.admin-card,.metric-strip article,.admin-metrics article,.user-row,.trip-row,.driver-row,.queue-row)>.bits-card-glow{position:absolute!important;z-index:0!important;inset:0!important;display:block!important;pointer-events:none!important;background:radial-gradient(230px circle at var(--ride-card-x,50%) var(--ride-card-y,50%),rgba(80,218,235,.16),transparent 68%)!important;opacity:0;transition:opacity .28s ease}
+:where(.feature-card,.start-ride-card,.active-trip,.request-form,.quote-card,.settings-card,.account-settings-form,.driver-status-card,.driver-summary article,.driver-request-list article,.vehicle-list article,.document-list article,.admin-card,.metric-strip article,.admin-metrics article,.user-row,.trip-row,.driver-row,.queue-row).ride-spotlight-active>.bits-card-glow{opacity:1}
+:where(.feature-card,.start-ride-card,.active-trip,.request-form,.quote-card,.settings-card,.account-settings-form,.driver-status-card,.driver-summary article,.driver-request-list article,.vehicle-list article,.document-list article,.admin-card,.metric-strip article,.admin-metrics article,.user-row,.trip-row,.driver-row,.queue-row)>:not(.bits-card-glow){position:relative;z-index:1}
+
+/* Glass Icons: los indicadores personales y operativos reciben el mismo pulso. */
+:where(.feature-symbol,.overview-metric-icon,.user-metric-icon,.metric-icon,.settings-card-head>span,.account-settings-head>span,.notification-mark,.searching-driver,.vehicle-list article>span,.document-list .doc-state){transition:transform .25s cubic-bezier(.22,1,.36,1),filter .25s ease,box-shadow .25s ease!important}
+:where(.feature-card,.metric-strip article,.admin-metrics article,.settings-card,.account-settings,.notification-list article,.vehicle-list article,.document-list article):hover :where(.feature-symbol,.overview-metric-icon,.user-metric-icon,.metric-icon,.settings-card-head>span,.account-settings-head>span,.notification-mark,.vehicle-list article>span,.document-list .doc-state){transform:translateY(-3px) rotate(-4deg) scale(1.08);filter:drop-shadow(0 7px 12px rgba(39,193,216,.24));box-shadow:0 0 0 7px rgba(70,210,229,.07)}
 
 @keyframes ride-road-flow { to { stroke-dashoffset: -180; } }
 @keyframes ride-car-route { 0% { offset-distance: 0%; opacity: 0; } 6%,92% { opacity: 1; } 100% { offset-distance: 100%; opacity: 0; } }
@@ -99,6 +109,6 @@
 }
 
 @media(prefers-reduced-motion:reduce){
-  .bits-road,.bits-moving-car,.bits-waypoint,.bits-signal,.auth-page .brand-panel::before,.auth-page .brand-panel::after,.auth-page .brand-status .status-dot,.auth-page .auth-icon,.auth-page .auth-icon::before,.auth-page .primary-action,:where(.passenger-sidebar nav button,.driver-sidebar nav button).active>span:first-child,.admin-sidebar .nav-group button.active>svg{animation:none!important}
+  .bits-road,.bits-moving-car,.bits-waypoint,.bits-signal,.auth-page .brand-panel::before,.auth-page .brand-panel::after,.auth-page .brand-status .status-dot,.auth-page .auth-icon,.auth-page .auth-icon::before,.auth-page .primary-action,:where(.passenger-sidebar nav button,.driver-sidebar nav button,.passenger-mobile-nav button,.driver-mobile-nav button).active>span:first-child,.admin-sidebar .nav-group button.active>svg{animation:none!important}
   .bits-moving-car{display:none}.auth-page .primary-action::before{display:none}
 }
