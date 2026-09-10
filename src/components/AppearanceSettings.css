@@ -9,11 +9,12 @@
   box-sizing: border-box;
   margin-top: 0;
   padding: clamp(19px, 3vw, 25px);
-  border: 1px solid var(--ride-panel-border, #cce3ec);
+  border: 0 !important;
+  outline: 0 !important;
   border-radius: var(--ride-radius-lg, 18px);
   background: var(--ride-panel-surface, #fff);
   color: var(--ride-panel-ink, #0b2a3a);
-  box-shadow: var(--ride-shadow-sm, 0 5px 16px rgba(12, 76, 103, .075));
+  box-shadow: 0 18px 46px rgba(8, 69, 91, .1);
 }
 
 .settings-shared .settings-card-head {
@@ -21,6 +22,10 @@
   align-items: center;
   gap: 13px;
   margin-bottom: 19px;
+}
+
+.settings-shared > .settings-card::before {
+  display: none !important;
 }
 
 .settings-shared .settings-card-head > span {
@@ -71,13 +76,16 @@
   align-items: center;
   gap: 12px;
   padding: 14px;
-  border: 1px solid var(--ride-panel-border, #cce3ec);
+  border: 0 !important;
+  outline: 0 !important;
   border-radius: 14px;
-  background: var(--ride-panel-surface, #fff);
+  background: var(--ride-panel-surface-soft, #f2f9fc);
   color: var(--ride-panel-ink, #0b2a3a);
   text-align: left;
   overflow-wrap: normal;
   cursor: pointer;
+  box-shadow: 0 8px 22px rgba(8, 69, 91, .065);
+  transition: transform var(--ride-transition, 180ms ease), background-color var(--ride-transition, 180ms ease), box-shadow var(--ride-transition, 180ms ease);
 }
 
 .settings-shared .theme-options button > b {
@@ -119,9 +127,20 @@
 }
 
 .settings-shared .theme-options button.selected {
-  border-color: var(--ride-brand-500, #26a9dc);
-  background: var(--ride-brand-50, #effaff);
-  box-shadow: var(--ride-focus, 0 0 0 3px rgba(38, 169, 220, .24));
+  border: 0 !important;
+  background: linear-gradient(135deg, var(--ride-brand-50, #effaff), #e3f7f4);
+  box-shadow: 0 13px 30px rgba(8, 114, 142, .14);
+  transform: translateY(-2px);
+}
+
+.settings-shared .theme-options button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 13px 30px rgba(8, 69, 91, .11);
+}
+
+.settings-shared .theme-options button:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(11, 42, 58, .14), 0 13px 30px rgba(8, 69, 91, .11);
 }
 
 .settings-shared .settings-toggle {
@@ -129,8 +148,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding-top: 18px;
-  border-top: 1px solid var(--ride-panel-border, #cce3ec);
+  padding: 16px;
+  border: 0 !important;
+  border-radius: 14px;
+  background: var(--ride-panel-surface-soft, #f2f9fc);
 }
 
 .settings-shared .settings-toggle > span {
@@ -183,8 +204,35 @@
   font-size: 12px;
 }
 
-.theme-dark .settings-shared .theme-options button.selected { background: #153f50; }
+.theme-dark .settings-shared > .settings-card {
+  background: linear-gradient(145deg, rgba(18, 51, 65, .96), rgba(11, 37, 50, .94));
+  box-shadow: 0 20px 48px rgba(0, 10, 17, .22);
+}
+.theme-dark .settings-shared .theme-options button { background: #153644; }
+.theme-dark .settings-shared .theme-options button.selected {
+  background: linear-gradient(135deg, #19495a, #17473f);
+  box-shadow: 0 13px 30px rgba(0, 12, 20, .24);
+}
+.theme-dark .settings-shared .settings-toggle { background: #153644; }
 .theme-dark .settings-shared .theme-options button > b { background: #153644; }
+
+/* The settings component must look the same in every dashboard. */
+.admin-shell:not(.theme-dark) .settings-shared .settings-card:first-child .settings-card-head {
+  margin: 0 0 19px !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+.admin-shell:not(.theme-dark) .settings-shared .settings-card:first-child .settings-card-head h3 {
+  color: var(--ride-panel-ink, #0b2a3a) !important;
+}
+.admin-shell:not(.theme-dark) .settings-shared .settings-card:first-child .settings-card-head p {
+  color: var(--ride-panel-muted, #4d6977) !important;
+}
+.admin-shell:not(.theme-dark) .settings-shared .settings-card:first-child .settings-card-head > span {
+  background: var(--ride-brand-100, #d9f4fc) !important;
+  color: var(--ride-brand-600, #1688ad) !important;
+}
 
 @media (max-width: 800px) {
   .settings-shared .theme-options { grid-template-columns: 1fr; }
