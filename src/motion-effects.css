@@ -1,0 +1,102 @@
+/* Movimiento de producto: rutas, GPS y vehículo. Los efectos toman ideas de
+   Aurora, Floating Lines, Magnet y Electric Border de ReactBits, adaptadas a
+   Ride sin añadir otra dependencia al paquete inicial. */
+
+.auth-page > .react-bits-layer { z-index: 0; }
+.auth-page > :where(.brand-panel, .form-panel) { z-index: 1; }
+.bits-scene-auth .bits-aurora { opacity: .48; filter: blur(105px) saturate(1.18); }
+.bits-scene-auth .bits-orb { opacity: .23; }
+.bits-scene-auth .orb-a { width: 430px; height: 430px; left: 35%; top: -22%; background: #19c6df; }
+.bits-scene-auth .orb-b { width: 390px; height: 390px; right: 4%; bottom: -24%; background: #4fd7b4; }
+
+.bits-journey { position: absolute; inset: 0; overflow: hidden; }
+.bits-journey svg { position: absolute; inset: 8% -3% 0; width: 106%; height: 84%; filter: drop-shadow(0 0 13px rgba(69, 215, 235, .2)); }
+.bits-road-shadow,.bits-road { fill: none; stroke-linecap: round; }
+.bits-road-shadow { stroke: rgba(5, 31, 44, .22); stroke-width: 12; }
+.bits-road { stroke: rgba(92, 222, 237, .5); stroke-width: 2.2; stroke-dasharray: 5 13; animation: ride-road-flow 13s linear infinite; }
+.bits-waypoint { position: absolute; display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid rgba(116, 226, 239, .34); border-radius: 14px 14px 14px 4px; color: #9cf0f7; background: rgba(6, 42, 57, .68); box-shadow: 0 12px 30px rgba(3, 29, 42, .2), 0 0 0 8px rgba(74, 207, 226, .055); backdrop-filter: blur(11px); animation: ride-waypoint-float 5s ease-in-out infinite; }
+.waypoint-a { left: 15%; bottom: 16%; }
+.waypoint-b { right: 12%; top: 21%; color: #7fe5c8; animation-delay: -2.4s; }
+.bits-moving-car { position: absolute; left: 0; top: 0; display: grid; place-items: center; width: 45px; height: 34px; border: 1px solid rgba(146, 235, 244, .38); border-radius: 11px; color: #d9fbff; background: linear-gradient(145deg, rgba(18, 151, 181, .9), rgba(34, 192, 180, .82)); box-shadow: 0 12px 28px rgba(3, 43, 59, .27), 0 0 24px rgba(77, 217, 231, .22); offset-path: path('M -30 500 C 170 390 205 560 390 448 S 680 230 805 330 S 1005 440 1235 175'); offset-rotate: auto 0deg; animation: ride-car-route 15s cubic-bezier(.45, 0, .35, 1) infinite; }
+.bits-signal { position: absolute; width: 9px; height: 9px; border-radius: 50%; background: #64dec0; box-shadow: 0 0 0 0 rgba(100, 222, 192, .3); animation: ride-signal 2.7s ease-out infinite; }
+.signal-a { left: 33%; top: 34%; }.signal-b { right: 28%; bottom: 23%; animation-delay: -1.2s; }
+
+.auth-page .brand-panel {
+  background:
+    linear-gradient(rgba(67, 204, 226, .035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(67, 204, 226, .035) 1px, transparent 1px),
+    radial-gradient(circle at 18% 22%, rgba(37, 218, 220, .22), transparent 31%),
+    radial-gradient(circle at 78% 84%, rgba(90, 101, 225, .2), transparent 36%),
+    linear-gradient(145deg, #062a36, #073d47 47%, #0a2740) !important;
+  background-size: 46px 46px, 46px 46px, auto, auto, auto !important;
+}
+.auth-page .brand-panel::before { display: block !important; content: ''; position: absolute; inset: 0; background: linear-gradient(115deg, rgba(255,255,255,.035), transparent 28% 72%, rgba(80,220,212,.04)); animation: ride-panel-breathe 9s ease-in-out infinite alternate; }
+.auth-page .brand-panel::after { display: block !important; width: 540px; height: 540px; right: -260px; top: -250px; border: 82px solid rgba(104, 226, 233, .045); animation: ride-ring-drift 18s ease-in-out infinite alternate; }
+.auth-page .brand-copy { position: relative; }
+.auth-page .brand-copy h1 { text-wrap: balance; text-shadow: 0 18px 45px rgba(0, 14, 24, .22); }
+.auth-page .brand-copy h1 em { background: linear-gradient(90deg, #69def0, #65e1c2); color: transparent; background-clip: text; -webkit-background-clip: text; }
+.auth-page .brand-benefits span { box-shadow: inset 0 1px rgba(255,255,255,.045); transition: transform .25s ease, border-color .25s ease, background .25s ease; }
+.auth-page .brand-benefits span:hover { transform: translateY(-3px); border-color: rgba(121, 228, 238, .44); background: rgba(10, 59, 73, .7); }
+.auth-page .brand-status { border-color: rgba(112, 222, 231, .28); background: linear-gradient(145deg, rgba(9, 50, 63, .74), rgba(8, 34, 54, .7)); box-shadow: 0 22px 55px rgba(0, 15, 25, .28), inset 0 1px rgba(255,255,255,.05); }
+.auth-page .brand-status .status-dot { animation: ride-status-pulse 2.4s ease-out infinite; }
+
+.auth-page .form-panel {
+  background:
+    linear-gradient(rgba(20, 145, 175, .035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 145, 175, .035) 1px, transparent 1px),
+    radial-gradient(circle at 85% 9%, rgba(37, 200, 224, .25), transparent 28%),
+    radial-gradient(circle at 12% 90%, rgba(68, 211, 174, .18), transparent 31%),
+    linear-gradient(145deg, #f7fcfc, #eaf7fa) !important;
+  background-size: 52px 52px, 52px 52px, auto, auto, auto !important;
+}
+.auth-page .form-panel .auth-box { overflow: hidden; border-color: rgba(152, 211, 224, .82); background: linear-gradient(145deg, rgba(255,255,255,.94), rgba(239,250,252,.89)); box-shadow: 0 34px 90px rgba(8, 88, 111, .17), 0 8px 24px rgba(8, 88, 111, .08), inset 0 1px #fff; }
+.auth-page .form-panel .auth-box::after { content: ''; position: absolute; inset: 0 auto 0 0; width: 4px; background: linear-gradient(180deg, #26c4e0, #54d7b7 58%, #786ee4); box-shadow: 0 0 23px rgba(38, 196, 224, .38); }
+.auth-page .auth-icon { position: relative; isolation: isolate; transform: rotate(-3deg); box-shadow: 0 12px 28px rgba(27, 161, 192, .16), 0 0 0 6px rgba(59, 195, 220, .055); animation: ride-auth-icon 5s ease-in-out infinite; }
+.auth-page .auth-icon::before { content: ''; position: absolute; z-index: -1; inset: -2px; border-radius: inherit; background: conic-gradient(from 180deg, #54d9ef, transparent 28%, #58dbb9 52%, transparent 74%, #776ce3); animation: ride-icon-border 6s linear infinite; }
+.auth-page .auth-icon::after { content: ''; position: absolute; z-index: -1; inset: 1px; border-radius: 12px; background: linear-gradient(145deg, #eefbfc, #dff6f8); }
+.auth-page .primary-action { position: relative; overflow: hidden; background: linear-gradient(100deg, #18bedc, #45dcc4, #2ac4e0) !important; background-size: 200% 100% !important; box-shadow: 0 16px 38px rgba(17, 177, 203, .28) !important; animation: ride-cta-flow 7s ease infinite; }
+.auth-page .primary-action::before { content: ''; position: absolute; inset: 0; transform: translateX(-120%) skewX(-20deg); background: linear-gradient(90deg, transparent, rgba(255,255,255,.38), transparent); animation: ride-button-shine 4.6s ease-in-out infinite; }
+.auth-page .primary-action > * { position: relative; }
+.auth-page .secondary-action { background: rgba(255,255,255,.62) !important; border-color: rgba(124, 190, 207, .52) !important; backdrop-filter: blur(8px); }
+
+/* Magnet y Electric Border para los iconos de navegación de todos los paneles. */
+:where(.passenger-sidebar nav button,.driver-sidebar nav button) > span:first-child,
+.admin-sidebar .nav-group button > svg {
+  transition: transform .24s cubic-bezier(.22,1,.36,1), filter .24s ease, color .24s ease, background .24s ease !important;
+  transform: translate(var(--ride-magnet-x,0),var(--ride-magnet-y,0));
+}
+:where(.passenger-sidebar nav button,.driver-sidebar nav button).ride-magnetic-active > span:first-child,
+.admin-sidebar .nav-group button.ride-magnetic-active > svg {
+  transform: translate(var(--ride-magnet-x,0),var(--ride-magnet-y,0)) scale(1.13) rotate(-4deg);
+  filter: drop-shadow(0 0 9px rgba(62, 221, 238, .58));
+}
+:where(.passenger-sidebar nav button,.driver-sidebar nav button).active > span:first-child,
+.admin-sidebar .nav-group button.active > svg {
+  color: #7ce9f3 !important;
+  background: radial-gradient(circle at 30% 25%, rgba(103,233,243,.24), rgba(45,177,205,.1)) !important;
+  box-shadow: 0 0 0 1px rgba(109, 226, 239, .28), 0 0 22px rgba(46, 201, 224, .22), inset 0 1px rgba(255,255,255,.1) !important;
+  animation: ride-nav-electric 3.2s ease-in-out infinite;
+}
+
+@keyframes ride-road-flow { to { stroke-dashoffset: -180; } }
+@keyframes ride-car-route { 0% { offset-distance: 0%; opacity: 0; } 6%,92% { opacity: 1; } 100% { offset-distance: 100%; opacity: 0; } }
+@keyframes ride-waypoint-float { 50% { transform: translateY(-10px) rotate(3deg); box-shadow: 0 20px 38px rgba(3,29,42,.24),0 0 0 12px rgba(74,207,226,.035); } }
+@keyframes ride-signal { 75%,100% { box-shadow: 0 0 0 34px rgba(100,222,192,0); opacity: .25; } }
+@keyframes ride-panel-breathe { to { opacity: .65; transform: translateX(2%); } }
+@keyframes ride-ring-drift { to { transform: translate(-42px,35px) rotate(16deg); } }
+@keyframes ride-status-pulse { 70%,100% { box-shadow: 0 0 0 15px rgba(101,223,189,0); } }
+@keyframes ride-auth-icon { 50% { transform: translateY(-5px) rotate(3deg); } }
+@keyframes ride-icon-border { to { transform: rotate(360deg); } }
+@keyframes ride-cta-flow { 50% { background-position: 100% 50%; } }
+@keyframes ride-button-shine { 0%,58% { transform: translateX(-120%) skewX(-20deg); } 82%,100% { transform: translateX(150%) skewX(-20deg); } }
+@keyframes ride-nav-electric { 50% { box-shadow: 0 0 0 1px rgba(109,226,239,.42),0 0 30px rgba(46,201,224,.34),inset 0 1px rgba(255,255,255,.15); } }
+
+@media(max-width:850px){
+  .bits-journey{opacity:.48}.bits-moving-car{animation-duration:18s}.bits-waypoint{transform:scale(.82)}
+  .auth-page .form-panel .auth-box{box-shadow:0 25px 65px rgba(8,88,111,.14),inset 0 1px #fff}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .bits-road,.bits-moving-car,.bits-waypoint,.bits-signal,.auth-page .brand-panel::before,.auth-page .brand-panel::after,.auth-page .brand-status .status-dot,.auth-page .auth-icon,.auth-page .auth-icon::before,.auth-page .primary-action,:where(.passenger-sidebar nav button,.driver-sidebar nav button).active>span:first-child,.admin-sidebar .nav-group button.active>svg{animation:none!important}
+  .bits-moving-car{display:none}.auth-page .primary-action::before{display:none}
+}
