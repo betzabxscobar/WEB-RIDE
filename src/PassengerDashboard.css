@@ -353,3 +353,15 @@ html[data-ride-theme="dark"] .settings-shared .theme-options button:nth-child(3)
 /* Credito del mapa. Va fuera del lienzo porque el control de atribucion de
    Leaflet se queda por debajo de las teselas vectoriales de MapLibre. */
 .ride-map-credit{display:block;margin-top:6px;font-size:10px;opacity:.6;text-align:right}
+
+/* Donde esta quien mira el mapa: punto azul con halo, como en cualquier mapa.
+   No es un alfiler a proposito —un alfiler se lee como «un sitio del viaje» y
+   se confundia con el origen—. El halo late despacio para que se distinga de
+   los marcadores fijos sin robar atencion. */
+.ride-leaflet-me{background:transparent!important;border:0!important}
+.ride-leaflet-me i{position:absolute;inset:0;border-radius:50%;background:#1a9ee0;opacity:.28;animation:ride-me-pulso 2.4s ease-out infinite}
+.ride-leaflet-me span{position:absolute;left:5px;top:5px;width:12px;height:12px;border:2.5px solid #fff;border-radius:50%;background:#1a9ee0;box-shadow:0 2px 8px rgba(3,33,45,.45)}
+@keyframes ride-me-pulso{0%{transform:scale(.6);opacity:.4}70%{transform:scale(1.5);opacity:0}100%{transform:scale(1.5);opacity:0}}
+/* Con «reducir movimiento» activado el latido se queda quieto: el punto se ve
+   igual, solo deja de animarse. */
+@media(prefers-reduced-motion:reduce){.ride-leaflet-me i{animation:none;opacity:.3}}
