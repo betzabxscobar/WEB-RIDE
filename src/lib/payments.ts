@@ -2,7 +2,7 @@ import { supabase } from './supabase'
 
 export type PaymentMethod = {
   id: string
-  type: 'efectivo' | 'tarjeta' | 'deuna' | 'transferencia'
+  type: 'efectivo' | 'tarjeta' | 'transferencia'
   detail: string | null
   preferred: boolean
   createdAt: string
@@ -35,31 +35,49 @@ export async function listPaymentMethods(userId: string): Promise<PaymentMethod[
   }))
 }
 
-export async function registerPaymentMethod(type: 'efectivo' | 'deuna' | 'transferencia'): Promise<void> {
+export async function registerPaymentMethod(type: 'efectivo' | 'transferencia'): Promise<void> {
   const { error } = await supabase.rpc('registrar_metodo_pago', {
     p_tipo: type,
     p_token: null,
     p_predeterminado: true,
   })
-  if (error) throw new Error(`No se pudo registrar ${type === 'deuna' ? 'DeUna' : type === 'transferencia' ? 'la transferencia' : 'el pago en efectivo'}.`)
+  if (error) throw new Error(`No se pudo registrar ${type === 'transferencia' ? 'la transferencia' : 'el pago en efectivo'}.`)
 }
 
 export const registerCashPayment = () => registerPaymentMethod('efectivo')
-export const registerDeunaPayment = () => registerPaymentMethod('deuna')
 export const registerTransferPayment = () => registerPaymentMethod('transferencia')
 
-export type DeunaCharge = { order: string; amount: number; qr: string | null; deepLink: string | null; alreadyPaid: boolean }
+/**
+ * Sube la foto del comprobante y devuelve su ruta dentro del depósito.
+ *
+ * La carpeta es el uuid del pasajero porque la política de acceso lo exige:
+ * cada quien escribe solo en la suya. Lo leen el que lo subió, el chofer de ese
+ * viaje y la administración; el depósito no es público, porque un comprobante
+ * lleva número de cuenta, nombre y monto.
+ */
+export async function uploadTransferReceipt(tripId: string, file: File): Promise<string> {
+  const { data: session } = await supabase.auth.getUser()
+  const uid = session?.user?.id
+  if (!uid) throw new Error('Debes iniciar sesión para subir el comprobante.')
 
-/** El importe lo resuelve la función segura; la web solo envía el viaje. */
-export async function createDeunaCharge(tripId: string): Promise<DeunaCharge> {
-  const { data, error } = await supabase.functions.invoke('cobro-deuna', { body: { viaje_id: tripId } })
-  if (error) {
-    const status = (error as { context?: { status?: number } }).context?.status
-    if (status === 404 || status === 503) throw new Error('El cobro con DeUna todavía no está configurado.')
-    throw new Error('No pudimos generar el cobro con DeUna. Inténtalo nuevamente.')
-  }
-  const row = data as Record<string, unknown>
-  return { order: String(row.orden ?? ''), amount: Number(row.monto ?? 0), qr: typeof row.qr === 'string' ? row.qr : null, deepLink: typeof row.deep_link === 'string' ? row.deep_link : null, alreadyPaid: row.ya_pagado === true }
+  const path = `${uid}/${tripId}.jpg`
+  // `upsert` para que una segunda foto pise a la primera en vez de acumular
+  // basura cuando la primera sale movida.
+  const { error } = await supabase.storage.from('comprobantes').upload(path, file, { upsert: true, contentType: file.type || 'image/jpeg' })
+  if (error) throw new Error('No pudimos subir el comprobante.')
+  return path
+}
+
+/**
+ * El pasajero avisa de que ya transfirió, con el comprobante.
+ *
+ * Esto **no** da el viaje por cobrado: solo se lo dice al chofer, que es el
+ * único que puede ver si el dinero llegó a su cuenta. Él lo confirma, y hasta
+ * entonces el viaje no se cierra.
+ */
+export async function reportTransfer(tripId: string, receiptPath: string | null): Promise<void> {
+  const { error } = await supabase.rpc('reportar_transferencia', { p_viaje_id: tripId, p_comprobante: receiptPath })
+  if (error) throw new Error('No pudimos avisar al chofer. Inténtalo nuevamente.')
 }
 
 export async function choosePreferredPayment(id: string): Promise<void> {

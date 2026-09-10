@@ -29,14 +29,13 @@ import {
 } from './lib/notifications'
 import {
   choosePreferredPayment,
-  createDeunaCharge,
   deletePaymentMethod,
   listPaymentMethods,
   listPaymentsForTrips,
   registerCashPayment,
-  registerDeunaPayment,
   registerTransferPayment,
-  type DeunaCharge,
+  reportTransfer,
+  uploadTransferReceipt,
   type PaymentMethod,
   type RidePayment,
 } from './lib/payments'
@@ -108,7 +107,6 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onUserUpdat
   const [addresses, setAddresses] = useState<SavedAddress[]>([])
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
   const [payments, setPayments] = useState<RidePayment[]>([])
-  const [deunaCharge, setDeunaCharge] = useState<DeunaCharge | null>(null)
   const [trackingTripId, setTrackingTripId] = useState<string | null>(null)
   const [chatTrip, setChatTrip] = useState<Trip | null>(null)
   const [tripPosition, setTripPosition] = useState<TripPosition | null>(null)
@@ -452,13 +450,6 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onUserUpdat
     } finally { setBusy(false) }
   }
 
-  const addDeuna = async () => {
-    setBusy(true); setError(''); setNotice('')
-    try { await registerDeunaPayment(); await loadPaymentData(); setNotice('DeUna quedó como opción principal.') }
-    catch (cause) { setError(cause instanceof Error ? cause.message : 'No se pudo registrar DeUna.') }
-    finally { setBusy(false) }
-  }
-
   const addTransfer = async () => {
     setBusy(true); setError(''); setNotice('')
     try { await registerTransferPayment(); await loadPaymentData(); setNotice('La transferencia quedó como opción principal.') }
@@ -466,10 +457,20 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onUserUpdat
     finally { setBusy(false) }
   }
 
-  const payWithDeuna = async (trip: Trip) => {
-    setBusy(true); setError('')
-    try { setDeunaCharge(await createDeunaCharge(trip.id)) }
-    catch (cause) { setError(cause instanceof Error ? cause.message : 'No se pudo generar el cobro.') }
+  /**
+   * Avisa al chofer de que ya se transfirió, con el comprobante.
+   *
+   * No cierra el cobro: eso lo hace el chofer cuando ve el dinero en su banco,
+   * que es lo único que puede comprobarlo. Y hasta que lo confirme, el viaje
+   * no se cierra.
+   */
+  const reportTransferPaid = async (trip: Trip, receipt: File) => {
+    setBusy(true); setError(''); setNotice('')
+    try {
+      const path = await uploadTransferReceipt(trip.id, receipt)
+      await reportTransfer(trip.id, path)
+      setNotice('Avisamos al chofer. Está revisando su banco.')
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'No se pudo avisar al chofer.') }
     finally { setBusy(false) }
   }
 
@@ -553,11 +554,11 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onUserUpdat
         {error && <div className="passenger-feedback failure"><AlertCircle size={18} aria-hidden />{error}<button onClick={() => setError('')}>Cerrar</button></div>}
         {loading ? <LoadingPanel/> : page === 'inicio' ? <HomePage user={user} activeTrip={activeTrip} trips={trips} onRequest={() => go('pedir')} onTrips={() => go('viajes')} onCancel={openCancel} onTrack={openTracking}/>
           : page === 'pedir' ? <RequestPage places={places} origin={origin} destination={destination} originPlaceId={originPlaceId} destinationId={destinationId} quote={quote} categoryQuotes={categoryQuotes} selectedCategory={selectedCategory} pickupReference={pickupReference} route={roadRoute} quoting={quoting} locating={locating} busy={busy} activeTrip={activeTrip} onUseLocation={useLocation} onOriginPoint={selectOriginPoint} onDestinationPoint={selectDestinationPoint} onCategory={chooseCategory} onReference={setPickupReference} onConfirm={confirmRequest} onActive={() => activeTrip && openTracking(activeTrip)}/>
-          : page === 'seguimiento' ? <TrackingPage trip={trackingTrip} position={tripPosition} canPayDeuna={paymentMethods.some((method) => method.type === 'deuna' && method.preferred)} canPayTransfer={paymentMethods.some((method) => method.type === 'transferencia' && method.preferred)} busy={busy} onPayDeuna={payWithDeuna} onCancel={openCancel} onChat={setChatTrip} onBack={() => go('inicio')}/>
+          : page === 'seguimiento' ? <TrackingPage trip={trackingTrip} position={tripPosition} canPayTransfer={paymentMethods.some((method) => method.type === 'transferencia' && method.preferred)} busy={busy} onReportTransfer={reportTransferPaid} onCancel={openCancel} onChat={setChatTrip} onBack={() => go('inicio')}/>
           : page === 'viajes' ? <TripsPage trips={trips} busy={busy} onCancel={openCancel} onRate={openRating} onTrack={openTracking}/>
           : page === 'avisos' ? <NotificationsPage notifications={notifications}/>
           : page === 'direcciones' ? <AddressesPage addresses={addresses} busy={busy} onSave={saveCurrentAddress} onFavorite={toggleFavoriteAddress} onDelete={removeAddress}/>
-          : page === 'pagos' ? <PaymentsPage methods={paymentMethods} payments={payments} trips={trips} busy={busy} onAddCash={addCashPayment} onAddDeuna={addDeuna} onAddTransfer={addTransfer} onPreferred={selectPreferredPayment} onDelete={removePaymentMethod}/>
+          : page === 'pagos' ? <PaymentsPage methods={paymentMethods} payments={payments} trips={trips} busy={busy} onAddCash={addCashPayment} onAddTransfer={addTransfer} onPreferred={selectPreferredPayment} onDelete={removePaymentMethod}/>
           : page === 'soporte' ? <SupportPage userId={user.id} trips={trips}/>
           : page === 'configuracion' ? <SettingsPage user={user} onUserUpdate={onUserUpdate} theme={theme} reducedMotion={reducedMotion} canBecomeDriver={user.role === 'passenger'} busy={busy} onTheme={changeTheme} onReducedMotion={changeReducedMotion} onBecomeDriver={becomeDriver}/>
           : <AccountPage user={user} trips={trips} addresses={addresses} methods={paymentMethods} onAddresses={() => go('direcciones')} onPayments={() => go('pagos')} onSettings={() => go('configuracion')}/>
@@ -573,7 +574,6 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onUserUpdat
       <NavButton active={page === 'cuenta'} icon={<UserIcon size={16} />} label="Cuenta" onClick={() => go('cuenta')}/>
     </nav>
     {chatTrip && <TripChat trip={chatTrip} userId={user.id} onClose={() => setChatTrip(null)}/>}
-    {deunaCharge && <Dialog title={deunaCharge.alreadyPaid ? 'Este viaje ya está pagado' : 'Paga con DeUna'} text={deunaCharge.alreadyPaid ? 'No generamos otro cobro para evitar duplicarlo.' : `Orden ${deunaCharge.order} · ${money(deunaCharge.amount)}`} onClose={() => setDeunaCharge(null)}>{deunaCharge.qr && <img className="deuna-qr" src={deunaCharge.qr} alt="Código QR para pagar con DeUna"/>}{deunaCharge.deepLink && <a className="dialog-primary deuna-link" href={deunaCharge.deepLink}>Abrir DeUna</a>}<button className="dialog-secondary" onClick={() => setDeunaCharge(null)}>Cerrar</button></Dialog>}
 
     {canceling && <Dialog title="¿Cancelar este viaje?" text={canceling.estado === 'CONDUCTOR_EN_ORIGEN' ? `El chofer ya llegó al punto. Cancelar este viaje registrará una multa de $1.00.` : `Se cancelará el viaje hacia ${canceling.destinoTexto}.`} onClose={() => setCanceling(null)}><label className="cancel-reason">Motivo <small>opcional</small><textarea maxLength={200} value={cancelReason} onChange={(event) => setCancelReason(event.target.value)} placeholder="Ej. cambié de planes"/></label><button className="dialog-secondary" onClick={() => setCanceling(null)}>Volver</button><button className="dialog-danger" disabled={busy} onClick={confirmCancel}>{busy ? 'Cancelando…' : canceling.estado === 'CONDUCTOR_EN_ORIGEN' ? 'Cancelar y pagar $1.00' : 'Sí, cancelar'}</button></Dialog>}
     {rating && <Dialog title="Califica tu viaje" text={`¿Cómo estuvo tu experiencia con ${rating.conductorNombre ?? 'tu conductor'}?`} onClose={() => setRating(null)}><div className="rating-fields"><div className="rating-stars" aria-label="Puntuación">{[1,2,3,4,5].map((score) => <button key={score} className={score <= ratingScore ? 'selected' : ''} onClick={() => setRatingScore(score)} aria-label={`${score} estrellas`}>★</button>)}</div><label>Comentario opcional<textarea maxLength={300} value={ratingComment} onChange={(event) => setRatingComment(event.target.value)} placeholder="Cuéntanos cómo fue el viaje"/></label></div><button className="dialog-secondary" onClick={() => setRating(null)}>Ahora no</button><button className="dialog-primary" disabled={busy} onClick={submitRating}>{busy ? 'Guardando…' : 'Enviar calificación'}</button></Dialog>}
@@ -588,9 +588,9 @@ function LoadingPanel() {
   return <div className="passenger-loading"><i/><span>Actualizando tu información…</span></div>
 }
 
-function TrackingPage({ trip, position, canPayDeuna, canPayTransfer, busy, onPayDeuna, onCancel, onChat, onBack }: { trip: Trip | null; position: TripPosition | null; canPayDeuna: boolean; canPayTransfer: boolean; busy: boolean; onPayDeuna: (trip: Trip) => void; onCancel: (trip: Trip) => void; onChat: (trip: Trip) => void; onBack: () => void }) {
+function TrackingPage({ trip, position, canPayTransfer, busy, onReportTransfer, onCancel, onChat, onBack }: { trip: Trip | null; position: TripPosition | null; canPayTransfer: boolean; busy: boolean; onReportTransfer: (trip: Trip, receipt: File) => void; onCancel: (trip: Trip) => void; onChat: (trip: Trip) => void; onBack: () => void }) {
   if (!trip) return <EmptyState title="No hay un viaje para seguir" text="Cuando tengas un viaje activo podrás ver aquí cada cambio." action="Volver al inicio" onAction={onBack}/>
-  return <div className="passenger-page tracking-page"><button className="tracking-back" onClick={onBack}>← Volver al inicio</button><section className="tracking-hero"><div><span className={`trip-status ${trip.estado.toLowerCase()}`}>{ESTADO_LABEL[trip.estado]}</span><h2>{STATUS_HINT[trip.estado]}</h2><p>Los cambios se muestran automáticamente.</p></div><strong>{money(trip.tarifaFinal ?? trip.tarifaEstimada)}</strong></section><div className="trip-progress tracking-progress"><span style={{ width: `${progresoViaje(trip.estado)}%` }}/></div>{trip.estado === 'CONDUCTOR_EN_ORIGEN' && <TripSecurityCode tripId={trip.id}/>}<TripTrackingMap trip={trip} position={position}/><div className="tracking-layout"><section className="tracking-main"><h3>Recorrido</h3><Route trip={trip}/>{trip.origenReferencia && <div className="pickup-note"><small>REFERENCIA DE RECOGIDA</small><strong>{trip.origenReferencia}</strong></div>}<div className="tracking-position"><span>⌖</span><div><small>UBICACIÓN DEL CONDUCTOR</small>{position ? <><strong>Actualizada {date(position.recordedAt)}</strong><p>{position.lat.toFixed(5)}, {position.lng.toFixed(5)}</p></> : <><strong>{trip.conductorId ? 'Esperando la primera actualización' : 'Se mostrará cuando se asigne un conductor'}</strong><p>Ride solo enseña una posición que el conductor haya enviado realmente.</p></>}</div></div></section><aside className="tracking-driver"><h3>Conductor y vehículo</h3>{trip.conductorId ? <><div className="tracking-driver-profile"><span>{initials(trip.conductorNombre ?? 'Conductor')}</span><div><strong>{trip.conductorNombre}</strong>{trip.conductorCalificacion != null && <small>★ {trip.conductorCalificacion.toFixed(1)}</small>}</div></div><p>{vehicle(trip)}</p><div className="tracking-contact">{trip.conductorTelefono && <a href={`tel:${trip.conductorTelefono}`}>Llamar</a>}<button onClick={() => onChat(trip)}>Abrir chat</button></div></> : <div className="tracking-search"><span>⌁</span><strong>Buscando conductor</strong><p>Cuando alguien acepte, aquí aparecerán sus datos y los del vehículo.</p></div>}</aside></div>{trip.estado === 'FINALIZADO' && canPayTransfer && trip.pagoEstado !== 'completado' && <TransferAccounts tripId={trip.id}/>} {trip.estado === 'FINALIZADO' && canPayDeuna && trip.pagoEstado !== 'completado' && <button className="tracking-pay" disabled={busy} onClick={() => onPayDeuna(trip)}>{busy ? 'Generando QR…' : 'Pagar con DeUna'}</button>}{puedeCancelar(trip.estado) && <button className="tracking-cancel" onClick={() => onCancel(trip)}>Cancelar este viaje</button>}</div>
+  return <div className="passenger-page tracking-page"><button className="tracking-back" onClick={onBack}>← Volver al inicio</button><section className="tracking-hero"><div><span className={`trip-status ${trip.estado.toLowerCase()}`}>{ESTADO_LABEL[trip.estado]}</span><h2>{STATUS_HINT[trip.estado]}</h2><p>Los cambios se muestran automáticamente.</p></div><strong>{money(trip.tarifaFinal ?? trip.tarifaEstimada)}</strong></section><div className="trip-progress tracking-progress"><span style={{ width: `${progresoViaje(trip.estado)}%` }}/></div>{trip.estado === 'CONDUCTOR_EN_ORIGEN' && <TripSecurityCode tripId={trip.id}/>}<TripTrackingMap trip={trip} position={position}/><div className="tracking-layout"><section className="tracking-main"><h3>Recorrido</h3><Route trip={trip}/>{trip.origenReferencia && <div className="pickup-note"><small>REFERENCIA DE RECOGIDA</small><strong>{trip.origenReferencia}</strong></div>}<div className="tracking-position"><span>⌖</span><div><small>UBICACIÓN DEL CONDUCTOR</small>{position ? <><strong>Actualizada {date(position.recordedAt)}</strong><p>{position.lat.toFixed(5)}, {position.lng.toFixed(5)}</p></> : <><strong>{trip.conductorId ? 'Esperando la primera actualización' : 'Se mostrará cuando se asigne un conductor'}</strong><p>Ride solo enseña una posición que el conductor haya enviado realmente.</p></>}</div></div></section><aside className="tracking-driver"><h3>Conductor y vehículo</h3>{trip.conductorId ? <><div className="tracking-driver-profile"><span>{initials(trip.conductorNombre ?? 'Conductor')}</span><div><strong>{trip.conductorNombre}</strong>{trip.conductorCalificacion != null && <small>★ {trip.conductorCalificacion.toFixed(1)}</small>}</div></div><p>{vehicle(trip)}</p><div className="tracking-contact">{trip.conductorTelefono && <a href={`tel:${trip.conductorTelefono}`}>Llamar</a>}<button onClick={() => onChat(trip)}>Abrir chat</button></div></> : <div className="tracking-search"><span>⌁</span><strong>Buscando conductor</strong><p>Cuando alguien acepte, aquí aparecerán sus datos y los del vehículo.</p></div>}</aside></div>{(trip.estado === 'EN_CURSO' || trip.estado === 'FINALIZADO') && canPayTransfer && trip.pagoEstado !== 'completado' && <TransferAccounts tripId={trip.id} busy={busy} onReport={(receipt) => onReportTransfer(trip, receipt)}/>}{puedeCancelar(trip.estado) && <button className="tracking-cancel" onClick={() => onCancel(trip)}>Cancelar este viaje</button>}</div>
 }
 
 function TripSecurityCode({ tripId }: { tripId: string }) {
@@ -600,12 +600,21 @@ function TripSecurityCode({ tripId }: { tripId: string }) {
   return <section className="trip-security-code"><div><small>CÓDIGO DE INICIO</small><h3>{code ?? (error ? 'No disponible' : 'Generando…')}</h3></div><p>{error || 'Díctale estos seis números al chofer cuando estés dentro del vehículo. No los compartas antes.'}</p></section>
 }
 
-function TransferAccounts({ tripId }: { tripId: string }) {
+/**
+ * Las cuentas del chofer y el aviso de que ya se transfirió.
+ *
+ * Ride no mueve este dinero: enseña el número, el pasajero copia y transfiere
+ * desde su banco. Después adjunta el comprobante y avisa — y eso **no** da el
+ * viaje por pagado: al chofer le llega el aviso, mira su cuenta y lo confirma
+ * él, que es el único que puede verlo. Hasta entonces el viaje no se cierra.
+ */
+function TransferAccounts({ tripId, busy, onReport }: { tripId: string; busy: boolean; onReport: (receipt: File) => void }) {
   const [accounts, setAccounts] = useState<BankAccount[]>([])
   const [error, setError] = useState('')
+  const [receipt, setReceipt] = useState<File | null>(null)
   useEffect(() => { let active = true; void listDriverBankAccountsForTrip(tripId).then((value) => { if (active) setAccounts(value) }).catch((cause) => { if (active) setError(cause instanceof Error ? cause.message : 'No se pudieron cargar las cuentas.') }); return () => { active = false } }, [tripId])
   if (error) return <p className="transfer-error">{error}</p>
-  return <section className="transfer-accounts"><small>TRANSFERENCIA DIRECTA</small><h3>Datos del chofer</h3><p>Transfiere desde tu banco y avisa al chofer. Ride no mueve el dinero ni solicita claves bancarias.</p>{accounts.map((account) => <article key={account.id}><div><strong>{account.bankName}</strong><small>Cuenta de {account.type}</small></div><button type="button" onClick={() => void navigator.clipboard.writeText(account.number)}>{account.number} · Copiar</button><span>{account.holder}{account.holderId ? ` · ${account.holderId}` : ''}</span></article>)}{accounts.length === 0 && <p>El chofer todavía no registró una cuenta bancaria.</p>}</section>
+  return <section className="transfer-accounts"><small>TRANSFERENCIA DIRECTA</small><h3>Datos del chofer</h3><p>Transfiere desde tu banco y avisa al chofer. Ride no mueve el dinero ni solicita claves bancarias.</p>{accounts.map((account) => <article key={account.id}><div><strong>{account.bankName}</strong><small>Cuenta de {account.type}</small></div><button type="button" onClick={() => void navigator.clipboard.writeText(account.number)}>{account.number} · Copiar</button><span>{account.holder}{account.holderId ? ` · ${account.holderId}` : ''}</span></article>)}{accounts.length === 0 ? <p>El chofer todavía no registró una cuenta bancaria.</p> : <div className="transfer-report"><h4>Cuando ya hayas transferido</h4><p>Adjunta el comprobante y avisa. El chofer revisa su banco y confirma; hasta entonces el viaje sigue abierto.</p><label className="transfer-file">{receipt ? `✓ ${receipt.name}` : 'Adjuntar comprobante'}<input type="file" accept="image/*,application/pdf" onChange={(event) => setReceipt(event.target.files?.[0] ?? null)}/></label><button type="button" className="transfer-report-send" disabled={busy || !receipt} onClick={() => { if (receipt) onReport(receipt) }}>{busy ? 'Avisando…' : 'Ya transferí'}</button></div>}</section>
 }
 
 function TripTrackingMap({ trip, position }: { trip: Trip; position: TripPosition | null }) {
@@ -640,10 +649,10 @@ function AddressesPage({ addresses, busy, onSave, onFavorite, onDelete }: { addr
   return <div className="passenger-page addresses-page"><section className="passenger-section-head"><div><span>LUGARES PERSONALES</span><h2>Direcciones guardadas</h2><p>Guarda el punto donde estás para encontrarlo rápidamente en un próximo viaje.</p></div></section><div className="address-layout"><section className="address-form"><h3>Guardar mi ubicación actual</h3><p>Escribe cómo quieres reconocer este lugar. Las coordenadas se obtienen del navegador.</p><label>Nombre del lugar<input maxLength={40} value={label} onChange={(event) => setLabel(event.target.value)} placeholder="Ej. Casa, trabajo o universidad"/></label><label>Referencia visible<input maxLength={120} value={address} onChange={(event) => setAddress(event.target.value)} placeholder="Ej. Entrada principal, calle y sector"/></label><button disabled={busy || !label.trim() || !address.trim()} onClick={submit}>{busy ? 'Guardando…' : '⌖ Usar mi ubicación y guardar'}</button><small>Ride nunca te pedirá escribir coordenadas manualmente.</small></section><section className="address-list">{addresses.length === 0 ? <EmptyState title="No tienes direcciones guardadas" text="Guarda tu ubicación actual para usarla al pedir un viaje."/> : addresses.map((item) => <article key={item.id}><span className={item.favorite ? 'address-pin favorite' : 'address-pin'}>⌖</span><div><div className="address-title"><h3>{item.label}</h3>{item.favorite && <b>Favorita</b>}</div><p>{item.address}</p><small>Guardada el {date(item.lastUsedAt)}</small></div><div className="address-actions"><button disabled={busy} onClick={() => onFavorite(item)}>{item.favorite ? 'Quitar favorita' : 'Hacer favorita'}</button><button className="danger" disabled={busy} onClick={() => onDelete(item)}>Eliminar</button></div></article>)}</section></div></div>
 }
 
-function PaymentsPage({ methods, payments, trips, busy, onAddCash, onAddDeuna, onAddTransfer, onPreferred, onDelete }: { methods: PaymentMethod[]; payments: RidePayment[]; trips: Trip[]; busy: boolean; onAddCash: () => void; onAddDeuna: () => void; onAddTransfer: () => void; onPreferred: (method: PaymentMethod) => void; onDelete: (method: PaymentMethod) => void }) {
+function PaymentsPage({ methods, payments, trips, busy, onAddCash, onAddTransfer, onPreferred, onDelete }: { methods: PaymentMethod[]; payments: RidePayment[]; trips: Trip[]; busy: boolean; onAddCash: () => void; onAddTransfer: () => void; onPreferred: (method: PaymentMethod) => void; onDelete: (method: PaymentMethod) => void }) {
   const tripDestination = (tripId: string) => trips.find((trip) => trip.id === tripId)?.destinoTexto ?? 'Viaje Ride'
   const statusLabel: Record<RidePayment['status'], string> = { pendiente: 'Pendiente', completado: 'Completado', fallido: 'Fallido' }
-  return <div className="passenger-page payments-page"><section className="passenger-section-head"><div><span>COBROS REGISTRADOS</span><h2>Formas de pago</h2><p>Efectivo, transferencia o DeUna. Ride nunca guarda tus datos bancarios.</p></div></section><div className="payment-layout"><section className="payment-methods"><div className="payment-head"><h3>Tus opciones</h3><div>{!methods.some((method) => method.type === 'efectivo') && <button disabled={busy} onClick={onAddCash}>+ Efectivo</button>}{!methods.some((method) => method.type === 'transferencia') && <button disabled={busy} onClick={onAddTransfer}>+ Transferencia</button>}{!methods.some((method) => method.type === 'deuna') && <button disabled={busy} onClick={onAddDeuna}>+ DeUna</button>}</div></div>{methods.length === 0 ? <div className="payment-empty"><span>$</span><h4>Sin formas de pago</h4><p>Registra efectivo, transferencia o DeUna para elegir cómo pagar tus viajes.</p><button disabled={busy} onClick={onAddCash}>{busy ? 'Agregando…' : 'Usar efectivo'}</button></div> : <div className="payment-method-list">{methods.map((method) => <article key={method.id}><span>{method.type === 'efectivo' ? '$' : method.type === 'deuna' ? 'QR' : method.type === 'transferencia' ? '⇄' : '▣'}</span><div><strong>{method.type === 'efectivo' ? 'Efectivo' : method.type === 'deuna' ? 'DeUna' : method.type === 'transferencia' ? 'Transferencia bancaria' : 'Tarjeta tokenizada'}</strong><small>{method.preferred ? 'Opción principal' : `Agregada el ${date(method.createdAt)}`}</small></div><div className="payment-method-actions">{method.preferred ? <b>Principal</b> : <button disabled={busy} onClick={() => onPreferred(method)}>Elegir</button>}<button className="delete" disabled={busy} onClick={() => onDelete(method)}>Eliminar</button></div></article>)}</div>}<aside className="payment-security"><b>Pago seguro</b><p>En una transferencia, Ride solo muestra la cuenta registrada por el chofer al terminar el viaje: el dinero va directamente a ella.</p></aside></section><section className="payment-history"><h3>Movimientos</h3>{payments.length === 0 ? <p className="payment-no-history">Aún no tienes cobros registrados.</p> : payments.map((payment) => <article key={payment.id}><span className={`payment-state ${payment.status}`}>{statusLabel[payment.status]}</span><div><strong>{tripDestination(payment.tripId)}</strong><small>{date(payment.createdAt)} · {payment.type === 'multa' ? 'Multa por cancelación tardía' : payment.type === 'reembolso' ? 'Reembolso' : payment.type === 'reintento' ? 'Reintento' : 'Pago'}</small></div><b>{money(payment.amount)}</b></article>)}</section></div></div>
+  return <div className="passenger-page payments-page"><section className="passenger-section-head"><div><span>COBROS REGISTRADOS</span><h2>Formas de pago</h2><p>Efectivo o transferencia. Ride nunca guarda tus datos bancarios.</p></div></section><div className="payment-layout"><section className="payment-methods"><div className="payment-head"><h3>Tus opciones</h3><div>{!methods.some((method) => method.type === 'efectivo') && <button disabled={busy} onClick={onAddCash}>+ Efectivo</button>}{!methods.some((method) => method.type === 'transferencia') && <button disabled={busy} onClick={onAddTransfer}>+ Transferencia</button>}</div></div>{methods.length === 0 ? <div className="payment-empty"><span>$</span><h4>Sin formas de pago</h4><p>Registra efectivo o transferencia para elegir cómo pagar tus viajes.</p><button disabled={busy} onClick={onAddCash}>{busy ? 'Agregando…' : 'Usar efectivo'}</button></div> : <div className="payment-method-list">{methods.map((method) => <article key={method.id}><span>{method.type === 'efectivo' ? '$' : method.type === 'transferencia' ? '⇄' : '▣'}</span><div><strong>{method.type === 'efectivo' ? 'Efectivo' : method.type === 'transferencia' ? 'Transferencia bancaria' : 'Tarjeta tokenizada'}</strong><small>{method.preferred ? 'Opción principal' : `Agregada el ${date(method.createdAt)}`}</small></div><div className="payment-method-actions">{method.preferred ? <b>Principal</b> : <button disabled={busy} onClick={() => onPreferred(method)}>Elegir</button>}<button className="delete" disabled={busy} onClick={() => onDelete(method)}>Eliminar</button></div></article>)}</div>}<aside className="payment-security"><b>Pago seguro</b><p>En una transferencia, Ride solo muestra la cuenta que registró el chofer: el dinero va de tu banco al suyo sin pasar por aquí. Quien confirma que llegó es él.</p></aside></section><section className="payment-history"><h3>Movimientos</h3>{payments.length === 0 ? <p className="payment-no-history">Aún no tienes cobros registrados.</p> : payments.map((payment) => <article key={payment.id}><span className={`payment-state ${payment.status}`}>{statusLabel[payment.status]}</span><div><strong>{tripDestination(payment.tripId)}</strong><small>{date(payment.createdAt)} · {payment.type === 'multa' ? 'Multa por cancelación tardía' : payment.type === 'reembolso' ? 'Reembolso' : payment.type === 'reintento' ? 'Reintento' : 'Pago'}</small></div><b>{money(payment.amount)}</b></article>)}</section></div></div>
 }
 
 function AccountPage({ user, trips, addresses, methods, onAddresses, onPayments, onSettings }: { user: User; trips: Trip[]; addresses: SavedAddress[]; methods: PaymentMethod[]; onAddresses: () => void; onPayments: () => void; onSettings: () => void }) {
