@@ -349,3 +349,43 @@ html[data-ride-theme="dark"] .settings-shared .theme-options button:nth-child(3)
 .passenger-workspace-pedir .request-form,.passenger-workspace-pedir .quote-card{border:0!important;border-top:0!important;border-left:0!important;outline:0!important;background-clip:padding-box!important}.passenger-workspace-pedir .request-form:before,.passenger-workspace-pedir .request-form:after,.passenger-workspace-pedir .quote-card:after{border:0!important;outline:0!important}
 .passenger-workspace-pedir button.location-button{appearance:none!important;-webkit-appearance:none!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:205px!important;min-height:48px!important;padding:0 22px!important;border:0!important;border-radius:9999px!important;clip-path:inset(0 round 9999px)!important;background:linear-gradient(110deg,#00b4d2,#34d6cb)!important;color:#032f3d!important;box-shadow:0 14px 30px rgba(0,160,192,.28)!important;font-size:12px!important;font-weight:850!important}
 .passenger-shell :where(.passenger-empty,.start-ride-card,.active-trip,.recent-trip-list .passenger-trip-row,.trip-history article,.notification-list article,.address-form,.address-list>article,.payment-methods,.payment-history,.tracking-main,.tracking-driver,.account-details,.account-summary,.settings-card,.support-form,.support-list article){border:0!important;outline:0!important;border-radius:24px!important;box-shadow:0 20px 55px rgba(8,83,105,.11)!important}.passenger-shell .passenger-empty{background:linear-gradient(145deg,rgba(255,255,255,.84),rgba(215,247,249,.7))!important}.passenger-shell .passenger-empty>button,.passenger-shell .start-ride-card>button,.passenger-shell .define-route-button{border:0!important;border-radius:9999px!important;clip-path:inset(0 round 9999px)!important;background:linear-gradient(110deg,#04b9d7,#3bd7c5)!important;color:#052f3c!important;box-shadow:0 12px 28px rgba(0,160,192,.23)!important;font-weight:800!important}
+
+/* Solicitud sin contornos decorativos y con una jerarquía legible. */
+.passenger-workspace-pedir .request-page{
+  border:0!important;outline:0!important;
+  background:rgba(247,252,252,.9)!important;
+  box-shadow:0 28px 76px rgba(9,76,96,.13)!important
+}
+.passenger-workspace-pedir .request-form{
+  border:0!important;outline:0!important;background:#fbfefe!important;
+  box-shadow:0 20px 54px rgba(8,79,99,.1)!important
+}
+.passenger-workspace-pedir .request-form:before,
+.passenger-workspace-pedir .request-form:after{display:none!important}
+.passenger-workspace-pedir .request-form>p{color:#3f5e6b!important;font-size:12px;font-weight:550}
+.passenger-workspace-pedir .map-pick-hint{color:#365b69!important}
+.passenger-workspace-pedir .quote-card h3{color:#f7fcfd!important}
+.passenger-workspace-pedir .quote-card .passenger-kicker{color:#75e3f2!important}
+.passenger-workspace-pedir .vehicle-categories{gap:9px;margin:15px 0 18px}
+.passenger-workspace-pedir .vehicle-categories button{
+  min-height:58px;padding:11px 13px;border:0!important;border-radius:16px!important;
+  background:rgba(255,255,255,.075)!important;color:#f5fcfd!important;
+  box-shadow:0 8px 18px rgba(0,23,31,.08)!important;
+  transition:transform .2s ease,background .2s ease,box-shadow .2s ease
+}
+.passenger-workspace-pedir .vehicle-categories button:hover{transform:translateY(-2px)!important;background:rgba(255,255,255,.13)!important}
+.passenger-workspace-pedir .vehicle-categories button.selected{
+  border:0!important;background:linear-gradient(120deg,rgba(43,198,218,.3),rgba(52,210,178,.2))!important;
+  box-shadow:0 12px 28px rgba(0,27,36,.17),inset 0 1px rgba(255,255,255,.13)!important
+}
+.passenger-workspace-pedir .vehicle-categories button>span{background:rgba(62,214,232,.15)!important;color:#71e5f3!important}
+.passenger-workspace-pedir .vehicle-categories button strong,
+.passenger-workspace-pedir .vehicle-categories button b{color:#f8fdfe!important}
+.passenger-workspace-pedir .vehicle-categories button small{color:#c6dde3!important;opacity:1!important}
+.passenger-workspace-pedir .quote-card :where(dt,p,small){color:#c5dce2!important}
+.passenger-workspace-pedir .quote-card dd{color:#f5fbfd!important}
+
+.passenger-shell.theme-dark .passenger-workspace-pedir .request-page{background:rgba(8,29,40,.88)!important}
+.passenger-shell.theme-dark .passenger-workspace-pedir .request-form{background:#102f3d!important}
+.passenger-shell.theme-dark .passenger-workspace-pedir .request-form>p,
+.passenger-shell.theme-dark .passenger-workspace-pedir .map-pick-hint{color:#bfd2d9!important}

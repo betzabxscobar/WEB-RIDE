@@ -49,8 +49,8 @@
     linear-gradient(145deg, #f7fcfc, #eaf7fa) !important;
   background-size: 52px 52px, 52px 52px, auto, auto, auto !important;
 }
-.auth-page .form-panel .auth-box { overflow: hidden; border-color: rgba(152, 211, 224, .82); background: linear-gradient(145deg, rgba(255,255,255,.94), rgba(239,250,252,.89)); box-shadow: 0 34px 90px rgba(8, 88, 111, .17), 0 8px 24px rgba(8, 88, 111, .08), inset 0 1px #fff; }
-.auth-page .form-panel .auth-box::after { content: ''; position: absolute; inset: 0 auto 0 0; width: 4px; background: linear-gradient(180deg, #26c4e0, #54d7b7 58%, #786ee4); box-shadow: 0 0 23px rgba(38, 196, 224, .38); }
+.auth-page .form-panel .auth-box { overflow: hidden; border: 0 !important; outline: 0 !important; background: linear-gradient(145deg, rgba(255,255,255,.97), rgba(239,250,252,.94)); box-shadow: 0 34px 90px rgba(8, 88, 111, .17), 0 8px 24px rgba(8, 88, 111, .08), inset 0 1px #fff; }
+.auth-page .form-panel .auth-box::after { display: none !important; }
 .auth-page .auth-icon { position: relative; isolation: isolate; transform: rotate(-3deg); box-shadow: 0 12px 28px rgba(27, 161, 192, .16), 0 0 0 6px rgba(59, 195, 220, .055); animation: ride-auth-icon 5s ease-in-out infinite; }
 .auth-page .auth-icon::before { content: ''; position: absolute; z-index: -1; inset: -2px; border-radius: inherit; background: conic-gradient(from 180deg, #54d9ef, transparent 28%, #58dbb9 52%, transparent 74%, #776ce3); animation: ride-icon-border 6s linear infinite; }
 .auth-page .auth-icon::after { content: ''; position: absolute; z-index: -1; inset: 1px; border-radius: 12px; background: linear-gradient(145deg, #eefbfc, #dff6f8); }
@@ -58,6 +58,8 @@
 .auth-page .primary-action::before { content: ''; position: absolute; inset: 0; transform: translateX(-120%) skewX(-20deg); background: linear-gradient(90deg, transparent, rgba(255,255,255,.38), transparent); animation: ride-button-shine 4.6s ease-in-out infinite; }
 .auth-page .primary-action > * { position: relative; }
 .auth-page .secondary-action { background: rgba(255,255,255,.62) !important; border-color: rgba(124, 190, 207, .52) !important; backdrop-filter: blur(8px); }
+.auth-page .welcome-box .primary-action { justify-content: center !important; padding-inline: 48px !important; }
+.auth-page .welcome-box .primary-action svg { position: absolute; right: 18px; margin: 0 !important; }
 
 /* Magnet y Electric Border para los iconos de navegación de todos los paneles. */
 :where(.passenger-sidebar nav button,.driver-sidebar nav button) > span:first-child,
