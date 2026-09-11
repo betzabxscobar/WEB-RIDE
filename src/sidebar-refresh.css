@@ -657,8 +657,11 @@
 @keyframes auth-gradient-drift { 50% { background-position: 100% 50%; } }
 
 /* Ajustes finales compartidos: las dos acciones de acceso usan exactamente la
-   misma retícula y el fondo de los paneles también en la bienvenida. */
-.auth-page-welcome :where(.auth-city-scene, .auth-app-person, .auth-app-car) {
+   misma retícula y el fondo de los paneles también en la bienvenida.
+   La ciudad, las personas y el auto animados tampoco salen en claro fuera de la
+   bienvenida: el acceso entero usa la escena de la portada, igual que el oscuro,
+   que ya los ocultaba. */
+:is(.auth-page-welcome, .auth-page.auth-theme-light) :where(.auth-city-scene, .auth-app-person, .auth-app-car) {
   display: none !important;
 }
 
