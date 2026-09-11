@@ -62,3 +62,251 @@
 @media (max-width:760px),(prefers-reduced-motion:reduce){
   :where(.passenger-shell,.driver-shell,.admin-shell) :where(article,.feature-card,.start-ride-card,.active-trip,.request-form,.quote-card,.settings-card,.driver-status-card,.admin-card):hover{transform:none}
 }
+
+/* Auth viewport contract: the access flow is a single screen. The previous
+   form-panel overflow created the white scrollbar rail and shifted the card
+   away from the visual center. */
+html:has(main.auth-page),
+body:has(main.auth-page),
+body:has(main.auth-page) #root {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden !important;
+  scrollbar-width: none;
+}
+
+html:has(main.auth-page)::-webkit-scrollbar,
+body:has(main.auth-page)::-webkit-scrollbar { display: none; }
+
+main.auth-page {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+main.auth-page > .form-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  overflow-y: hidden !important;
+  scrollbar-width: none;
+  place-items: center;
+  align-content: center;
+}
+
+main.auth-page > .form-panel::-webkit-scrollbar { display: none; }
+main.auth-page .auth-stage {
+  width: min(100%, 570px);
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* Keep the taller registration card inside the viewport without introducing
+   a nested scroll area. */
+main.auth-page-register .auth-stage { transform-origin: center center; }
+main.auth-page-register .auth-box { max-height: calc(100dvh - 36px); }
+
+@media (max-height: 760px) {
+  main.auth-page .form-panel { padding-block: 12px !important; }
+  main.auth-page .auth-box { padding-block: 20px !important; }
+  main.auth-page-register .auth-box { padding-block: 16px !important; }
+}
+
+@media (max-width: 560px) {
+  main.auth-page > .form-panel { padding: 58px 12px 12px !important; }
+  main.auth-page .auth-stage { width: min(100%, 520px); }
+  main.auth-page-register > .form-panel { padding-top: 54px !important; }
+}
+
+/* React Bits vuelve a ser visible en la portada: la ruta se mueve sobre la
+   escena y los halos acompañan el fondo sin invadir la tarjeta. */
+main.auth-page-welcome .bits-journey,
+main.auth-page-welcome .bits-aurora,
+main.auth-page-welcome .bits-orb {
+  display: block !important;
+}
+
+main.auth-page-welcome .bits-journey {
+  opacity: .72;
+  pointer-events: none;
+}
+
+main.auth-page-welcome .bits-aurora { opacity: .34 !important; }
+main.auth-page-welcome .bits-orb { opacity: .14 !important; }
+main.auth-page-welcome .bits-road-shadow { stroke: transparent !important; opacity: 0 !important; }
+main.auth-page-welcome .bits-road {
+  stroke-width: 2.2px !important;
+  stroke-linecap: round;
+}
+main.auth-page-welcome > .react-bits-layer {
+  z-index: 3 !important;
+  pointer-events: none !important;
+}
+main.auth-page-welcome > .form-panel { z-index: 4 !important; }
+main.auth-page-welcome .auth-stage { position: relative; z-index: 5; }
+main.auth-page-welcome .bits-road { opacity: .9 !important; }
+main.auth-page-welcome .bits-waypoint,
+main.auth-page-welcome .bits-signal,
+main.auth-page-welcome .bits-moving-car { z-index: 2; }
+main.auth-page-welcome .bits-waypoint { opacity: .92 !important; }
+main.auth-page-welcome .bits-moving-car { opacity: 1 !important; }
+
+/* El modo claro conserva el contraste de cada acción: el CTA oscuro usa
+   texto blanco y la alternativa clara usa texto azul oscuro. */
+main.auth-page-welcome.auth-theme-light .auth-choice-grid .primary-action,
+main.auth-page-welcome.auth-theme-dark .auth-choice-grid .primary-action {
+  color: #fff !important;
+}
+main.auth-page-welcome.auth-theme-light .auth-choice-grid .primary-action :is(strong, small),
+main.auth-page-welcome.auth-theme-dark .auth-choice-grid .primary-action :is(strong, small) {
+  color: #fff !important;
+}
+main.auth-page-welcome.auth-theme-light .auth-choice-grid .secondary-action :is(strong, small) {
+  color: #0b3547 !important;
+}
+main.auth-page-welcome.auth-theme-light .auth-choice-grid .secondary-action > svg { color: #0b3547 !important; }
+
+main.auth-page-welcome.auth-theme-light .bits-road-shadow { stroke: rgba(25, 114, 137, .13); }
+main.auth-page-welcome.auth-theme-light .bits-road { stroke: rgba(20, 147, 175, .38); }
+main.auth-page-welcome.auth-theme-light .bits-waypoint {
+  color: #1485a4;
+  background: rgba(239, 252, 253, .72);
+  border-color: rgba(20, 147, 175, .27);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  main.auth-page-welcome .bits-journey,
+  main.auth-page-welcome .bits-aurora,
+  main.auth-page-welcome .bits-orb { display: none !important; }
+}
+
+/* Contrato visual estricto del acceso: en claro ninguna superficie hereda el
+   azul oscuro del tema nocturno, y en oscuro todas las superficies conservan
+   el mismo lenguaje profundo. */
+main.auth-page.auth-theme-light {
+  color-scheme: light;
+  background: #e9f8fb !important;
+}
+main.auth-page.auth-theme-light > .form-panel {
+  background: transparent !important;
+}
+main.auth-page.auth-theme-light .auth-box,
+main.auth-page.auth-theme-light .welcome-box {
+  color: #082c3c !important;
+  background: rgba(250, 254, 255, .88) !important;
+  border-color: rgba(174, 214, 224, .72) !important;
+  box-shadow: 0 30px 78px rgba(32, 103, 124, .16), inset 0 1px rgba(255,255,255,.96) !important;
+}
+main.auth-page.auth-theme-light .auth-box :is(h2, strong, label) { color: #082c3c !important; }
+main.auth-page.auth-theme-light .auth-box > p,
+main.auth-page.auth-theme-light .form-footer { color: #506a75 !important; }
+main.auth-page.auth-theme-light .auth-box input {
+  color: #123b4c !important;
+  background: #b5bfcb !important;
+  border-color: #7b8e9d !important;
+}
+main.auth-page.auth-theme-light .auth-box input::placeholder { color: #344b5b !important; opacity: 1; }
+main.auth-page.auth-theme-light .auth-box input:autofill {
+  box-shadow: inset 0 0 0 1000px #b5bfcb !important;
+  -webkit-text-fill-color: #123b4c !important;
+}
+main.auth-page.auth-theme-light .auth-box .role-picker button {
+  background: #edf1f5 !important;
+  border-color: #aab9c4 !important;
+  color: #123b4c !important;
+}
+main.auth-page.auth-theme-light .auth-box .role-picker button.selected {
+  background: #d8f2f6 !important;
+  border-color: #087c96 !important;
+  box-shadow: inset 0 0 0 1px #087c96;
+}
+main.auth-page.auth-theme-light .auth-box .role-picker :is(b, small) { color: #244858 !important; }
+main.auth-page.auth-theme-light .auth-box :is(.back, .link-button, .form-footer button, .password-field button),
+main.auth-page.auth-theme-light .auth-box .input-with-icon > svg { color: #075c74 !important; }
+
+/* Both entry actions use the daytime palette, including their descendants.
+   Shared motion styles must not reposition icons or change button padding. */
+main.auth-page.auth-theme-light .auth-box .primary-action {
+  background: linear-gradient(110deg, #65d2e5, #3ed8bf) !important;
+  color: #082c3c !important;
+}
+main.auth-page.auth-theme-light .auth-box .auth-choice-grid .primary-action :is(strong, small, svg) { color: #082c3c !important; }
+main.auth-page.auth-theme-light .auth-box .auth-choice-grid .primary-action .action-icon { background: rgba(255,255,255,.35) !important; }
+main.auth-page .auth-box .auth-choice-grid :is(.primary-action, .secondary-action) {
+  padding-inline: 16px !important;
+  grid-template-columns: 44px minmax(0, 1fr) 24px;
+  gap: 12px;
+}
+main.auth-page .auth-box .auth-choice-grid .action-icon > svg {
+  position: static !important;
+  transform: none !important;
+}
+main.auth-page.auth-theme-light .auth-choice-grid .secondary-action {
+  color: #0b3547 !important;
+  background: rgba(248,253,254,.92) !important;
+  border-color: #b8dce4 !important;
+}
+main.auth-page.auth-theme-light .auth-choice-grid .secondary-action :is(strong, small),
+main.auth-page.auth-theme-light .auth-choice-grid .secondary-action > svg { color: #0b3547 !important; }
+main.auth-page.auth-theme-light .auth-choice-grid .secondary-action .action-icon {
+  color: #1186a5 !important;
+  background: #e2f5f8 !important;
+}
+main.auth-page.auth-theme-light .auth-feature-row span {
+  color: #416570 !important;
+  background: rgba(238,250,252,.82) !important;
+}
+main.auth-page.auth-theme-light .auth-assurance {
+  color: #587680 !important;
+  border-top-color: #d8e9ed !important;
+}
+
+main.auth-page.auth-theme-light .bits-road { stroke: rgba(11, 143, 174, .52) !important; }
+main.auth-page.auth-theme-light .bits-waypoint {
+  color: #117f9e !important;
+  background: rgba(242, 253, 254, .82) !important;
+  border-color: rgba(17, 127, 158, .3) !important;
+}
+
+main.auth-page.auth-theme-dark .auth-box :is(input, .role-picker button) {
+  color: #eef8fb !important;
+  background: rgba(17, 52, 67, .9) !important;
+  border-color: #31515f !important;
+}
+main.auth-page.auth-theme-dark .auth-box input::placeholder { color: #86a2ae !important; opacity: 1; }
+
+/* En responsive el panel de marca se oculta, así que el fondo no puede
+   depender de él. Se replica en la pantalla raíz para que la escena y la
+   ruta sigan visibles detrás de la tarjeta. */
+@media (max-width: 1050px) {
+  main.auth-page.auth-theme-light {
+    background:
+      linear-gradient(115deg, rgba(239,252,253,.58), rgba(230,244,251,.25)),
+      url('./assets/PanelFondoClaro.svg') center / cover no-repeat,
+      #e9f8fb !important;
+  }
+  main.auth-page.auth-theme-dark {
+    background:
+      linear-gradient(115deg, rgba(3,20,35,.42), rgba(4,24,43,.2)),
+      url('./assets/PanelFondoOscuro.svg') center / cover no-repeat,
+      #061823 !important;
+  }
+  main.auth-page > .form-panel { background: transparent !important; }
+  main.auth-page .auth-stage { width: min(100%, 570px); }
+}
+
+@media (max-width: 560px) {
+  main.auth-page > .form-panel { padding-inline: 12px !important; }
+  main.auth-page .auth-stage { width: min(100%, 520px); }
+  main.auth-page .auth-box,
+  main.auth-page .welcome-box { width: 100%; }
+}

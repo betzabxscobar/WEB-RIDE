@@ -1,0 +1,16 @@
+# Mira si hay algo nuevo en git cada dos minutos.
+[Unit]
+Description=Comprueba cada pocos minutos si hay una version nueva de la web
+
+[Timer]
+# La primera, un minuto despues de arrancar el servidor: asi tambien se pone al
+# dia solo despues de un reinicio o un corte de luz.
+OnBootSec=1min
+OnUnitActiveSec=2min
+# Un poco de desorden a proposito, para no pedirle a GitHub siempre en el mismo
+# segundo exacto.
+RandomizedDelaySec=20s
+Persistent=true
+
+[Install]
+WantedBy=timers.target

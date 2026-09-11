@@ -21,6 +21,13 @@ type Props = {
   origin?: Coordinates | null
   destination?: Place | null
   driver?: TripPosition | null
+  /**
+   * Dónde está quien mira el mapa. Se pinta como punto, no como alfiler.
+   *
+   * Pide solo las coordenadas —no `Coordinates`— porque quien la tiene es
+   * `TripPosition`, que no lleva etiqueta, y aquí no se rotula nada.
+   */
+  me?: { lat: number; lng: number } | null
   route?: RoadRoute | null
   onPick?: (lat: number, lng: number) => void
   className?: string

@@ -1,6 +1,72 @@
 import { useState, type FormEvent } from 'react'
-import { Check, Landmark, MapPinned, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Check, Clock, Landmark, MapPinned, Pencil, Plus, Trash2, WalletCards } from 'lucide-react'
 import type { Bank, BankAccount, WorkZone } from '../lib/driver-account'
+import { hasExpired, hasUnfinishedPayment, isCourtesy, isExpiringSoon, type DriverSubscription } from '../lib/subscription'
+
+const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+
+/** «hasta el 9 de octubre» */
+function fecha(iso: string): string {
+  const d = new Date(iso)
+  return `${d.getDate()} de ${MESES[d.getMonth()]}`
+}
+
+/** «Te quedan 12 días (hasta el 9 de octubre).» */
+function restante(subscription: DriverSubscription): string {
+  if (subscription.daysLeft == null || subscription.validUntil == null) return ''
+  const dias = subscription.daysLeft === 1 ? 'Te queda 1 día' : `Te quedan ${subscription.daysLeft} días`
+  return `${dias} (hasta el ${fecha(subscription.validUntil)}).`
+}
+
+/**
+ * La cuota mensual del chofer: 15 USD para poder recibir viajes.
+ *
+ * Lo que se ve aquí es un espejo de lo que dice Postgres, no la verdad. El
+ * corte de verdad está en `aceptar_viaje()`: aunque alguien parchee esta
+ * pantalla, el servidor le sigue rebotando los viajes.
+ *
+ * Volver de PayPal **no** activa nada: quien da la cuota por pagada es el
+ * webhook. Por eso al volver se ofrece «Ya pagué» en vez de darlo por hecho.
+ */
+export function SubscriptionPage({ subscription, busy, reviewOnly, returned, onPay, onRefresh }: { subscription: DriverSubscription; busy: boolean; reviewOnly: boolean; returned: boolean; onPay: () => void; onRefresh: () => void }) {
+  const cortesia = isCourtesy(subscription)
+  const aMedias = hasUnfinishedPayment(subscription)
+  const vencida = hasExpired(subscription)
+
+  const [tono, titulo, detalle] = subscription.active && cortesia
+    ? ['info', 'Mes de cortesía', `Te regalamos el primer mes por ya estar con nosotros. ${restante(subscription)} Después son $15 al mes.`]
+    : isExpiringSoon(subscription)
+      ? ['danger', 'Se te acaba pronto', `${restante(subscription)} Renuévala para no quedarte sin recibir viajes.`]
+      : subscription.active
+        ? ['ok', 'Al día', `${restante(subscription)} Puedes recibir viajes con normalidad.`]
+        : vencida
+          ? ['danger', 'Se te venció', 'Mientras no la renueves no te llegan solicitudes ni puedes ponerte en línea.']
+          : ['danger', 'Sin pagar', 'Necesitas la cuota mensual para empezar a recibir viajes.']
+
+  // Al que ya está al día no se le ofrece pagar otra vez: pagaría doble. Salvo
+  // que tenga un pago a medias, que sí conviene que termine.
+  const soloRevisar = subscription.active && !cortesia && !aMedias
+
+  return <div className="driver-page"><section className="driver-section-head"><span>CUOTA MENSUAL</span><h2>Tu cuota</h2><p>15 USD al mes para recibir viajes. Se cobra solo, y puedes darla de baja desde PayPal cuando quieras.</p></section>
+    <section className={`driver-tool-card subscription-state ${tono}`}><small>TU CUOTA</small><h3>{titulo}</h3><p>{detalle}</p></section>
+    <section className="driver-tool-card"><div className="driver-tool-card-title"><WalletCards size={22} aria-hidden /><div><h3>$15 USD al mes</h3><p>Lo que incluye mientras esté al día.</p></div></div>
+      <ul className="subscription-perks"><li><Check size={16} aria-hidden /> Recibes las solicitudes de tu zona</li><li><Check size={16} aria-hidden /> Te puedes poner en línea cuando quieras</li><li><Check size={16} aria-hidden /> Sin límite de viajes: lo que ganes es tuyo</li></ul>
+      <p className="subscription-note">Se cobra solo cada mes. Si la das de baja, sigues trabajando hasta que termine el mes que ya pagaste.</p>
+      {reviewOnly && <p className="subscription-warning"><Clock size={15} aria-hidden /> Estás viendo esto con una cuenta administradora, y esas no pagan cuota: no reciben viajes, y el servidor tampoco les aplica el corte. Para probar el pago hay que entrar con una cuenta de chofer.</p>}
+      {aMedias && <p className="subscription-warning"><Clock size={15} aria-hidden /> Dejaste un pago a medias en PayPal ({subscription.unfinishedPayment}). Mientras no lo apruebes no cuenta como pagado.</p>}
+      {returned && !subscription.active && <p className="subscription-warning"><Clock size={15} aria-hidden /> PayPal puede tardar unos segundos en confirmarnos el pago. Si acabas de pagar, toca «Ya pagué».</p>}
+      <footer>{subscription.reference && <small>Referencia de PayPal: {subscription.reference}</small>}
+        {reviewOnly
+          ? <button className="primary" disabled={busy} onClick={onRefresh}>Actualizar estado</button>
+          : soloRevisar
+            ? <button className="primary" disabled={busy} onClick={onRefresh}>Actualizar estado</button>
+            : returned
+              ? <button className="primary" disabled={busy} onClick={onRefresh}>Ya pagué</button>
+              : <button className="primary" disabled={busy} onClick={onPay}>{busy ? 'Abriendo PayPal…' : aMedias ? 'Terminar el pago' : cortesia ? 'Pagar por adelantado' : vencida ? 'Renovar por $15' : 'Pagar $15 con PayPal'}</button>}
+      </footer>
+    </section>
+  </div>
+}
 
 export function WorkZonesPage({ zones, busy, reviewOnly, onSave }: { zones: WorkZone[]; busy: boolean; reviewOnly: boolean; onSave: (ids: string[]) => void }) {
   const [selected, setSelected] = useState<string[]>(zones.filter((zone) => zone.selected).map((zone) => zone.id))

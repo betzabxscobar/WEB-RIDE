@@ -1,5 +1,16 @@
 import { supabase } from './supabase'
+import { AVATAR_PHOTO, preparePhoto } from './image-upload'
 
+
+/**
+ * A dónde vuelven los enlaces de los correos de acceso.
+ *
+ * Con el origen solo, en GitHub Pages el enlace perdía `/WEB-RIDE/` y terminaba
+ * en un 404. Cada dirección tiene que estar además en Supabase → Authentication
+ * → URL Configuration → Redirect URLs, o Supabase manda al Site URL. Los
+ * correos salen por Brevo, pero esa lista la sigue decidiendo Supabase.
+ */
+const vueltaDeCorreo = () => `${window.location.origin}${import.meta.env.BASE_URL}`
 export type Role = 'passenger' | 'driver' | 'admin' | 'superadmin'
 
 /**
@@ -139,7 +150,7 @@ export async function signUp(input: {
       // enlace del correo funciona igual en desarrollo y en producción sin
       // tocar código. Cada origen debe estar en Authentication → URL
       // Configuration → Redirect URLs, o Supabase lo rechaza.
-      emailRedirectTo: window.location.origin,
+      emailRedirectTo: vueltaDeCorreo(),
       data: {
         full_name: input.name.trim(),
         phone: input.phone.trim(),
@@ -197,7 +208,7 @@ export async function changeInitialPassword(newPassword: string): Promise<User> 
 export async function requestPasswordReset(email: string): Promise<void> {
   const { error } = await supabase.auth.resetPasswordForEmail(
     email.trim().toLowerCase(),
-    { redirectTo: window.location.origin },
+    { redirectTo: vueltaDeCorreo() },
   )
   if (error) throw new Error(translateAuthError(error.message))
 }
@@ -283,15 +294,17 @@ export async function changeOwnEmail(user: User, email: string, currentPassword:
   await reauthenticate(user.email, currentPassword)
   const { error } = await supabase.auth.updateUser(
     { email: normalized },
-    { emailRedirectTo: window.location.origin },
+    { emailRedirectTo: vueltaDeCorreo() },
   )
   if (error) throw new Error(translateAuthError(error.message))
 }
 
 /** Cambia la contraseña después de comprobar que la actual pertenece al usuario. */
 export async function changeOwnPassword(user: User, currentPassword: string, newPassword: string): Promise<void> {
-  const minimum = user.role === 'admin' || user.role === 'superadmin' ? 10 : 8
-  if (newPassword.length < minimum) throw new Error(`La contraseña debe tener mínimo ${minimum} caracteres.`)
+  // La misma regla que Supabase para todos los roles: con 8 para pasajeros y
+  // choferes, el formulario dejaba pasar una que el servidor rechazaba.
+  const debil = validatePassword(newPassword)
+  if (debil) throw new Error(debil)
   if (newPassword === currentPassword) throw new Error('Elige una contraseña distinta a la actual.')
   await reauthenticate(user.email, currentPassword)
   const { error } = await supabase.auth.updateUser({ password: newPassword })
@@ -300,10 +313,11 @@ export async function changeOwnPassword(user: User, currentPassword: string, new
 
 /** Guarda una foto pública, pero restringe la escritura a la carpeta del usuario mediante RLS. */
 export async function uploadOwnAvatar(user: User, file: File): Promise<User> {
-  if (file.size > 2 * 1024 * 1024) throw new Error('La foto pesa más de 2 MB. Usa una más liviana.')
-  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) throw new Error('Sube una imagen JPG, PNG o WebP.')
+  // Reducida y sin EXIF: el bucket es público, y una foto tal cual sale del
+  // móvil lleva las coordenadas de donde se tomó. Ver image-upload.ts.
+  const photo = await preparePhoto(file, AVATAR_PHOTO, 'perfil')
   const path = `${user.id}/perfil.jpg`
-  const { error: uploadError } = await supabase.storage.from('avatares').upload(path, file, { upsert: true, contentType: file.type })
+  const { error: uploadError } = await supabase.storage.from('avatares').upload(path, photo, { upsert: true, contentType: photo.type })
   if (uploadError) throw new Error('No pudimos subir la foto. Revisa el archivo e inténtalo nuevamente.')
   const { data } = supabase.storage.from('avatares').getPublicUrl(path)
   const avatarUrl = `${data.publicUrl}?v=${Date.now()}`
@@ -335,12 +349,54 @@ export async function listUsers(): Promise<User[]> {
   return (data ?? []).map(toUser)
 }
 
+/** El mismo que exige Supabase Auth. Si se cambia alli, se cambia aqui. */
+export const LARGO_MINIMO_PASSWORD = 10
+
+/** Los símbolos que Supabase da por buenos. La lista es suya, no nuestra. */
+export const SIMBOLOS_PASSWORD = String.raw`!@#$%^&*()_+-=[]{};'\:"|<>?,./` + '`~'
+
+/**
+ * Las cuatro condiciones de Supabase Auth, comprobadas por separado para poder
+ * decir **cuál** falta.
+ *
+ * Esto no es la seguridad: la de verdad la aplica el servidor. Sirve para no
+ * mandar al usuario a que le rechacen la contraseña con un mensaje que no
+ * explica nada. Devuelve null cuando la contraseña vale.
+ */
+export function validatePassword(value: string): string | null {
+  if (!value) return 'Escribe una contraseña.'
+  // El largo primero: si además es corta, decirle las cinco cosas a la vez no
+  // ayuda a nadie.
+  if (value.length < LARGO_MINIMO_PASSWORD) return `Usa al menos ${LARGO_MINIMO_PASSWORD} caracteres.`
+
+  const faltan = [
+    /[a-z]/.test(value) ? null : 'una minúscula',
+    /[A-Z]/.test(value) ? null : 'una mayúscula',
+    /[0-9]/.test(value) ? null : 'un número',
+    value.split('').some((char) => SIMBOLOS_PASSWORD.includes(char)) ? null : 'un símbolo',
+  ].filter((item): item is string => item != null)
+
+  if (faltan.length === 0) return null
+  if (faltan.length === 1) return `Falta ${faltan[0]}.`
+  return `Faltan ${faltan.slice(0, -1).join(', ')} y ${faltan[faltan.length - 1]}.`
+}
+
 function translateAuthError(message: string): string {
   const normalized = message.toLowerCase()
   if (normalized.includes('invalid login credentials')) return 'Correo o contraseña incorrectos.'
   if (normalized.includes('email not confirmed')) return 'Debes confirmar tu correo antes de entrar.'
   if (normalized.includes('user already registered')) return 'Este correo ya tiene una cuenta.'
-  if (normalized.includes('password should be at least')) return 'La contraseña es demasiado corta.'
+  // Supabase manda las dos quejas de contrasena juntas y en ingles, con la
+  // lista entera de caracteres permitidos pegada detras. Eso, tal cual, es
+  // ilegible para quien solo quiere entrar. Se traducen por separado porque
+  // pueden venir las dos a la vez.
+  if (normalized.includes('password should be at least') || normalized.includes('password should contain at least')) {
+    const corta = normalized.includes('password should be at least')
+    const tipos = normalized.includes('password should contain at least')
+    if (corta && tipos) return `Tu contraseña necesita ${LARGO_MINIMO_PASSWORD} caracteres e incluir mayúscula, minúscula, número y símbolo.`
+    if (corta) return `Tu contraseña necesita al menos ${LARGO_MINIMO_PASSWORD} caracteres.`
+    return 'Tu contraseña necesita una mayúscula, una minúscula, un número y un símbolo.'
+  }
   if (normalized.includes('for security purposes')) return 'Espera unos segundos antes de reintentar.'
   if (normalized.includes('not allowed')) return 'Este correo no puede registrarse con ese rol.'
   if (normalized.includes('should be different from the old password')) {

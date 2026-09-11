@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { DOCUMENT_PHOTO, preparePhoto } from './image-upload'
 
 export type DriverState = {
   exists: boolean
@@ -134,15 +135,28 @@ export async function listOwnDocuments(userId: string): Promise<OwnDocument[]> {
   return (data ?? []).map((row) => ({ id: row.id, type: row.tipo_documento, status: row.estado, path: row.url_archivo, uploadedAt: row.fecha_subida, vehicleId: row.vehiculo_id, number: row.numero, expiresAt: row.caduca_el, rejectionReason: row.motivo_rechazo }))
 }
 
+/** Las extensiones con las que un documento ha podido quedar guardado. */
+const DOCUMENT_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'pdf']
+
 export async function uploadDriverDocument(userId: string, type: DocumentType, file: File, options: { vehicleId?: string; number?: string; expiresAt?: string } = {}): Promise<void> {
-  if (file.size > 5 * 1024 * 1024) throw new Error('El archivo pesa más de 5 MB.')
-  if (!['image/jpeg', 'image/png', 'image/webp', 'application/pdf'].includes(file.type)) throw new Error('Sube una imagen JPG, PNG, WebP o un PDF.')
-  const extension = file.name.split('.').pop()?.toLowerCase() || (file.type === 'application/pdf' ? 'pdf' : 'jpg')
-  const path = options.vehicleId ? `${userId}/${options.vehicleId}/${type}.${extension}` : `${userId}/${type}.${extension}`
-  const { error: uploadError } = await supabase.storage.from('documentos').upload(path, file, { upsert: true, contentType: file.type })
+  // El PDF va tal cual: no hay nada que reducir. Las fotos, como en la app: a
+  // 1600 de ancho, y con al menos 600 de lado para que se lean.
+  const isPdf = file.type === 'application/pdf'
+  if (isPdf && file.size > 5 * 1024 * 1024) throw new Error('El PDF pesa más de 5 MB.')
+  const upload = isPdf ? file : await preparePhoto(file, DOCUMENT_PHOTO, type)
+  const extension = isPdf ? 'pdf' : 'jpg'
+  const folder = options.vehicleId ? `${userId}/${options.vehicleId}` : userId
+  const path = `${folder}/${type}.${extension}`
+  const { error: uploadError } = await supabase.storage.from('documentos').upload(path, upload, { upsert: true, contentType: upload.type })
   if (uploadError) throw failure(uploadError, 'No se pudo subir el archivo.')
   const { error } = await supabase.rpc('registrar_documento', { p_tipo: type, p_url: path, p_vehiculo_id: options.vehicleId ?? null, p_numero: options.number?.trim() || null, p_caduca_el: options.expiresAt || null })
   if (error) throw failure(error, 'No se pudo registrar el documento.')
+  // Si el anterior tenía otra extensión, `upsert` no lo pisó: sigue en el
+  // bucket y ninguna fila lo nombra. Se borra después de registrar el nuevo,
+  // no antes, para no quedarse sin ninguno si el registro falla. Y si el
+  // borrado falla da igual: el documento nuevo ya está bien.
+  const stale = DOCUMENT_EXTENSIONS.filter((other) => other !== extension).map((other) => `${folder}/${type}.${other}`)
+  await supabase.storage.from('documentos').remove(stale).catch(() => undefined)
 }
 
 export async function getDriverIdentity(userId: string): Promise<DriverIdentity> {

@@ -71,8 +71,26 @@ main.auth-page .auth-choice-grid :is(.primary-action, .secondary-action) {
 }
 
 main.auth-page .auth-choice-grid :is(.primary-action, .secondary-action) > .action-icon {
+  width: 44px;
+  height: 44px;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  place-content: center;
+  align-content: center;
   align-self: center;
   justify-self: center;
+  margin: 0;
+  line-height: 0;
+}
+
+main.auth-page .auth-choice-grid :is(.primary-action, .secondary-action) > .action-icon > svg {
+  display: block;
+  place-self: center;
+  align-self: center;
+  justify-self: center;
+  width: 19px;
+  height: 19px;
   margin: 0;
 }
 

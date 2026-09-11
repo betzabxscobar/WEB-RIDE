@@ -1,0 +1,29 @@
+# Una pasada del despliegue. No se arranca a mano: lo dispara el temporizador
+# ride-desplegar.timer.
+[Unit]
+Description=Actualiza la web de Ride desde git
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# El repositorio es del usuario `ride`, asi que git y npm corren como el. Este
+# servicio no necesita root para nada: nginx solo lee la carpeta.
+User=ride
+WorkingDirectory=/var/www/WEB-RIDE
+# Se invoca con `bash` a proposito, sin depender del bit de ejecucion: el
+# repositorio se edita desde Windows, donde `chmod +x` no siempre queda
+# registrado en git, y entonces el script llega al servidor sin permiso y el
+# servicio falla con un 203/EXEC que no dice de que se queja.
+ExecStart=/bin/bash /var/www/WEB-RIDE/infra/servidor/desplegar.sh
+# Si un despliegue se cuelga, no se queda ahi para siempre bloqueando a los
+# siguientes con el `flock`.
+TimeoutStartSec=15min
+
+# Este servicio solo tiene que tocar su propio directorio.
+PrivateTmp=false
+ProtectSystem=full
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

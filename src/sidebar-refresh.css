@@ -387,7 +387,7 @@
 .sidebar-journey {
   background:
     linear-gradient(90deg,rgba(5,28,42,.92),rgba(5,34,49,.48)),
-    url('./assets/app-auth-city.jpeg') center 72% / cover !important;
+    url('./assets/app-auth-city.webp') center 72% / cover !important;
 }
 
 @media (max-width: 1050px) {
@@ -595,7 +595,7 @@
 .sidebar-journey {
   background:
     linear-gradient(90deg, rgba(5,28,42,.95), rgba(5,34,49,.55)),
-    url('./assets/app-auth-city.jpeg') center 72% / cover !important;
+    url('./assets/app-auth-city.webp') center 72% / cover !important;
 }
 
 /* Alineación consistente de las acciones principales del resto de la aplicación. */
