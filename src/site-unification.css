@@ -90,6 +90,9 @@ main.auth-page {
 }
 
 main.auth-page > .form-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
   min-height: 0 !important;
@@ -206,12 +209,47 @@ main.auth-page.auth-theme-light .welcome-box {
 main.auth-page.auth-theme-light .auth-box :is(h2, strong, label) { color: #082c3c !important; }
 main.auth-page.auth-theme-light .auth-box > p,
 main.auth-page.auth-theme-light .form-footer { color: #506a75 !important; }
-main.auth-page.auth-theme-light .auth-box :is(input, .role-picker button) {
+main.auth-page.auth-theme-light .auth-box input {
   color: #123b4c !important;
-  background: rgba(255,255,255,.92) !important;
-  border-color: #c3e0e7 !important;
+  background: #b5bfcb !important;
+  border-color: #7b8e9d !important;
 }
-main.auth-page.auth-theme-light .auth-box input::placeholder { color: #7d99a5 !important; opacity: 1; }
+main.auth-page.auth-theme-light .auth-box input::placeholder { color: #344b5b !important; opacity: 1; }
+main.auth-page.auth-theme-light .auth-box input:autofill {
+  box-shadow: inset 0 0 0 1000px #b5bfcb !important;
+  -webkit-text-fill-color: #123b4c !important;
+}
+main.auth-page.auth-theme-light .auth-box .role-picker button {
+  background: #edf1f5 !important;
+  border-color: #aab9c4 !important;
+  color: #123b4c !important;
+}
+main.auth-page.auth-theme-light .auth-box .role-picker button.selected {
+  background: #d8f2f6 !important;
+  border-color: #087c96 !important;
+  box-shadow: inset 0 0 0 1px #087c96;
+}
+main.auth-page.auth-theme-light .auth-box .role-picker :is(b, small) { color: #244858 !important; }
+main.auth-page.auth-theme-light .auth-box :is(.back, .link-button, .form-footer button, .password-field button),
+main.auth-page.auth-theme-light .auth-box .input-with-icon > svg { color: #075c74 !important; }
+
+/* Both entry actions use the daytime palette, including their descendants.
+   Shared motion styles must not reposition icons or change button padding. */
+main.auth-page.auth-theme-light .auth-box .primary-action {
+  background: linear-gradient(110deg, #65d2e5, #3ed8bf) !important;
+  color: #082c3c !important;
+}
+main.auth-page.auth-theme-light .auth-box .auth-choice-grid .primary-action :is(strong, small, svg) { color: #082c3c !important; }
+main.auth-page.auth-theme-light .auth-box .auth-choice-grid .primary-action .action-icon { background: rgba(255,255,255,.35) !important; }
+main.auth-page .auth-box .auth-choice-grid :is(.primary-action, .secondary-action) {
+  padding-inline: 16px !important;
+  grid-template-columns: 44px minmax(0, 1fr) 24px;
+  gap: 12px;
+}
+main.auth-page .auth-box .auth-choice-grid .action-icon > svg {
+  position: static !important;
+  transform: none !important;
+}
 main.auth-page.auth-theme-light .auth-choice-grid .secondary-action {
   color: #0b3547 !important;
   background: rgba(248,253,254,.92) !important;
