@@ -96,7 +96,10 @@ export async function getMySubscription(): Promise<DriverSubscription> {
  * por pagada la cuota es el webhook, que es lo único que la base deja escribir.
  */
 export async function openSubscriptionCheckout(): Promise<string> {
-  const { data, error } = await supabase.functions.invoke('suscripcion-paypal')
+  const { data, error } = await supabase.functions.invoke('suscripcion-paypal', {
+    // Sin esto PayPal devuelve al chofer a `ride://`, que el navegador no sabe abrir.
+    body: { vuelta: `${window.location.origin}${import.meta.env.BASE_URL}` },
+  })
   if (error) {
     const status = (error as { context?: { status?: number } }).context?.status
     if (status === 403) throw new Error('Solo un chofer paga la cuota mensual.')

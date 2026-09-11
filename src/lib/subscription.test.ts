@@ -85,7 +85,11 @@ describe('cuota mensual del chofer', () => {
   it('abre el pago y devuelve dónde se aprueba', async () => {
     mocks.invoke.mockResolvedValue({ data: { suscripcion_id: 'I-1', aprobar_en: 'https://paypal.com/x' }, error: null })
     await expect(openSubscriptionCheckout()).resolves.toBe('https://paypal.com/x')
-    expect(mocks.invoke).toHaveBeenCalledWith('suscripcion-paypal')
+    // Manda a donde volver: sin eso PayPal devuelve al chofer a `ride://`,
+    // que el navegador no sabe abrir.
+    expect(mocks.invoke).toHaveBeenCalledWith('suscripcion-paypal', {
+      body: { vuelta: expect.stringMatching(/^https?:\/\/[^/]+\/$/) },
+    })
   })
 
   it('sin credenciales configuradas lo dice, en vez de un error genérico', async () => {

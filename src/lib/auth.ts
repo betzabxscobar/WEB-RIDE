@@ -1,6 +1,16 @@
 import { supabase } from './supabase'
 import { AVATAR_PHOTO, preparePhoto } from './image-upload'
 
+
+/**
+ * A dónde vuelven los enlaces de los correos de acceso.
+ *
+ * Con el origen solo, en GitHub Pages el enlace perdía `/WEB-RIDE/` y terminaba
+ * en un 404. Cada dirección tiene que estar además en Supabase → Authentication
+ * → URL Configuration → Redirect URLs, o Supabase manda al Site URL. Los
+ * correos salen por Brevo, pero esa lista la sigue decidiendo Supabase.
+ */
+const vueltaDeCorreo = () => `${window.location.origin}${import.meta.env.BASE_URL}`
 export type Role = 'passenger' | 'driver' | 'admin' | 'superadmin'
 
 /**
@@ -140,7 +150,7 @@ export async function signUp(input: {
       // enlace del correo funciona igual en desarrollo y en producción sin
       // tocar código. Cada origen debe estar en Authentication → URL
       // Configuration → Redirect URLs, o Supabase lo rechaza.
-      emailRedirectTo: window.location.origin,
+      emailRedirectTo: vueltaDeCorreo(),
       data: {
         full_name: input.name.trim(),
         phone: input.phone.trim(),
@@ -198,7 +208,7 @@ export async function changeInitialPassword(newPassword: string): Promise<User> 
 export async function requestPasswordReset(email: string): Promise<void> {
   const { error } = await supabase.auth.resetPasswordForEmail(
     email.trim().toLowerCase(),
-    { redirectTo: window.location.origin },
+    { redirectTo: vueltaDeCorreo() },
   )
   if (error) throw new Error(translateAuthError(error.message))
 }
@@ -284,15 +294,17 @@ export async function changeOwnEmail(user: User, email: string, currentPassword:
   await reauthenticate(user.email, currentPassword)
   const { error } = await supabase.auth.updateUser(
     { email: normalized },
-    { emailRedirectTo: window.location.origin },
+    { emailRedirectTo: vueltaDeCorreo() },
   )
   if (error) throw new Error(translateAuthError(error.message))
 }
 
 /** Cambia la contraseña después de comprobar que la actual pertenece al usuario. */
 export async function changeOwnPassword(user: User, currentPassword: string, newPassword: string): Promise<void> {
-  const minimum = user.role === 'admin' || user.role === 'superadmin' ? 10 : 8
-  if (newPassword.length < minimum) throw new Error(`La contraseña debe tener mínimo ${minimum} caracteres.`)
+  // La misma regla que Supabase para todos los roles: con 8 para pasajeros y
+  // choferes, el formulario dejaba pasar una que el servidor rechazaba.
+  const debil = validatePassword(newPassword)
+  if (debil) throw new Error(debil)
   if (newPassword === currentPassword) throw new Error('Elige una contraseña distinta a la actual.')
   await reauthenticate(user.email, currentPassword)
   const { error } = await supabase.auth.updateUser({ password: newPassword })
