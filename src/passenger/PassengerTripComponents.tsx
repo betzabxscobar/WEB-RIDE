@@ -27,7 +27,7 @@ function ActiveTrip({ trip, onCancel }: { trip: Trip; onCancel: (trip: Trip) => 
 }
 
 export function Route({ trip }: { trip: Trip }) {
-  return <div className="trip-route-card"><div><i className="origin"/><span><small>ORIGEN</small><strong>{trip.origenTexto}</strong></span></div><b/><div><i className="destination"/><span><small>DESTINO</small><strong>{trip.destinoTexto}</strong></span></div></div>
+  return <div className="trip-route-card"><div><Navigation className="origin route-point-icon" size={16} aria-hidden/><span><small>ORIGEN</small><strong>{trip.origenTexto}</strong></span></div><b/><div><MapPin className="destination route-point-icon" size={16} aria-hidden/><span><small>DESTINO</small><strong>{trip.destinoTexto}</strong></span></div></div>
 }
 
 export function TripRow({ trip }: { trip: Trip }) {

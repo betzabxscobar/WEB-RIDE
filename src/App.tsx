@@ -2,10 +2,10 @@ import { Component, lazy, Suspense, useEffect, useState } from 'react'
 import type { ErrorInfo, FormEvent, ReactNode } from 'react'
 import { PanelPreview } from './components/PanelPreview'
 import { ReactBitsEffects } from './components/ReactBitsEffects'
-import { RideJourneyVisual } from './components/RideJourneyVisual'
 import './App.css'
 import logoTipo from './assets/LogoTipo.webp'
-import { AlertTriangle, ArrowRight, CarFront, CheckCircle2, Clock3, LockKeyhole, Mail, MapPin, MapPinned, Navigation, RotateCcw, ShieldCheck } from 'lucide-react'
+import rideCityJourney from './assets/ride-city-journey-v2.png'
+import { AlertTriangle, ArrowRight, BadgeCheck, CarFront, Clock3, Compass, LockKeyhole, LogIn, Mail, MapPin, Navigation, RotateCcw, Route as RouteIcon, ShieldCheck, Sparkles, UserPlus, WalletCards } from 'lucide-react'
 import { supabase } from './lib/supabase'
 import { useRideBrowserNotifications } from './lib/browser-notifications'
 import {
@@ -66,7 +66,7 @@ function LoadingExperience({ title, text, detail }: { title: string; text: strin
       <div className="loading-brand"><img src={logoTipo} alt="" /><b>Ride</b><span>EN RUTA</span></div>
       <div className="loading-journey" aria-hidden>
         <span className="loading-vehicle"><CarFront size={24} /></span>
-        <div className="loading-road"><i /><i /><i /></div>
+        <div className="loading-road" />
         <span className="loading-destination"><MapPin size={22} /></span>
       </div>
       <h1>{title}</h1>
@@ -77,7 +77,7 @@ function LoadingExperience({ title, text, detail }: { title: string; text: strin
         <span><Clock3 size={15} />Llegada</span>
       </div>
       <div className="loading-progress" aria-hidden><span /></div>
-      <small><i />{detail}</small>
+      <small><RouteIcon size={14} aria-hidden />{detail}</small>
     </section>
   </>
 }
@@ -280,16 +280,15 @@ function App() {
 
   return <main className={`auth-page auth-page-${screen}`}><ReactBitsEffects scene="auth"/>
     <section className="brand-panel">
-      <div className="brand-copy"><div className="wordmark"><img src={logoTipo} className="wordmark-logo" alt="Ride" /><span>Ride</span></div><span className="brand-kicker">TU CIUDAD, A TU RITMO</span><h1>Muévete con<br/><em>libertad.</em></h1><p>Una forma más segura, transparente y humana de llegar a donde quieres.</p><div className="brand-benefits"><span><CheckCircle2 size={16} aria-hidden /> Viajes confiables</span><span><ShieldCheck size={16} aria-hidden /> Acceso protegido</span></div></div>
-      <RideJourneyVisual />
-      <div className="brand-status"><span className="brand-status-icon" aria-hidden><MapPinned size={20} /></span><div><strong>Todo tu viaje en un solo lugar</strong><small>Solicita, conduce o administra con una experiencia clara.</small></div></div>
+      <img className="auth-city-scene" src={rideCityJourney} alt="Automóvil recorriendo una ciudad costera siguiendo una ruta iluminada" decoding="async" fetchPriority="high" />
+      <div className="brand-copy"><div className="wordmark"><img src={logoTipo} className="wordmark-logo" alt="Ride" /><span>Ride</span></div><div className="brand-message"><span className="brand-kicker">MOVILIDAD HECHA PARA TI</span><h1>Tu ciudad.<br/><em>Tu camino.</em></h1><p>Pide, conduce y sigue cada trayecto desde una experiencia clara, segura y llena de movimiento.</p></div><div className="brand-benefits"><span><RouteIcon size={16} aria-hidden /> Ruta en tiempo real</span><span><ShieldCheck size={16} aria-hidden /> Viajes protegidos</span><span><WalletCards size={16} aria-hidden /> Precio transparente</span></div></div>
       <div className="city-art"><div className="moon"/><div className="route"><i/><i/><i/></div><div className="car">▰</div><div className="buildings"><i/><i/><i/><i/><i/><i/></div></div>
     </section>
 
     <section className="form-panel">
       <div className="mobile-brand"><img src={logoTipo} className="wordmark-logo mobile-logo" alt="Ride" /><b>Ride</b></div>
       <div className="auth-stage">
-        {screen === 'welcome' && <div className="auth-box welcome-box"><span className="auth-icon"><ShieldCheck size={20} aria-hidden /></span><span className="eyebrow">BIENVENIDO A RIDE</span><h2>Tu próximo viaje<br/>empieza aquí.</h2><p>Crea una cuenta o inicia sesión para continuar.</p><button className="primary-action" onClick={() => setScreen('register')}>Crear cuenta <ArrowRight size={18} aria-hidden /></button><button className="secondary-action" onClick={() => setScreen('login')}>Ya tengo una cuenta</button><div className="auth-assurance"><ShieldCheck size={15} aria-hidden /> Tus datos viajan protegidos</div></div>}
+        {screen === 'welcome' && <div className="auth-box welcome-box"><div className="welcome-heading"><span className="auth-icon"><Compass size={21} aria-hidden /></span><div><span className="eyebrow">BIENVENIDO A RIDE</span><small><Sparkles size={13} aria-hidden /> Todo listo para moverte</small></div></div><h2>Elige cómo quieres empezar.</h2><p>Tu cuenta reúne viajes, rutas, pagos y seguridad en un solo lugar.</p><div className="auth-choice-grid"><button className="primary-action" onClick={() => setScreen('register')}><span className="action-icon"><UserPlus size={19} aria-hidden /></span><span><strong>Crear mi cuenta</strong><small>Empieza a viajar o conducir</small></span><ArrowRight size={18} aria-hidden /></button><button className="secondary-action" onClick={() => setScreen('login')}><span className="action-icon"><LogIn size={19} aria-hidden /></span><span><strong>Ya tengo una cuenta</strong><small>Entra de forma segura</small></span><ArrowRight size={18} aria-hidden /></button></div><div className="auth-feature-row"><span><BadgeCheck size={16} aria-hidden /> Identidad protegida</span><span><RouteIcon size={16} aria-hidden /> Ruta visible</span><span><WalletCards size={16} aria-hidden /> Tarifa clara</span></div></div>}
         {screen === 'login' && <AuthForm title="Qué bueno verte" subtitle="Ingresa tus datos para continuar." submit="Iniciar sesión" loading={loading} message={message} notice={notice} showPassword={showPassword} setShowPassword={setShowPassword} onSubmit={(event) => { event.preventDefault(); handleLogin(event.currentTarget) }} onBack={() => { setScreen('welcome'); setMessage(''); setNotice('') }} footer={<>¿Aún no tienes cuenta? <button onClick={() => { setScreen('register'); setMessage(''); setNotice('') }}>Regístrate</button></>} extra={<button type="button" className="link-button" onClick={() => { setScreen('forgot'); setMessage(''); setNotice('') }}>¿Olvidaste tu contraseña?</button>} />}
         {screen === 'forgot' && <ForgotPasswordForm loading={loading} message={message} onSubmit={(event) => { event.preventDefault(); handleForgotPassword(event.currentTarget) }} onBack={() => { setScreen('login'); setMessage(''); setNotice('') }} />}
         {screen === 'register' && <RegisterForm loading={loading} message={message} notice={notice} showPassword={showPassword} setShowPassword={setShowPassword} onSubmit={(event) => { event.preventDefault(); handleRegister(event.currentTarget) }} onBack={() => { setScreen('welcome'); setMessage(''); setNotice('') }} onLogin={() => { setScreen('login'); setMessage(''); setNotice('') }} />}

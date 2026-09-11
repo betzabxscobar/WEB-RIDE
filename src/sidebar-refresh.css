@@ -233,3 +233,184 @@
 
 @keyframes sidebar-route-flow { to { stroke-dashoffset: -84; } }
 @keyframes sidebar-car-float { 50% { transform: translate(8px, -5px) rotate(-4deg); } }
+
+/* Segunda dirección visual: acceso cinematográfico y controles con jerarquía. */
+.auth-page {
+  grid-template-columns: minmax(560px, 1.2fr) minmax(500px, .8fr) !important;
+  background: #061c2a !important;
+}
+.auth-page .brand-panel {
+  isolation: isolate;
+  padding: clamp(28px, 4vw, 64px) clamp(34px, 5vw, 82px) !important;
+  background: #071d2d !important;
+}
+.auth-city-scene {
+  position: absolute;
+  z-index: -3;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 58% center;
+  filter: saturate(.88) contrast(1.04);
+  animation: auth-scene-reveal 1s cubic-bezier(.2,.8,.2,1) both;
+}
+.auth-page .brand-panel::before {
+  content: '' !important;
+  display: block !important;
+  position: absolute !important;
+  z-index: -2 !important;
+  inset: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  border-radius: 0 !important;
+  background:
+    linear-gradient(90deg, rgba(4,22,34,.94) 0%, rgba(4,25,38,.68) 49%, rgba(4,25,38,.2) 78%),
+    linear-gradient(0deg, rgba(3,18,29,.86) 0%, transparent 49%) !important;
+  filter: none !important;
+  animation: none !important;
+}
+.auth-page .brand-panel::after {
+  content: '' !important;
+  display: block !important;
+  position: absolute !important;
+  z-index: -1 !important;
+  inset: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: linear-gradient(105deg, transparent 44%, rgba(51,211,231,.12) 49%, transparent 55%) !important;
+  animation: auth-light-sweep 9s ease-in-out infinite !important;
+}
+.auth-page .brand-copy { height: 100%; max-width: 660px; display: flex; flex-direction: column; }
+.auth-page .brand-copy .wordmark { margin: 0 !important; transform: none !important; }
+.auth-page .brand-copy .wordmark img { width: 51px !important; }
+.auth-page .brand-copy .wordmark span { color: #fff !important; font-size: 28px !important; font-weight: 800; }
+.brand-message { margin-top: clamp(70px, 12vh, 138px); }
+.auth-page .brand-kicker { margin: 0 0 15px; color: #80e5f4; font-size: 11px; font-weight: 850; letter-spacing: .2em; }
+.auth-page .brand-copy h1 { max-width: 620px; margin: 0 0 22px; color: #fff; font-size: clamp(52px, 5.4vw, 88px); line-height: .94; letter-spacing: -.055em; text-shadow: 0 12px 42px rgba(0,10,18,.38); }
+.auth-page .brand-copy h1 em { color: #78e6ef; text-shadow: 0 0 35px rgba(45,208,229,.2); }
+.auth-page .brand-copy > .brand-message p { max-width: 490px !important; margin: 0; color: #e1f0f4 !important; font-size: 15px !important; line-height: 1.65 !important; text-shadow: 0 3px 18px rgba(0,9,16,.7); }
+.auth-page .brand-benefits { max-width: none; margin-top: auto; display: flex; gap: 9px; }
+.auth-page .brand-benefits span { border-color: rgba(170,234,243,.28); background: rgba(5,28,42,.72); color: #f2fbfd; box-shadow: 0 12px 32px rgba(0,10,18,.18); }
+.auth-page .brand-benefits svg { color: #7de2ef; }
+.auth-page .brand-status,
+.auth-page .auth-journey-visual { display: none !important; }
+.auth-page .bits-journey,
+.auth-page .bits-aurora,
+.loading-route-art { display: none !important; }
+
+.auth-page .form-panel {
+  padding: clamp(24px, 4vw, 64px) !important;
+  background:
+    radial-gradient(circle at 88% 10%, rgba(64,205,229,.2), transparent 28%),
+    radial-gradient(circle at 10% 92%, rgba(100,92,224,.12), transparent 30%),
+    linear-gradient(145deg, #f8fcfd, #e9f7fa) !important;
+}
+.auth-page .auth-stage { width: min(100%, 590px); }
+.auth-page .welcome-box {
+  width: 100%;
+  box-sizing: border-box;
+  padding: clamp(27px, 3vw, 44px);
+  border: 1px solid rgba(130,190,205,.24);
+  border-radius: 30px;
+  background: rgba(255,255,255,.8);
+  box-shadow: 0 32px 85px rgba(7,73,96,.14), inset 0 1px rgba(255,255,255,.95);
+  backdrop-filter: blur(22px) saturate(1.08);
+}
+.welcome-heading { display: flex; align-items: center; gap: 13px; margin-bottom: 24px; }
+.welcome-heading .auth-icon { flex: 0 0 48px; width: 48px; height: 48px; margin: 0; }
+.welcome-heading > div { display: grid; gap: 5px; }
+.welcome-heading small { display: flex; align-items: center; gap: 5px; color: #54707c !important; font-size: 10px; }
+.auth-page .welcome-box h2 { max-width: 470px; margin: 0 0 12px; color: #072d40 !important; font-size: clamp(34px, 3.2vw, 48px); line-height: 1.02; letter-spacing: -.045em; }
+.auth-page .welcome-box > p { max-width: 460px; margin: 0 0 25px; color: #4a6875 !important; font-size: 13px; line-height: 1.6; }
+.auth-choice-grid { display: grid; gap: 11px; }
+.auth-page .auth-choice-grid :where(.primary-action,.secondary-action) {
+  min-height: 70px;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 44px 1fr 24px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: 18px !important;
+  text-align: left;
+}
+.auth-page .auth-choice-grid .primary-action { background: linear-gradient(120deg,#06394f,#08718a) !important; color: #fff !important; box-shadow: 0 17px 36px rgba(6,83,107,.24) !important; }
+.auth-page .auth-choice-grid .secondary-action { border: 1px solid #b8dce4 !important; background: rgba(247,252,253,.86) !important; color: #0b3547 !important; }
+.auth-choice-grid .action-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 13px; background: rgba(120,227,239,.16); color: #81e6f1; }
+.auth-choice-grid .secondary-action .action-icon { background: #e2f5f8; color: #1186a5; }
+.auth-choice-grid button > span:nth-child(2) { display: grid; gap: 3px; }
+.auth-choice-grid button strong { color: inherit !important; font-size: 13px; }
+.auth-choice-grid button small { color: inherit !important; font-size: 10px; opacity: .72; }
+.auth-page .auth-choice-grid button > svg:last-child { position: static; justify-self: end; transition: transform .22s ease; }
+.auth-page .auth-choice-grid button:hover > svg:last-child { transform: translateX(4px); }
+.auth-feature-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; margin-top: 22px; }
+.auth-feature-row span { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 5px; border-radius: 12px; background: #edf8fa; color: #416570; font-size: 9px; font-weight: 750; text-align: center; }
+.auth-feature-row svg { flex: 0 0 auto; color: #138da9; }
+
+/* Ningún estado decorativo vuelve a presentarse como punto verde. */
+.status-dot,
+.bits-signal,
+.brand-status .status-dot,
+.loading-road i,
+.intro-orbit > i,
+.driver-preview-route > i { display: none !important; }
+.loading-route-art > span,
+.driver-route i { display: none !important; }
+.route-field > i { width: 12px !important; height: 4px !important; margin-top: 31px !important; border: 0 !important; border-radius: 3px !important; background: #20a9c7 !important; }
+.route-field.destination > i { background: #6e66d6 !important; }
+.trip-route-card .route-point-icon { flex: 0 0 auto; padding: 5px; border-radius: 8px; background: #e1f4f8; color: #1285a3; box-sizing: content-box; }
+.trip-route-card .route-point-icon.destination { background: #eeeafd; color: #665bca; }
+.driver-status-icon { flex: 0 0 42px; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 14px; background: rgba(112,213,237,.12); color: #79dcef; }
+.driver-status-card > div:first-child::before { content: '↗'; flex: 0 0 42px; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 14px; background: rgba(112,213,237,.12); color: #79dcef; font-size: 21px; font-weight: 800; }
+.driver-route > div::before { content: '↗'; flex: 0 0 27px; width: 27px; height: 27px; display: grid; place-items: center; border-radius: 8px; background: #e1f4f8; color: #1285a3; font-size: 14px; }
+.driver-route > div:last-child::before { content: '⌖'; background: #eeeafd; color: #665bca; }
+.theme-dark .driver-route > div::before { background: #164657; color: #8bdff0; }
+.theme-dark .driver-route > div:last-child::before { background: #2b315e; color: #c4bbff; }
+
+/* Especificidad deliberada: el tema general no puede oscurecer estas identidades. */
+.admin-shell .admin-sidebar .admin-brand strong,
+.admin-shell.theme-dark .admin-sidebar .admin-brand strong,
+.passenger-shell .passenger-sidebar .passenger-brand b,
+.passenger-shell.theme-dark .passenger-sidebar .passenger-brand b,
+.driver-shell .driver-sidebar .driver-brand b,
+.driver-shell.theme-dark .driver-sidebar .driver-brand b { color: #fff !important; opacity: 1 !important; -webkit-text-fill-color: #fff !important; }
+.admin-shell .admin-sidebar .sidebar-profile strong,
+.admin-shell.theme-dark .admin-sidebar .sidebar-profile strong,
+.passenger-shell .passenger-sidebar .passenger-profile strong,
+.passenger-shell.theme-dark .passenger-sidebar .passenger-profile strong,
+.driver-shell .driver-sidebar .driver-profile strong,
+.driver-shell.theme-dark .driver-sidebar .driver-profile strong { color: #fff !important; opacity: 1 !important; -webkit-text-fill-color: #fff !important; }
+
+.sidebar-journey {
+  background:
+    linear-gradient(90deg,rgba(5,28,42,.92),rgba(5,34,49,.48)),
+    url('./assets/ride-city-journey-v2.png') 60% 60% / cover !important;
+}
+
+@media (max-width: 1050px) {
+  .auth-page { grid-template-columns: 1fr !important; }
+  .auth-page .brand-panel { display: none !important; }
+  .auth-page .form-panel { min-height: 100dvh; }
+}
+@media (max-width: 560px) {
+  .auth-page .form-panel { padding: 82px 14px 24px !important; align-items: center; }
+  .auth-page .welcome-box { padding: 25px 20px; border-radius: 24px; }
+  .auth-page .welcome-box h2 { font-size: 34px; }
+  .auth-feature-row { grid-template-columns: 1fr; }
+  .auth-feature-row span { justify-content: flex-start; padding-inline: 13px; }
+}
+@media (max-height: 760px) and (min-width: 1051px) {
+  .brand-message { margin-top: 42px; }
+  .auth-page .brand-copy h1 { font-size: clamp(46px,4.5vw,68px); }
+  .auth-page .brand-benefits { margin-top: 24px; }
+  .auth-page .welcome-box { padding-block: 25px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-city-scene,
+  .auth-page .brand-panel::after { animation: none !important; }
+}
+@keyframes auth-scene-reveal { from { opacity: 0; transform: scale(1.035); } to { opacity: 1; transform: none; } }
+@keyframes auth-light-sweep { 0%,55% { transform: translateX(-45%); opacity: 0; } 72% { opacity: 1; } 100% { transform: translateX(48%); opacity: 0; } }
