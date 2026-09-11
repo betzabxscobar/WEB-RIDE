@@ -48,14 +48,13 @@ for (const header of ['Content-Security-Policy', 'Referrer-Policy', 'X-Content-T
 // cambie una y deje la otra atras, que es justo el fallo que no se ve hasta que
 // alguien mira las cabeceras del sitio en produccion.
 const nginxConf = await readFile(join(root, 'infra', 'servidor', 'ride.nginx.conf'), 'utf8')
+const cabecerasNginx = await readFile(join(root, 'infra', 'servidor', 'ride-cabeceras.conf'), 'utf8')
 // `\\s` y no `\s`: dentro de un template literal, `\s` se queda en `s` y el
 // patron deja de buscar espacios. El `\r?` es para cuando el archivo llega con
 // finales de linea de Windows.
 const valorEnHeaders = (nombre) => headers.match(new RegExp(`^[ \\t]*${nombre}:[ \\t]*(.+?)\\r?$`, 'm'))?.[1]?.trim()
-// Solo el primero de cada cabecera: en nginx se repiten dentro de los bloques
-// `location`, porque `add_header` no se hereda y en cuanto un bloque declara
-// uno pierde todos los de arriba.
-const valorEnNginx = (nombre) => nginxConf.match(new RegExp(`^[ \\t]*add_header[ \\t]+${nombre}[ \\t]+"(.+?)"[ \\t]*(?:always)?[ \\t]*;`, 'm'))?.[1]?.trim()
+// Las de nginx viven en `ride-cabeceras.conf`, que se incluye en cada bloque.
+const valorEnNginx = (nombre) => cabecerasNginx.match(new RegExp(`^[ \\t]*add_header[ \\t]+${nombre}[ \\t]+"(.+?)"[ \\t]*(?:always)?[ \\t]*;`, 'm'))?.[1]?.trim()
 
 for (const header of ['Content-Security-Policy', 'Referrer-Policy', 'X-Content-Type-Options', 'X-Frame-Options', 'Permissions-Policy', 'Cross-Origin-Opener-Policy']) {
   const esperado = valorEnHeaders(header)
@@ -63,9 +62,21 @@ for (const header of ['Content-Security-Policy', 'Referrer-Policy', 'X-Content-T
   requireCondition(enNginx != null, `La configuracion de nginx no declara ${header}`)
   requireCondition(
     esperado == null || enNginx === esperado,
-    `${header} no coincide entre public/_headers y infra/servidor/ride.nginx.conf`,
+    `${header} no coincide entre public/_headers y infra/servidor/ride-cabeceras.conf`,
   )
 }
+
+// `add_header` no se hereda: un `location` que declare uno propio pierde las de
+// seguridad del `server` salvo que vuelva a incluir el archivo. Asi se sirvio el
+// index.html sin CSP ni X-Frame-Options, y esta comprobacion no lo vio porque
+// solo miraba la primera aparicion de cada cabecera.
+const incluye = (texto) => /include\s+\S*ride-cabeceras\.conf\s*;/.test(texto)
+for (const [, ruta, cuerpo] of nginxConf.matchAll(/location\s+([^{]+)\{([^}]*)\}/g)) {
+  requireCondition(!/add_header/.test(cuerpo) || incluye(cuerpo),
+    `nginx: location ${ruta.trim()} declara add_header y no incluye ride-cabeceras.conf`)
+}
+requireCondition(incluye(nginxConf.replace(/location\s+[^{]+\{[^}]*\}/g, '')),
+  'nginx: el server no incluye ride-cabeceras.conf')
 
 const html = await readFile(join(root, 'dist', 'index.html'), 'utf8')
 requireCondition(/<html\s+lang="es"/.test(html), 'La salida no declara lang="es"')

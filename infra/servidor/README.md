@@ -192,7 +192,13 @@ sudo certbot --nginx -d rideviajes.com.ec -d www.rideviajes.com.ec
 ```
 
 Certbot edita el archivo del sitio para añadir el `listen 443 ssl`, la
-redirección desde HTTP y la renovación automática. No hay que tocar nada a mano.
+redirección desde HTTP y la renovación automática.
+
+Lo único a mano, y solo cuando `https://rideviajes.com.ec` ya cargue: quitar el
+`#` de la línea `Strict-Transport-Security` en `ride-cabeceras.conf`, subirlo y
+recargar nginx. Certbot no la añade, y es la que impide que alguien vuelva a
+entrar por http. Sin `preload` al principio: si algo sale mal, se puede retirar
+sin esperar a los navegadores.
 
 Comprobar que renovará solo:
 
@@ -250,19 +256,31 @@ Si el paso 1 sale mal, los demás no sirven de nada, y las salidas son otras: IP
 pública contratada al proveedor, un servidor con IP propia, o dejar la web en la
 red local con un DNS interno.
 
-## Las cabeceras están en dos sitios
+## Las cabeceras de seguridad
 
-`public/_headers` lo leen Netlify y Cloudflare Pages; `ride.nginx.conf` lo lee
-este servidor. Ninguno de los dos entiende el formato del otro, así que la lista
-está repetida.
+Están en dos sitios, porque ninguno entiende el formato del otro:
+`public/_headers`, que leen Netlify y Cloudflare Pages, y
+[`ride-cabeceras.conf`](ride-cabeceras.conf), que lee este servidor.
 
-Dentro del propio archivo de nginx también se repiten: `add_header` **no se
-hereda**, y en cuanto un bloque `location` declara uno, pierde todos los de
-arriba. Por eso los bloques de `assets/` y del index vuelven a declarar las
-suyas; si no, esos archivos se servirían sin ninguna cabecera de seguridad.
+`ride.nginx.conf` incluye `ride-cabeceras.conf` en el `server` **y en cada
+`location` que declare un `add_header` propio**. En nginx, `add_header` no se
+hereda: en cuanto un bloque declara uno, pierde todos los de arriba. Así se
+estuvo sirviendo el `index.html` sin CSP ni `X-Frame-Options`: el bloque del
+index repetía solo `nosniff`.
 
-`npm run check:quality` compara las dos y falla si se separan. Si añades una
+`npm run check:quality` comprueba las dos cosas: que las dos listas coincidan, y
+que ningún bloque `location` con `add_header` se salte el include. Si añades una
 cabecera, va en los dos archivos.
+
+El include apunta al archivo del repositorio (`/var/www/WEB-RIDE/infra/...`),
+así que llega solo con cada despliegue. Pero nginx lo lee **al recargar**: si un
+cambio toca las cabeceras, hay que hacer `sudo nginx -t && sudo systemctl reload
+nginx`. El despliegue automático no puede, porque corre sin `sudo`.
+
+La CSP no lleva `upgrade-insecure-requests`. Mientras no haya certificado, esa
+directiva hacía que el navegador pidiera los assets por https al entrar por
+`http://IP`, y la página salía en blanco justo en la prueba desde el móvil. Con
+HTTPS, lo que obliga a usarlo es HSTS.
 
 ## Lo que este montaje no cubre
 
