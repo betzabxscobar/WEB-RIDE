@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { RECEIPT_PHOTO, preparePhoto } from './image-upload'
 
 export type PaymentMethod = {
   id: string
@@ -60,10 +61,13 @@ export async function uploadTransferReceipt(tripId: string, file: File): Promise
   const uid = session?.user?.id
   if (!uid) throw new Error('Debes iniciar sesión para subir el comprobante.')
 
+  // Como en la app: a 1600 de ancho y en JPEG. Antes un PDF se guardaba con
+  // nombre `.jpg`, y el chofer, que lo ve como imagen, no veía nada.
+  const photo = await preparePhoto(file, RECEIPT_PHOTO, tripId)
   const path = `${uid}/${tripId}.jpg`
   // `upsert` para que una segunda foto pise a la primera en vez de acumular
   // basura cuando la primera sale movida.
-  const { error } = await supabase.storage.from('comprobantes').upload(path, file, { upsert: true, contentType: file.type || 'image/jpeg' })
+  const { error } = await supabase.storage.from('comprobantes').upload(path, photo, { upsert: true, contentType: photo.type })
   if (error) throw new Error('No pudimos subir el comprobante.')
   return path
 }

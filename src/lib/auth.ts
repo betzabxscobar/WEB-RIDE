@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { AVATAR_PHOTO, preparePhoto } from './image-upload'
 
 export type Role = 'passenger' | 'driver' | 'admin' | 'superadmin'
 
@@ -300,10 +301,11 @@ export async function changeOwnPassword(user: User, currentPassword: string, new
 
 /** Guarda una foto pública, pero restringe la escritura a la carpeta del usuario mediante RLS. */
 export async function uploadOwnAvatar(user: User, file: File): Promise<User> {
-  if (file.size > 2 * 1024 * 1024) throw new Error('La foto pesa más de 2 MB. Usa una más liviana.')
-  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) throw new Error('Sube una imagen JPG, PNG o WebP.')
+  // Reducida y sin EXIF: el bucket es público, y una foto tal cual sale del
+  // móvil lleva las coordenadas de donde se tomó. Ver image-upload.ts.
+  const photo = await preparePhoto(file, AVATAR_PHOTO, 'perfil')
   const path = `${user.id}/perfil.jpg`
-  const { error: uploadError } = await supabase.storage.from('avatares').upload(path, file, { upsert: true, contentType: file.type })
+  const { error: uploadError } = await supabase.storage.from('avatares').upload(path, photo, { upsert: true, contentType: photo.type })
   if (uploadError) throw new Error('No pudimos subir la foto. Revisa el archivo e inténtalo nuevamente.')
   const { data } = supabase.storage.from('avatares').getPublicUrl(path)
   const avatarUrl = `${data.publicUrl}?v=${Date.now()}`
