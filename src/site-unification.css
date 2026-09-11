@@ -123,3 +123,48 @@ main.auth-page-register .auth-box { max-height: calc(100dvh - 36px); }
   main.auth-page .auth-stage { width: min(100%, 520px); }
   main.auth-page-register > .form-panel { padding-top: 54px !important; }
 }
+
+/* React Bits vuelve a ser visible en la portada: la ruta se mueve sobre la
+   escena y los halos acompañan el fondo sin invadir la tarjeta. */
+main.auth-page-welcome .bits-journey,
+main.auth-page-welcome .bits-aurora,
+main.auth-page-welcome .bits-orb {
+  display: block !important;
+}
+
+main.auth-page-welcome .bits-journey {
+  opacity: .72;
+  pointer-events: none;
+}
+
+main.auth-page-welcome .bits-aurora { opacity: .34 !important; }
+main.auth-page-welcome .bits-orb { opacity: .14 !important; }
+
+/* El modo claro conserva el contraste de cada acción: el CTA oscuro usa
+   texto blanco y la alternativa clara usa texto azul oscuro. */
+main.auth-page-welcome.auth-theme-light .auth-choice-grid .primary-action,
+main.auth-page-welcome.auth-theme-dark .auth-choice-grid .primary-action {
+  color: #fff !important;
+}
+main.auth-page-welcome.auth-theme-light .auth-choice-grid .primary-action :is(strong, small),
+main.auth-page-welcome.auth-theme-dark .auth-choice-grid .primary-action :is(strong, small) {
+  color: #fff !important;
+}
+main.auth-page-welcome.auth-theme-light .auth-choice-grid .secondary-action :is(strong, small) {
+  color: #0b3547 !important;
+}
+main.auth-page-welcome.auth-theme-light .auth-choice-grid .secondary-action > svg { color: #0b3547 !important; }
+
+main.auth-page-welcome.auth-theme-light .bits-road-shadow { stroke: rgba(25, 114, 137, .13); }
+main.auth-page-welcome.auth-theme-light .bits-road { stroke: rgba(20, 147, 175, .38); }
+main.auth-page-welcome.auth-theme-light .bits-waypoint {
+  color: #1485a4;
+  background: rgba(239, 252, 253, .72);
+  border-color: rgba(20, 147, 175, .27);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  main.auth-page-welcome .bits-journey,
+  main.auth-page-welcome .bits-aurora,
+  main.auth-page-welcome .bits-orb { display: none !important; }
+}
