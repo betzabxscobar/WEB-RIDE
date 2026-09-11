@@ -201,22 +201,54 @@ sudo certbot renew --dry-run
 systemctl list-timers | grep certbot
 ```
 
-## Comprobar que funciona
+## Comprobar en qué punto está
 
-Desde la red, sin dominio todavía:
+Sin acordarse de nada. En el servidor:
+
+```bash
+bash /var/www/WEB-RIDE/infra/servidor/comprobar.sh
+```
+
+Solo lee, así que no hace falta `sudo`. Repasa en orden nginx, el sitio dado de
+alta, las cabeceras, el temporizador, **qué rama está siguiendo** —que no tiene
+por qué ser la del repositorio—, la memoria disponible, la IP pública, el DNS y
+el certificado. Termina con una sola línea: **Siguiente paso**.
+
+Lo que no puede comprobar por sí solo, y lo dice: **si los puertos llegan desde
+internet**. Desde el propio servidor esa prueba no vale, porque muchos routers
+no saben devolver hacia dentro una petición a su propia IP pública y fallan sin
+que eso signifique nada. Se prueba con el móvil en datos móviles, wifi apagado,
+entrando a la IP pública.
+
+A mano, si se quiere:
 
 ```bash
 curl -I http://192.168.0.254
-```
-
-Y con dominio y certificado:
-
-```bash
 curl -I https://rideviajes.com.ec
 echo | openssl s_client -connect rideviajes.com.ec:443 -servername rideviajes.com.ec 2>/dev/null | openssl x509 -noout -issuer -dates
 ```
 
 Tiene que dar `200` y el emisor debe ser Let's Encrypt.
+
+## Lo que queda, en orden
+
+Ninguno de estos pasos se hace en el servidor ni en el código: son el router, el
+registrador del dominio y el proveedor de internet.
+
+1. **Confirmar que la IP pública es tuya.** Entra a `192.168.8.1` y mira su IP
+   WAN. Si coincide con la que da `comprobar.sh`, se puede seguir. Si es `10.x` o
+   `100.64.x`–`100.127.x`, hay CGNAT y no hay redirección que valga.
+2. **Abrir 80 y 443 en los dos routers.** En el de arriba, hacia
+   `192.168.8.215`. En el TP-Link, hacia `192.168.0.254`.
+3. **Comprobar desde el móvil** que `http://<IP pública>` carga la web.
+4. **Apuntar el DNS en NIC.ec**: dos registros `A`, el dominio y `www`, a esa IP.
+   Puede tardar horas en propagarse.
+5. **Solo entonces, certbot.** Antes falla y gasta intentos: Let's Encrypt limita
+   los fallos y deja fuera un rato.
+
+Si el paso 1 sale mal, los demás no sirven de nada, y las salidas son otras: IP
+pública contratada al proveedor, un servidor con IP propia, o dejar la web en la
+red local con un DNS interno.
 
 ## Las cabeceras están en dos sitios
 
