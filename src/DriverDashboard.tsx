@@ -1,4 +1,4 @@
-import { PanelPreview, SidebarDismiss, SidebarBackdrop } from './components/PanelPreview'
+import { PanelPreview, SidebarDismiss, SidebarBackdrop, SidebarJourney } from './components/PanelPreview'
 import { PanelAtmosphere } from './components/PanelAtmosphere'
 import { ReactBitsEffects } from './components/ReactBitsEffects'
 import './DriverDashboard.css'
@@ -188,6 +188,7 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
   return <main className={`driver-shell ${appearance.darkMode ? 'theme-dark' : ''} ${appearance.reducedMotion ? 'reduced-motion' : ''} ${sidebarOpen ? 'sidebar-open' : ''}`}><ReactBitsEffects/>
     <aside id="driver-sidebar" className="driver-sidebar" aria-hidden={!sidebarOpen} inert={!sidebarOpen}><SidebarDismiss onClose={() => setSidebarOpen(false)} />
       <div className="driver-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
+      <SidebarJourney kind="driver" />
       <nav aria-label="Panel del conductor">
         <DriverNav active={page === 'inicio'} icon={<HomeIcon size={18} />} label="Inicio" onClick={() => go('inicio')}/>
         <DriverNav active={page === 'viajes'} icon={<MapPinIcon size={18} />} label="Viajes" onClick={() => go('viajes')}/>
@@ -200,7 +201,7 @@ export default function DriverDashboard({ user, views, activeView, onSwitchView,
         <DriverNav active={page === 'cuenta'} icon={<UserIcon size={18} />} label="Mi cuenta" onClick={() => go('cuenta')}/>
         <DriverNav active={page === 'configuracion'} icon={<SettingsIcon size={18} />} label="Configuración" onClick={() => go('configuracion')}/>
       </nav>
-      <div className="driver-profile"><span>{initials(user.name)}</span><div><strong>{user.name}</strong><small>{state.available ? 'En línea' : 'Fuera de línea'}</small></div></div>
+      <div className="driver-profile"><span>{initials(user.name)}</span><div><strong>{user.name}</strong><small>Conductor</small></div></div>
       <button className="driver-logout" onClick={onLogout}><LogOutIcon size={17} aria-hidden /><span>Cerrar sesión</span></button>
     </aside>
     {sidebarOpen && <SidebarBackdrop onClose={() => setSidebarOpen(false)} />}

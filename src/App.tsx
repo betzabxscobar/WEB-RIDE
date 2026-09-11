@@ -5,7 +5,7 @@ import { ReactBitsEffects } from './components/ReactBitsEffects'
 import { RideJourneyVisual } from './components/RideJourneyVisual'
 import './App.css'
 import logoTipo from './assets/LogoTipo.webp'
-import { AlertTriangle, ArrowRight, CarFront, CheckCircle2, Clock3, LockKeyhole, Mail, MapPin, Navigation, RotateCcw, ShieldCheck } from 'lucide-react'
+import { AlertTriangle, ArrowRight, CarFront, CheckCircle2, Clock3, LockKeyhole, Mail, MapPin, MapPinned, Navigation, RotateCcw, ShieldCheck } from 'lucide-react'
 import { supabase } from './lib/supabase'
 import { useRideBrowserNotifications } from './lib/browser-notifications'
 import {
@@ -282,7 +282,7 @@ function App() {
     <section className="brand-panel">
       <div className="brand-copy"><div className="wordmark"><img src={logoTipo} className="wordmark-logo" alt="Ride" /><span>Ride</span></div><span className="brand-kicker">TU CIUDAD, A TU RITMO</span><h1>Muévete con<br/><em>libertad.</em></h1><p>Una forma más segura, transparente y humana de llegar a donde quieres.</p><div className="brand-benefits"><span><CheckCircle2 size={16} aria-hidden /> Viajes confiables</span><span><ShieldCheck size={16} aria-hidden /> Acceso protegido</span></div></div>
       <RideJourneyVisual />
-      <div className="brand-status"><span className="status-dot" aria-hidden /><div><strong>Ride está listo para ti</strong><small>Solicita, conduce o administra desde un solo lugar.</small></div></div>
+      <div className="brand-status"><span className="brand-status-icon" aria-hidden><MapPinned size={20} /></span><div><strong>Todo tu viaje en un solo lugar</strong><small>Solicita, conduce o administra con una experiencia clara.</small></div></div>
       <div className="city-art"><div className="moon"/><div className="route"><i/><i/><i/></div><div className="car">▰</div><div className="buildings"><i/><i/><i/><i/><i/><i/></div></div>
     </section>
 

@@ -1,0 +1,235 @@
+/* Capa final de experiencia: identidad, contraste y respuesta consistente. */
+:where(.passenger-sidebar, .driver-sidebar, .admin-sidebar) {
+  --sidebar-ink: #f5fbfd;
+  --sidebar-copy: #c4d9e1;
+  --sidebar-soft: rgba(117, 213, 236, .14);
+  background:
+    radial-gradient(circle at 87% 10%, rgba(72, 206, 232, .2), transparent 25%),
+    radial-gradient(circle at 5% 74%, rgba(76, 211, 174, .1), transparent 28%),
+    linear-gradient(165deg, #061d2c 0%, #083448 58%, #071f2f 100%) !important;
+}
+
+:where(.passenger-brand, .driver-brand, .admin-brand) {
+  position: relative;
+  z-index: 1;
+}
+
+:where(.passenger-brand, .driver-brand) b,
+.admin-brand strong {
+  color: #fff !important;
+  text-shadow: 0 2px 18px rgba(59, 208, 237, .18);
+}
+
+.sidebar-journey {
+  position: relative;
+  flex: 0 0 auto;
+  min-height: 112px;
+  margin: 12px 0 3px;
+  overflow: hidden;
+  border: 1px solid rgba(131, 222, 240, .16);
+  border-radius: 17px;
+  background:
+    radial-gradient(circle at 84% 18%, rgba(92, 223, 196, .18), transparent 25%),
+    linear-gradient(145deg, rgba(29, 104, 125, .42), rgba(8, 40, 58, .66));
+  box-shadow: inset 0 1px rgba(255,255,255,.055), 0 14px 32px rgba(0, 13, 22, .16);
+}
+
+.sidebar-journey-art { position: absolute; inset: 0 0 34px; }
+.sidebar-journey-art svg { width: 100%; height: 100%; }
+.sidebar-journey-art path {
+  fill: none;
+  stroke: #67d9eb;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-dasharray: 6 8;
+  filter: drop-shadow(0 0 7px rgba(82, 213, 234, .35));
+  animation: sidebar-route-flow 8s linear infinite;
+}
+.sidebar-journey-art > span {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  color: #effcff;
+  box-shadow: 0 8px 18px rgba(0, 14, 22, .22);
+}
+.sidebar-journey .journey-pin {
+  top: 10px;
+  right: 11px;
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  background: rgba(11, 59, 75, .94);
+  color: #8de6d0;
+}
+.sidebar-journey .journey-car-mini {
+  left: 43%;
+  top: 33px;
+  width: 34px;
+  height: 27px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #18bada, #54d5bc);
+  color: #063246;
+  animation: sidebar-car-float 4.8s ease-in-out infinite;
+}
+.sidebar-journey-copy {
+  position: absolute;
+  inset: auto 11px 9px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #79dcee;
+}
+.sidebar-journey-copy > span { min-width: 0; display: grid; gap: 1px; }
+.sidebar-journey-copy strong {
+  overflow: hidden;
+  color: #f7fcfe !important;
+  font-size: 11px !important;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sidebar-journey-copy small { color: #abc7d1 !important; font-size: 9px !important; line-height: 1.3; }
+
+:where(.passenger-sidebar, .driver-sidebar, .admin-sidebar) nav {
+  margin-top: 7px !important;
+}
+:where(.passenger-sidebar, .driver-sidebar, .admin-sidebar) nav button {
+  color: #b9ced7 !important;
+}
+:where(.passenger-sidebar, .driver-sidebar, .admin-sidebar) nav button:hover,
+:where(.passenger-sidebar, .driver-sidebar, .admin-sidebar) nav button.active {
+  color: #fff !important;
+}
+
+:where(.passenger-profile, .driver-profile, .sidebar-profile) {
+  min-width: 0;
+  background: rgba(6, 31, 46, .56) !important;
+  border-color: rgba(139, 220, 237, .19) !important;
+}
+:where(.passenger-profile, .driver-profile, .sidebar-profile) > div {
+  min-width: 0 !important;
+  display: grid !important;
+  gap: 3px;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+:where(.passenger-profile, .driver-profile, .sidebar-profile) strong {
+  display: block !important;
+  max-width: 155px;
+  overflow: hidden;
+  color: var(--sidebar-ink) !important;
+  font-size: 12px !important;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 1 !important;
+}
+:where(.passenger-profile, .driver-profile, .sidebar-profile) small {
+  color: var(--sidebar-copy) !important;
+  font-size: 10px !important;
+  opacity: 1 !important;
+}
+:where(.passenger-profile, .driver-profile, .sidebar-profile) > span {
+  flex: 0 0 40px;
+  width: 40px !important;
+  height: 40px !important;
+  background: linear-gradient(145deg, #8ee5f2, #43bddf) !important;
+  color: #063049 !important;
+}
+
+:where(.passenger-logout, .driver-logout, .admin-logout) {
+  justify-content: center !important;
+  color: #d4e5eb !important;
+}
+:where(.passenger-logout, .driver-logout, .admin-logout):hover {
+  background: rgba(83, 202, 229, .12) !important;
+  color: #fff !important;
+}
+
+/* Los estados decorativos se expresan con iconos de viaje, no puntos de conexión. */
+.brand-status-icon {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: linear-gradient(145deg, rgba(70, 202, 227, .22), rgba(85, 213, 184, .14));
+  color: #87e5f1;
+}
+.intro-orbit .intro-car { z-index: 1; color: #118eac; }
+.intro-status strong { display: flex; align-items: center; gap: 8px; }
+.intro-status strong > svg { color: #159fbd; }
+.route-mark {
+  width: 52px;
+  height: 52px;
+  border-radius: 17px;
+  background: linear-gradient(145deg, #daf5fb, #d8f6ee);
+  color: #128cab;
+  box-shadow: 0 10px 25px rgba(20, 128, 158, .12);
+}
+
+/* Acciones centradas y con contraste suficiente en ambos temas. */
+.auth-page :where(.primary-action, .secondary-action) {
+  position: relative;
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center !important;
+  color: #052d3d !important;
+  text-align: center;
+}
+.auth-page .mobile-brand b { color: #082f40 !important; }
+.auth-page .primary-action > svg,
+.auth-page .primary-action > span:last-child { position: absolute; right: 18px; }
+.auth-page .secondary-action { border-color: #a9d6e1 !important; background: rgba(255,255,255,.76) !important; }
+.home-intro .command-copy { display: grid; justify-items: start; }
+.home-intro .command-action { min-width: 218px; justify-content: center; }
+.start-ride-card > button { justify-self: center; min-width: 150px; text-align: center; }
+
+/* El arte del acceso ocupa el vacío sin competir con el mensaje principal. */
+@media (min-width: 851px) {
+  .auth-page .auth-journey-visual {
+    right: clamp(30px, 4vw, 74px);
+    bottom: 76px;
+    width: min(42%, 350px);
+    height: 222px;
+    border: 1px solid rgba(134, 222, 239, .13);
+  }
+  .auth-page .brand-status { width: min(47%, 455px); }
+}
+
+@media (max-width: 1100px) and (min-width: 851px) {
+  .sidebar-journey { min-height: 96px; }
+  .sidebar-journey-copy small { display: none; }
+  .auth-page .auth-journey-visual { width: 38%; height: 190px; }
+}
+
+@media (max-width: 1450px) and (min-width: 851px) {
+  .auth-page .brand-benefits { max-width: 250px; }
+}
+
+@media (max-width: 760px) {
+  .sidebar-journey { min-height: 102px; }
+  .home-intro .command-copy { justify-items: center; text-align: center; }
+  .home-intro .command-copy p { max-width: 460px; }
+  .home-intro .command-action { width: min(100%, 320px); }
+  .start-ride-card > button { width: 100%; }
+}
+
+@media (max-height: 760px) and (min-width: 761px) {
+  .sidebar-journey { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-journey-art path,
+  .sidebar-journey .journey-car-mini { animation: none !important; }
+}
+
+:where(.passenger-shell, .driver-shell, .admin-shell).reduced-motion .sidebar-journey-art path,
+:where(.passenger-shell, .driver-shell, .admin-shell).reduced-motion .sidebar-journey .journey-car-mini {
+  animation: none !important;
+}
+
+@keyframes sidebar-route-flow { to { stroke-dashoffset: -84; } }
+@keyframes sidebar-car-float { 50% { transform: translate(8px, -5px) rotate(-4deg); } }

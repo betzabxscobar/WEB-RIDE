@@ -1,4 +1,4 @@
-import { PanelPreview, SidebarDismiss, SidebarBackdrop } from './components/PanelPreview'
+import { PanelPreview, SidebarDismiss, SidebarBackdrop, SidebarJourney } from './components/PanelPreview'
 import { PanelAtmosphere } from './components/PanelAtmosphere'
 import { ReactBitsEffects } from './components/ReactBitsEffects'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -510,6 +510,7 @@ function PassengerDashboard({ user, views, activeView, onSwitchView, onUserUpdat
     <div className="passenger-sidebar-trigger" aria-hidden="true"/>
     <aside id="passenger-sidebar" className={`passenger-sidebar ${sidebarOpen ? '' : 'collapsed'}`} inert={!sidebarOpen}><SidebarDismiss onClose={() => setSidebarOpen(false)} />
       <div className="passenger-brand"><img src={logoTipo} alt="Ride"/><b>Ride</b></div>
+      <SidebarJourney kind="passenger" />
       <nav aria-label="Panel del pasajero">
         <NavButton active={page === 'inicio'} icon={<HomeIcon size={16} />} label="Inicio" onClick={() => navTo('inicio')}/>
         <NavButton active={page === 'pedir'} icon={<RideRequestIcon size={16} />} label="Pedir viaje" onClick={() => navTo('pedir')}/>

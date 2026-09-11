@@ -7,7 +7,7 @@ type Spark = { id:number; x:number; y:number }
  * Click Spark, Spotlight Card, Aurora y Floating Lines, adaptadas a Ride. */
 export function ReactBitsEffects({ scene = 'panel' }: { scene?: 'auth' | 'panel' }){
   const [sparks,setSparks]=useState<Spark[]>([])
-  useEffect(()=>{void Promise.all([import('../motion-effects.css'),import('../site-unification.css')])},[])
+  useEffect(()=>{void Promise.all([import('../motion-effects.css'),import('../site-unification.css'),import('../sidebar-refresh.css')])},[])
   useEffect(()=>{
     let id=0
     const move=(event:PointerEvent)=>{
