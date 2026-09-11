@@ -374,8 +374,11 @@ Revisado en la auditoría del 2026-09-11:
 - Servidor: IP pública o solución al CGNAT, puertos 80 y 443, DNS de
   `rideviajes.com.ec`, certificado con certbot y HSTS. Después,
   `bash infra/servidor/comprobar.sh`.
-- Supabase → Authentication → URL Configuration: Site URL
-  `https://rideviajes.com.ec` y esa misma, con `www`, en las redirecciones.
+- Supabase → Authentication → URL Configuration. Mientras el servidor sirva por
+  **http**: Site URL la dirección por la que se entra hoy (`http://rideviajes.com.ec`
+  o `http://192.168.0.254`), y en las redirecciones `http://192.168.0.254/**`,
+  las versiones http y https del dominio con y sin `www`, y
+  `ride://login-callback`. El detalle, en `APPRIDE/docs/PUBLICAR.md` §7.
 - PayPal Live antes del 2026-10-09, cuando vencen las cortesías
   (`APPRIDE/docs/CUOTA.md`).
 - `npm audit` marca como crítica la versión de `maplibre-gl` (≤ 6.4.0). Hoy no
