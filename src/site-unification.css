@@ -148,8 +148,9 @@ main.auth-page-welcome .bits-road {
   stroke-linecap: round;
 }
 main.auth-page-welcome > .react-bits-layer {
-  z-index: 3 !important;
+  z-index: 1 !important;
   pointer-events: none !important;
+  overflow: hidden !important;
 }
 main.auth-page-welcome > .form-panel { z-index: 4 !important; }
 main.auth-page-welcome .auth-stage { position: relative; z-index: 5; }

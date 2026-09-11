@@ -2,7 +2,7 @@
    Aurora, Floating Lines, Magnet y Electric Border de ReactBits, adaptadas a
    Ride sin añadir otra dependencia al paquete inicial. */
 
-.auth-page > .react-bits-layer { z-index: 0; }
+.auth-page > .react-bits-layer { z-index: 1; contain: strict; clip-path: inset(0); }
 .auth-page > :where(.brand-panel, .form-panel) { z-index: 1; }
 .bits-scene-auth .bits-aurora { opacity: .48; filter: blur(105px) saturate(1.18); }
 .bits-scene-auth .bits-orb { opacity: .23; }
@@ -10,8 +10,8 @@
 .bits-scene-auth .orb-b { width: 390px; height: 390px; right: 4%; bottom: -24%; background: #4fd7b4; }
 
 .bits-journey { position: absolute; inset: 0; overflow: hidden; }
-.bits-journey svg { position: absolute; inset: 8% -3% 0; width: 106%; height: 84%; filter: drop-shadow(0 0 13px rgba(69, 215, 235, .2)); }
-.bits-road-shadow,.bits-road { fill: none; stroke-linecap: round; }
+.bits-journey svg { position: absolute; inset: 8% -3% 0; width: 106%; height: 84%; overflow: hidden; fill: none !important; filter: drop-shadow(0 0 13px rgba(69, 215, 235, .2)); }
+.bits-road-shadow,.bits-road { fill: none !important; stroke-linecap: round; }
 .bits-road-shadow { stroke: rgba(5, 31, 44, .22); stroke-width: 12; }
 .bits-road { stroke: rgba(92, 222, 237, .5); stroke-width: 2.2; stroke-dasharray: 5 13; animation: ride-road-flow 13s linear infinite; }
 .bits-waypoint { position: absolute; display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid rgba(116, 226, 239, .34); border-radius: 14px 14px 14px 4px; color: #9cf0f7; background: rgba(6, 42, 57, .68); box-shadow: 0 12px 30px rgba(3, 29, 42, .2), 0 0 0 8px rgba(74, 207, 226, .055); backdrop-filter: blur(11px); animation: ride-waypoint-float 5s ease-in-out infinite; }
@@ -20,6 +20,16 @@
 .bits-moving-car { position: absolute; left: 0; top: 0; display: grid; place-items: center; width: 45px; height: 34px; border: 1px solid rgba(146, 235, 244, .38); border-radius: 11px; color: #d9fbff; background: linear-gradient(145deg, rgba(18, 151, 181, .9), rgba(34, 192, 180, .82)); box-shadow: 0 12px 28px rgba(3, 43, 59, .27), 0 0 24px rgba(77, 217, 231, .22); offset-path: path('M -30 500 C 170 390 205 560 390 448 S 680 230 805 330 S 1005 440 1235 175'); offset-rotate: auto 0deg; animation: ride-car-route 15s cubic-bezier(.45, 0, .35, 1) infinite; }
 .bits-signal { position: absolute; width: 9px; height: 9px; border-radius: 50%; background: #64dec0; box-shadow: 0 0 0 0 rgba(100, 222, 192, .3); animation: ride-signal 2.7s ease-out infinite; }
 .signal-a { left: 33%; top: 34%; }.signal-b { right: 28%; bottom: 23%; animation-delay: -1.2s; }
+
+/* Floating travel symbols inspired by React Bits' Glass Icons. They live in
+   the background layer, never affect layout and stay outside the auth card. */
+.bits-travel-icons { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.travel-icon { position: absolute; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 16px; color: #85e8f2; background: rgba(8, 54, 69, .62); box-shadow: 0 16px 38px rgba(3, 35, 48, .18), inset 0 1px rgba(255,255,255,.12); backdrop-filter: blur(13px); animation: ride-travel-icon-float 7s ease-in-out infinite; }
+.travel-route { left: 5%; top: 28%; transform: rotate(-7deg); }
+.travel-location { left: 42%; bottom: 9%; color: #79e4c6; animation-delay: -2.1s; }
+.travel-car { right: 4%; top: 18%; color: #a8eafa; animation-delay: -3.8s; }
+.travel-pin { right: 8%; bottom: 12%; color: #a89cf2; animation-delay: -5.2s; }
+.auth-theme-light .travel-icon { color: #0b7998; background: rgba(239, 252, 253, .66); box-shadow: 0 15px 36px rgba(20, 104, 127, .11), inset 0 1px rgba(255,255,255,.9); }
 
 .auth-page .brand-panel {
   background:
@@ -105,14 +115,20 @@
 @keyframes ride-button-shine { 0%,58% { transform: translateX(-120%) skewX(-20deg); } 82%,100% { transform: translateX(150%) skewX(-20deg); } }
 @keyframes ride-nav-electric { 50% { box-shadow: 0 0 0 1px rgba(109,226,239,.42),0 0 30px rgba(46,201,224,.34),inset 0 1px rgba(255,255,255,.15); } }
 @keyframes journey-road-flow{to{stroke-dashoffset:-90}}@keyframes journey-car-drive{50%{transform:translate(18px,-13px) rotate(-5deg);box-shadow:0 18px 34px rgba(5,136,158,.35)}}@keyframes journey-visual-float{50%{transform:translateY(-7px) rotate(.7deg)}}
+@keyframes ride-travel-icon-float { 50% { translate: 0 -11px; rotate: 4deg; } }
 
 @media(max-width:850px){
   .bits-journey{opacity:.48}.bits-moving-car{animation-duration:18s}.bits-waypoint{transform:scale(.82)}
+  .travel-route{left:3%;top:20%}.travel-car{right:3%;top:13%}.travel-location{left:7%;bottom:9%}.travel-pin{right:5%;bottom:8%}
   .auth-page .form-panel .auth-box{box-shadow:0 25px 65px rgba(8,88,111,.14),inset 0 1px #fff}
   .auth-journey-visual{display:none}
 }
 
+@media(max-width:560px){
+  .bits-journey{opacity:.3}.travel-icon{width:40px;height:40px;border-radius:13px;opacity:.64}.travel-route{top:14%}.travel-car{top:10%}.travel-location{bottom:5%}.travel-pin{display:none}
+}
+
 @media(prefers-reduced-motion:reduce){
-  .bits-road,.bits-moving-car,.bits-waypoint,.bits-signal,.auth-journey-visual,.journey-road-line,.journey-car,.auth-page .brand-panel::before,.auth-page .brand-panel::after,.auth-page .brand-status .status-dot,.auth-page .auth-icon,.auth-page .auth-icon::before,.auth-page .primary-action,:where(.passenger-sidebar nav button,.driver-sidebar nav button,.passenger-mobile-nav button,.driver-mobile-nav button).active>span:first-child,.admin-sidebar .nav-group button.active>svg{animation:none!important}
+  .bits-road,.bits-moving-car,.bits-waypoint,.bits-signal,.travel-icon,.auth-journey-visual,.journey-road-line,.journey-car,.auth-page .brand-panel::before,.auth-page .brand-panel::after,.auth-page .brand-status .status-dot,.auth-page .auth-icon,.auth-page .auth-icon::before,.auth-page .primary-action,:where(.passenger-sidebar nav button,.driver-sidebar nav button,.passenger-mobile-nav button,.driver-mobile-nav button).active>span:first-child,.admin-sidebar .nav-group button.active>svg{animation:none!important}
   .bits-moving-car{display:none}.auth-page .primary-action::before{display:none}
 }

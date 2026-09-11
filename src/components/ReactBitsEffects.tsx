@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { CarFront, MapPin, Navigation } from 'lucide-react'
+import { CarFront, LocateFixed, MapPin, Navigation, Route } from 'lucide-react'
+import '../motion-effects.css'
 
 type Spark = { id:number; x:number; y:number }
 
@@ -7,7 +8,6 @@ type Spark = { id:number; x:number; y:number }
  * Click Spark, Spotlight Card, Aurora y Floating Lines, adaptadas a Ride. */
 export function ReactBitsEffects({ scene = 'panel' }: { scene?: 'auth' | 'panel' }){
   const [sparks,setSparks]=useState<Spark[]>([])
-  useEffect(()=>{void Promise.all([import('../motion-effects.css'),import('../site-unification.css'),import('../sidebar-refresh.css')])},[])
   useEffect(()=>{
     let id=0
     const move=(event:PointerEvent)=>{
@@ -74,5 +74,5 @@ export function ReactBitsEffects({ scene = 'panel' }: { scene?: 'auth' | 'panel'
     document.addEventListener('pointermove',spotlight,{passive:true});document.addEventListener('pointerout',spotlightOut,{passive:true})
     return()=>{window.removeEventListener('pointermove',move);window.removeEventListener('click',click);document.removeEventListener('pointermove',magnet);document.removeEventListener('pointerout',release);document.removeEventListener('pointermove',spotlight);document.removeEventListener('pointerout',spotlightOut);document.querySelectorAll('.bits-card-glow').forEach((glow)=>glow.remove())}
   },[])
-  return <div className={`react-bits-layer bits-scene-${scene}`} aria-hidden="true"><div className="bits-aurora"/><div className="bits-orb orb-a"/><div className="bits-orb orb-b"/>{scene==='auth'&&<div className="bits-journey"><svg viewBox="0 0 1200 620" preserveAspectRatio="none"><path className="bits-road-shadow" d="M-30 500C170 390 205 560 390 448S680 230 805 330 1005 440 1235 175"/><path className="bits-road" d="M-30 500C170 390 205 560 390 448S680 230 805 330 1005 440 1235 175"/></svg><span className="bits-waypoint waypoint-a"><Navigation size={17}/></span><span className="bits-waypoint waypoint-b"><MapPin size={18}/></span><span className="bits-moving-car"><CarFront size={22}/></span></div>}{sparks.map(s=><span className="bits-click-spark" style={{left:s.x,top:s.y}} key={s.id}>{Array.from({length:8},(_,i)=><i style={{'--spark-i':i} as React.CSSProperties} key={i}/>)}</span>)}</div>
+  return <div className={`react-bits-layer bits-scene-${scene}`} aria-hidden="true"><div className="bits-aurora"/><div className="bits-orb orb-a"/><div className="bits-orb orb-b"/>{scene==='auth'&&<><div className="bits-journey"><svg viewBox="0 0 1200 620" preserveAspectRatio="none" fill="none"><path fill="none" className="bits-road-shadow" d="M-30 500C170 390 205 560 390 448S680 230 805 330 1005 440 1235 175"/><path fill="none" className="bits-road" d="M-30 500C170 390 205 560 390 448S680 230 805 330 1005 440 1235 175"/></svg><span className="bits-waypoint waypoint-a"><Navigation size={17}/></span><span className="bits-waypoint waypoint-b"><MapPin size={18}/></span><span className="bits-moving-car"><CarFront size={22}/></span></div><div className="bits-travel-icons"><span className="travel-icon travel-route"><Route size={21}/></span><span className="travel-icon travel-location"><LocateFixed size={20}/></span><span className="travel-icon travel-car"><CarFront size={22}/></span><span className="travel-icon travel-pin"><MapPin size={20}/></span></div></>}{sparks.map(s=><span className="bits-click-spark" style={{left:s.x,top:s.y}} key={s.id}>{Array.from({length:8},(_,i)=><i style={{'--spark-i':i} as React.CSSProperties} key={i}/>)}</span>)}</div>
 }
