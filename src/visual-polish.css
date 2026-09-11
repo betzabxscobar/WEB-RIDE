@@ -1474,14 +1474,17 @@ html :where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
 :where(.metric-strip, .admin-metrics, .driver-summary) > article:nth-child(4n + 3) { --metric-orb: rgba(101, 127, 229, .14); }
 :where(.metric-strip, .admin-metrics, .driver-summary) > article:nth-child(4n + 4) { --metric-orb: rgba(233, 174, 50, .15); }
 
-/* Hero claro: gradiente eléctrico, brillo móvil y composición menos pesada. */
+/* Hero claro: gradiente eléctrico, brillo móvil y composición menos pesada.
+   Un punto más profundo que el original (#08618a → #079fc0 → #29b99f): en el
+   centro y a la derecha, ni el texto blanco llegaba a 4,5:1. Con estos tonos,
+   el blanco y el #eaf6f9 de los párrafos pasan en todo el recorrido. */
 :where(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
   :where(.passenger-welcome, .driver-status-card, .earnings-hero) {
   border: 1px solid rgba(112, 222, 244, .40) !important;
   border-radius: 25px !important;
   background:
     linear-gradient(120deg, rgba(255, 255, 255, .08), transparent 34%),
-    linear-gradient(112deg, #08618a 0%, #079fc0 52%, #29b99f 100%) !important;
+    linear-gradient(112deg, #06506f 0%, #077791 52%, #117768 100%) !important;
   box-shadow: 0 24px 52px rgba(4, 112, 145, .25) !important;
 }
 
