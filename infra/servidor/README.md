@@ -219,11 +219,24 @@ Hasta que haya certificado, entrando por `http://192.168.0.254`:
   `localhost`). «Usar mi ubicación», el punto azul y el chofer compartiendo su
   posición desde la web fallan. La búsqueda de direcciones y el mapa, sí van.
 - **Los enlaces de los correos** (confirmar cuenta, recuperar contraseña) vuelven
-  a la Site URL de Supabase, no a la IP. Eso se configura en *Authentication →
-  URL Configuration* cuando haya dominio.
+  a la web solo si su dirección está permitida en Supabase → *Authentication →
+  URL Configuration → Redirect URLs*: `http://192.168.0.254/**`,
+  `http://rideviajes.com.ec/**` y `http://www.rideviajes.com.ec/**`. Si no, van
+  a la Site URL.
 
-Iniciar sesión, pedir un viaje escribiendo la dirección y el panel de
-administración funcionan igual.
+Iniciar sesión, pedir un viaje escribiendo la dirección, el panel de
+administración y pagar la cuota con PayPal funcionan igual: `suscripcion-paypal`
+admite volver a esas direcciones http desde su v27.
+
+### Pasar a https cuando llegue el certificado
+
+No hay que tocar el código de la web: pide a Supabase volver a la dirección
+desde la que se abrió, y la función de PayPal ya admite las dos. Solo:
+
+1. certbot, como se explica abajo.
+2. Descomentar HSTS en `ride-cabeceras.conf` y `sudo nginx -t && sudo systemctl reload nginx`.
+3. En Supabase, Site URL a `https://rideviajes.com.ec`. Las redirecciones https
+   ya estaban en la lista.
 
 ## Si algún día hay que subir una versión a mano
 
