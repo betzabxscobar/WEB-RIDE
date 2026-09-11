@@ -458,3 +458,80 @@ main.auth-page.auth-theme-dark .auth-stage > .mobile-brand {
   main.auth-page .auth-stage > .mobile-brand img { width: 27px !important; height: 29px; }
   main.auth-page .auth-stage > .mobile-brand b { font-size: 18px; }
 }
+
+/* =============================================================================
+   Contraste del modo claro en los paneles
+   -----------------------------------------------------------------------------
+   Medido con WCAG AA (4,5:1 texto normal, 3:1 texto grande) sobre las 30
+   páginas de pasajero, chofer y administración, con el CSS de producción.
+   Las hojas de cada panel se cargan DESPUÉS de esta (van con la carga
+   diferida), así que todo lo de aquí gana por especificidad, no por orden.
+   ========================================================================== */
+
+/* 1. Superficies que siguen oscuras en modo claro: el menú lateral, la
+   cabecera de viajes de administración, la cotización del pasajero y las
+   tarjetas de estado y ganancias del chofer. Las reglas generales del claro
+   (`.driver-shell:not(.theme-dark) :where(h1, h2, strong…)` y su pareja
+   para p y small, con !important) les ponían texto oscuro encima: 1,2:1 en
+   «La ciudad te espera» o «Administración de viajes». Los botones de dentro
+   tienen fondo claro y conservan su texto. */
+:is(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :is(.passenger-sidebar, .driver-sidebar, .admin-sidebar, .trips-hero, .quote-card, .driver-status-card, .earnings-hero)
+  :is(h1, h2, h3, h4, strong, dd, b):not(button *) {
+  color: #ffffff !important;
+}
+:is(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :is(.passenger-sidebar, .driver-sidebar, .admin-sidebar, .trips-hero, .quote-card, .driver-status-card, .earnings-hero)
+  :is(p, small, dt, time):not(button *) {
+  color: #eaf6f9 !important;
+}
+
+/* 2. La opción activa del menú: en claro lleva una píldora turquesa detrás,
+   pero conservaba el cian (#00f5ff) pensado para el fondo oscuro sin píldora
+   (2:1). Texto e icono oscuros, como el propio botón. */
+:is(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :is(.passenger-sidebar, .driver-sidebar, .admin-sidebar) nav button.active :is(span, svg) {
+  color: #062d40 !important;
+}
+
+/* 3. El azul de acento de las etiquetas pequeñas (#1689ad, #087f9f) daba
+   3,3–4,4:1 sobre los fondos claros. Este tono de la misma familia da 5,2–5,5. */
+:is(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :is(.passenger-kicker, .passenger-section-head span, .passenger-section-head button,
+      .account-summary > span, .start-ride-card small, .driver-conversion-card small,
+      .transfer-accounts > small, .home-intro .command-copy > span,
+      .driver-topbar > div:first-of-type > span, .driver-section-head > span,
+      .driver-section-head > div > span, .driver-map-card small, .driver-summary small,
+      .active-driver-title small, .driver-account-hero small, .subscription-state.info small,
+      .admin-main header > div:first-child > small, .account-role-badge, .tool-filters button.active):not(:is(.passenger-sidebar, .driver-sidebar, .admin-sidebar, .trips-hero, .quote-card, .driver-status-card, .earnings-hero) *) {
+  color: #0b6f8b !important;
+}
+
+/* El «llegar hoy?» del saludo es texto grande: le basta 3:1, y con #009fc3
+   se quedaba en 2,97. */
+.passenger-shell:not(.theme-dark) .home-intro .command-copy h2 em {
+  color: #0a86a8 !important;
+}
+
+/* 4. Estados vacíos, avisos y textos de apoyo: el gris claro daba 2,9–4,2:1. */
+:is(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :is(.tool-empty, .tool-empty span, .support-list > p) {
+  color: #4f6873 !important;
+  opacity: 1 !important;
+}
+.passenger-shell:not(.theme-dark) .pickup-reference small { color: #5b727d !important; opacity: 1 !important; }
+.driver-shell:not(.theme-dark) .driver-account-grid > aside > span { color: #536b78 !important; }
+
+/* 5. Administración: la etiqueta de «Pasajero» en el resumen (morada, 4,05:1)
+   y en la lista de usuarios (rosa, 4,17:1), y el «Cerrar sesión» rojo de la
+   cuenta (4,22:1). */
+.admin-shell:not(.theme-dark) .overview-users .user-row em.passenger { color: #6a3aa2 !important; }
+.admin-shell:not(.theme-dark) .users-monitoring .user-row em.passenger { color: #b0336a !important; }
+.admin-shell:not(.theme-dark) .account-signout-button { color: #c62828 !important; }
+
+/* 6. Acceso en claro: la etiqueta de la tarjeta («ACCESO SEGURO»,
+   «BIENVENIDO A RIDE»…) daba 2,95:1, el enlace a los términos 4,19:1 y el
+   «© 2026 Ride» del pie 3,41:1. */
+main.auth-page.auth-theme-light .auth-box .eyebrow { color: #0b6f8b !important; }
+main.auth-page.auth-theme-light .legal-footer button { color: #0b6f8b !important; }
+main.auth-page.auth-theme-light .legal-footer span { color: #4f6873 !important; opacity: 1 !important; }
