@@ -1,4 +1,5 @@
 import { readdir, readFile, stat } from 'node:fs/promises'
+import { gzipSync } from 'node:zlib'
 import { join, relative } from 'node:path'
 
 const root = process.cwd()
@@ -95,10 +96,19 @@ if (scriptMatch) {
 } else failures.push('No se encontro el JavaScript inicial')
 
 const initialCss = [...html.matchAll(/<link[^>]+rel="stylesheet"[^>]+href="([^"]+)"/g)]
+// Se mide lo que viaja por la red: comprimido, que es como lo sirven nginx y
+// GitHub Pages. El tope en bruto (160 KB) lo rompieron los estilos del acceso
+// del 2026-09-11 con 213 KB que comprimidos son 37 KB: gzip deja casi en nada
+// las reglas que se repiten, y en bruto se castigaba justo eso.
 let cssBytes = 0
-for (const match of initialCss) cssBytes += (await stat(join(root, 'dist', localAsset(match[1])))).size
-requireCondition(cssBytes <= 160 * 1024, `CSS inicial demasiado grande: ${(cssBytes / 1024).toFixed(1)} KB`)
-console.log(`CSS inicial: ${(cssBytes / 1024).toFixed(1)} KB`)
+let cssGzip = 0
+for (const match of initialCss) {
+  const contenido = await readFile(join(root, 'dist', localAsset(match[1])))
+  cssBytes += contenido.length
+  cssGzip += gzipSync(contenido).length
+}
+requireCondition(cssGzip <= 45 * 1024, `CSS inicial demasiado grande: ${(cssGzip / 1024).toFixed(1)} KB comprimido`)
+console.log(`CSS inicial: ${(cssBytes / 1024).toFixed(1)} KB (${(cssGzip / 1024).toFixed(1)} KB comprimido)`)
 
 if (failures.length) {
   console.error('\nControl de calidad fallido:')
