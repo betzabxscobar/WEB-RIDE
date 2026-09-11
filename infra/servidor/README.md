@@ -139,18 +139,57 @@ Environment=RAMA=Diego
 
 ## Preparar el servidor
 
-Una sola vez. nginx ya está instalado, así que solo hay que crear la carpeta y
-darle de alta el sitio:
+Una sola vez, en este orden. Cada paso depende del anterior: la configuración de
+nginx lee un archivo del repositorio, así que el repositorio tiene que estar
+antes, y el servicio corre como el usuario `ride`, así que el usuario también.
+
+**1. Node.js 22 y git.** Vite 8 exige Node 20.19 o 22.12 como mínimo. El
+`nodejs` de `apt` en Ubuntu es más viejo, y con él la compilación falla. El de
+NodeSource sí vale:
 
 ```bash
-sudo mkdir -p /var/www/ride
-sudo chown -R www-data:www-data /var/www/ride
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt install -y nodejs git
+node -v    # tiene que decir v22.x
 ```
 
-Sube `ride.nginx.conf` al servidor y colócalo:
+**2. El usuario que despliega.** Con carpeta de inicio: `npm ci` guarda su
+caché ahí, y sin ella falla con `EACCES`.
 
 ```bash
-sudo cp ride.nginx.conf /etc/nginx/sites-available/ride
+sudo adduser --system --group --home /home/ride --shell /usr/sbin/nologin ride
+```
+
+**3. El repositorio, de ese usuario.** Si se clona con `sudo` y se queda de
+root, `ride` no puede actualizarlo y git se niega con «dubious ownership».
+
+```bash
+sudo git clone https://github.com/betzabxscobar/WEB-RIDE.git /var/www/WEB-RIDE
+sudo chown -R ride:ride /var/www/WEB-RIDE
+```
+
+**4. Memoria.** La compilación llega a 1,1 GB. Con 2 GB de RAM o menos, y sin
+swap, el kernel la mata a mitad:
+
+```bash
+free -m
+sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+```
+
+(Solo si `free -m` da poca memoria y ninguna swap.)
+
+**5. La primera compilación**, a mano y como `ride`, para ver si algo falla:
+
+```bash
+sudo -u ride bash /var/www/WEB-RIDE/infra/servidor/desplegar.sh
+ls /var/www/WEB-RIDE/dist/index.html
+```
+
+**6. El sitio en nginx:**
+
+```bash
+sudo cp /var/www/WEB-RIDE/infra/servidor/ride.nginx.conf /etc/nginx/sites-available/ride
 sudo ln -sf /etc/nginx/sites-available/ride /etc/nginx/sites-enabled/ride
 sudo nginx -t
 sudo systemctl reload nginx
@@ -159,6 +198,32 @@ sudo systemctl reload nginx
 `nginx -t` antes de recargar: si el archivo tiene un error, lo dice **sin tirar
 el sitio que ya estaba sirviendo**. Si `nginx -t` falla, no recargues; arregla
 primero.
+
+**7. El cortafuegos**, si `ufw` está activo (`sudo ufw status`):
+
+```bash
+sudo ufw allow 'Nginx Full'
+```
+
+**8. El despliegue automático:** ver «Instalarlo», más arriba.
+
+**9. Comprobar:** `bash /var/www/WEB-RIDE/infra/servidor/comprobar.sh` dice qué
+falta. Desde otro equipo de la red, `http://192.168.0.254` tiene que cargar la
+web.
+
+### Lo que no funciona por http, y es normal
+
+Hasta que haya certificado, entrando por `http://192.168.0.254`:
+
+- **La ubicación no funciona.** El navegador solo la da en páginas https (o en
+  `localhost`). «Usar mi ubicación», el punto azul y el chofer compartiendo su
+  posición desde la web fallan. La búsqueda de direcciones y el mapa, sí van.
+- **Los enlaces de los correos** (confirmar cuenta, recuperar contraseña) vuelven
+  a la Site URL de Supabase, no a la IP. Eso se configura en *Authentication →
+  URL Configuration* cuando haya dominio.
+
+Iniciar sesión, pedir un viaje escribiendo la dirección y el panel de
+administración funcionan igual.
 
 ## Si algún día hay que subir una versión a mano
 
@@ -290,5 +355,6 @@ HTTPS, lo que obliga a usarlo es HSTS.
 - **El servidor de rutas.** La app y la web siguen usando el OSRM público de
   demostración. Montarlo aquí es otro trabajo, y está preparado en el repositorio
   de la aplicación (`infra/osrm`).
-- **Copias de seguridad.** No hay nada que respaldar en `/var/www/ride`: se
-  regenera con `npm run build`. Lo que sí hay que respaldar es Supabase.
+- **Copias de seguridad.** No hay nada que respaldar en `/var/www/WEB-RIDE`: es
+  un clon de git y `dist` se regenera compilando. Lo que sí hay que respaldar es
+  Supabase.

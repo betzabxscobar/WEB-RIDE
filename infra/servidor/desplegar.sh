@@ -28,12 +28,19 @@ git fetch --quiet origin "$RAMA"
 ANTES="$(git rev-parse HEAD)"
 DESPUES="$(git rev-parse "origin/$RAMA")"
 
-if [ "$ANTES" = "$DESPUES" ]; then
+# Sin cambios no hay nada que hacer... salvo que nunca se haya compilado. En un
+# clon recien hecho HEAD ya es origin/main, y si solo se miraran los cambios el
+# primer `dist` no llegaria hasta el siguiente commit: nginx sin nada que servir.
+if [ "$ANTES" = "$DESPUES" ] && [ -f dist/index.html ]; then
   exit 0
 fi
 
-echo "== Cambios detectados: ${ANTES:0:8} -> ${DESPUES:0:8}"
-git log --oneline "$ANTES..$DESPUES" | sed 's/^/   /'
+if [ "$ANTES" = "$DESPUES" ]; then
+  echo "== No hay dist: primera compilacion de ${DESPUES:0:8}"
+else
+  echo "== Cambios detectados: ${ANTES:0:8} -> ${DESPUES:0:8}"
+  git log --oneline "$ANTES..$DESPUES" | sed 's/^/   /'
+fi
 
 # `reset --hard` y no `pull`: si alguien edito un archivo a mano en el servidor,
 # un `pull` se queda a medias con un conflicto y el despliegue no vuelve a
