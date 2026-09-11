@@ -104,6 +104,16 @@ main.auth-page > .form-panel {
 }
 
 main.auth-page > .form-panel::-webkit-scrollbar { display: none; }
+
+/* Cuando la tarjeta no cabe en alto (inicio de sesión en una pantalla de 655 px,
+   por ejemplo), centrarla a la fuerza con el desborde oculto dejaba el distintivo
+   «Ride» fuera de la pantalla por arriba y el pie por abajo. `safe` la pega arriba
+   solo si no cabe, y el panel se puede desplazar, sin barra visible. Si cabe,
+   sigue centrada como siempre. */
+main.auth-page > .form-panel {
+  align-items: safe center !important;
+  overflow-y: auto !important;
+}
 main.auth-page .auth-stage {
   width: min(100%, 570px);
   max-width: 100%;
@@ -128,38 +138,40 @@ main.auth-page-register .auth-box { max-height: calc(100dvh - 36px); }
 }
 
 /* React Bits vuelve a ser visible en la portada: la ruta se mueve sobre la
-   escena y los halos acompañan el fondo sin invadir la tarjeta. */
-main.auth-page-welcome .bits-journey,
-main.auth-page-welcome .bits-aurora,
-main.auth-page-welcome .bits-orb {
+   escena y los halos acompañan el fondo sin invadir la tarjeta. En modo claro,
+   lo mismo en todo el acceso (inicio de sesión, registro y recuperación), para
+   que las cuatro pantallas compartan una sola escena. */
+main:is(.auth-page-welcome, .auth-page.auth-theme-light) .bits-journey,
+main:is(.auth-page-welcome, .auth-page.auth-theme-light) .bits-aurora,
+main:is(.auth-page-welcome, .auth-page.auth-theme-light) .bits-orb {
   display: block !important;
 }
 
-main.auth-page-welcome .bits-journey {
+main:is(.auth-page-welcome, .auth-page.auth-theme-light) .bits-journey {
   opacity: .72;
   pointer-events: none;
 }
 
-main.auth-page-welcome .bits-aurora { opacity: .34 !important; }
-main.auth-page-welcome .bits-orb { opacity: .14 !important; }
-main.auth-page-welcome .bits-road-shadow { stroke: transparent !important; opacity: 0 !important; }
-main.auth-page-welcome .bits-road {
+main:is(.auth-page-welcome, .auth-page.auth-theme-light) .bits-aurora { opacity: .34 !important; }
+main:is(.auth-page-welcome, .auth-page.auth-theme-light) .bits-orb { opacity: .14 !important; }
+main:is(.auth-page-welcome, .auth-page.auth-theme-light) .bits-road-shadow { stroke: transparent !important; opacity: 0 !important; }
+main:is(.auth-page-welcome, .auth-page.auth-theme-light) .bits-road {
   stroke-width: 2.2px !important;
   stroke-linecap: round;
 }
-main.auth-page-welcome > .react-bits-layer {
+main:is(.auth-page-welcome, .auth-page.auth-theme-light) > .react-bits-layer {
   z-index: 1 !important;
   pointer-events: none !important;
   overflow: hidden !important;
 }
-main.auth-page-welcome > .form-panel { z-index: 4 !important; }
-main.auth-page-welcome .auth-stage { position: relative; z-index: 5; }
-main.auth-page-welcome .bits-road { opacity: .9 !important; }
-main.auth-page-welcome .bits-waypoint,
-main.auth-page-welcome .bits-signal,
-main.auth-page-welcome .bits-moving-car { z-index: 2; }
-main.auth-page-welcome .bits-waypoint { opacity: .92 !important; }
-main.auth-page-welcome .bits-moving-car { opacity: 1 !important; }
+main:is(.auth-page-welcome, .auth-page.auth-theme-light) > .form-panel { z-index: 4 !important; }
+main:is(.auth-page-welcome, .auth-page.auth-theme-light) .auth-stage { position: relative; z-index: 5; }
+main:is(.auth-page-welcome, .auth-page.auth-theme-light) .bits-road { opacity: .9 !important; }
+main:is(.auth-page-welcome, .auth-page.auth-theme-light) .bits-waypoint,
+main:is(.auth-page-welcome, .auth-page.auth-theme-light) .bits-signal,
+main:is(.auth-page-welcome, .auth-page.auth-theme-light) .bits-moving-car { z-index: 2; }
+main:is(.auth-page-welcome, .auth-page.auth-theme-light) .bits-waypoint { opacity: .92 !important; }
+main:is(.auth-page-welcome, .auth-page.auth-theme-light) .bits-moving-car { opacity: 1 !important; }
 
 /* El modo claro conserva el contraste de cada acción: el CTA oscuro usa
    texto blanco y la alternativa clara usa texto azul oscuro. */
@@ -185,9 +197,9 @@ main.auth-page-welcome.auth-theme-light .bits-waypoint {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  main.auth-page-welcome .bits-journey,
-  main.auth-page-welcome .bits-aurora,
-  main.auth-page-welcome .bits-orb { display: none !important; }
+  main:is(.auth-page-welcome, .auth-page.auth-theme-light) .bits-journey,
+  main:is(.auth-page-welcome, .auth-page.auth-theme-light) .bits-aurora,
+  main:is(.auth-page-welcome, .auth-page.auth-theme-light) .bits-orb { display: none !important; }
 }
 
 /* Contrato visual estricto del acceso: en claro ninguna superficie hereda el
