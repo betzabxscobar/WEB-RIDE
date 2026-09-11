@@ -35,6 +35,27 @@ function Logo() {
   return <img src={logoTipo} className="logo" alt="Ride" />
 }
 
+function LegalFooter({ onOpenTerms }: { onOpenTerms: () => void }) {
+  return <footer className="legal-footer">
+    <button type="button" onClick={onOpenTerms}>Términos y condiciones</button>
+    <span>© 2026 Ride. Todos los derechos reservados.</span>
+  </footer>
+}
+
+function TermsDialog({ onClose }: { onClose: () => void }) {
+  return <div className="terms-backdrop" role="presentation" onMouseDown={onClose}>
+    <section className="terms-dialog" role="dialog" aria-modal="true" aria-labelledby="terms-title" onMouseDown={(event) => event.stopPropagation()}>
+      <button type="button" className="terms-close" onClick={onClose} aria-label="Cerrar términos y condiciones">×</button>
+      <span className="eyebrow">RIDE</span>
+      <h2 id="terms-title">Términos y condiciones</h2>
+      <p>Al crear una cuenta o utilizar Ride, aceptas proporcionar información veraz y usar la plataforma de forma segura, respetuosa y conforme a la ley.</p>
+      <p>Los viajes, pagos, rutas y comunicaciones se gestionan según la disponibilidad del servicio. Cada persona usuaria es responsable de mantener protegidas sus credenciales y de revisar la información de cada viaje.</p>
+      <p>Ride puede actualizar estos términos para mejorar el servicio o cumplir obligaciones legales. Te avisaremos cuando un cambio relevante requiera tu atención.</p>
+      <button type="button" className="terms-confirm" onClick={onClose}>Entendido</button>
+    </section>
+  </div>
+}
+
 function loadingThemeClass() {
   if (typeof window === 'undefined') return 'loading-theme-light'
   const saved = localStorage.getItem('ride-theme')
@@ -96,6 +117,7 @@ function App() {
   const [message, setMessage] = useState('')
   const [notice, setNotice] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [showTerms, setShowTerms] = useState(false)
 
   // Llegó por el enlace de recuperación: hay que fijar contraseña nueva antes
   // de cualquier otra cosa. Gana sobre el resto del árbol de pantallas.
@@ -301,8 +323,10 @@ function App() {
         {screen === 'login' && <AuthForm title="Qué bueno verte" subtitle="Ingresa tus datos para continuar." submit="Iniciar sesión" loading={loading} message={message} notice={notice} showPassword={showPassword} setShowPassword={setShowPassword} onSubmit={(event) => { event.preventDefault(); handleLogin(event.currentTarget) }} onBack={() => { setScreen('welcome'); setMessage(''); setNotice('') }} footer={<>¿Aún no tienes cuenta? <button onClick={() => { setScreen('register'); setMessage(''); setNotice('') }}>Regístrate</button></>} extra={<button type="button" className="link-button" onClick={() => { setScreen('forgot'); setMessage(''); setNotice('') }}>¿Olvidaste tu contraseña?</button>} />}
         {screen === 'forgot' && <ForgotPasswordForm loading={loading} message={message} onSubmit={(event) => { event.preventDefault(); handleForgotPassword(event.currentTarget) }} onBack={() => { setScreen('login'); setMessage(''); setNotice('') }} />}
         {screen === 'register' && <RegisterForm loading={loading} message={message} notice={notice} showPassword={showPassword} setShowPassword={setShowPassword} onSubmit={(event) => { event.preventDefault(); handleRegister(event.currentTarget) }} onBack={() => { setScreen('welcome'); setMessage(''); setNotice('') }} onLogin={() => { setScreen('login'); setMessage(''); setNotice('') }} />}
+        <LegalFooter onOpenTerms={() => setShowTerms(true)} />
       </div>
     </section>
+    {showTerms && <TermsDialog onClose={() => setShowTerms(false)} />}
   </main>
 }
 
