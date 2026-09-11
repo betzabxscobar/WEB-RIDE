@@ -1,4 +1,4 @@
-import { PanelPreview, SidebarDismiss, SidebarBackdrop } from './components/PanelPreview'
+import { PanelPreview, SidebarDismiss, SidebarBackdrop, SidebarJourney } from './components/PanelPreview'
 import { PanelAtmosphere } from './components/PanelAtmosphere'
 import { ReactBitsEffects } from './components/ReactBitsEffects'
 import { useEffect, useMemo, useState } from 'react'
@@ -190,6 +190,8 @@ export default function AdminDashboard({ user, viewAs, views, onSwitchView, onUs
           <img src={logoAsset} className="admin-brand-logo" alt="Ride" />
           <div><strong>Ride</strong><small>Centro de operaciones</small></div>
         </div>
+
+        <SidebarJourney kind="admin" />
 
         <nav aria-label="Panel administrativo">
           {(['Operación', 'Gestión'] as const).map((group) => (
