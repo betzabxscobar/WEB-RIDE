@@ -168,3 +168,64 @@ main.auth-page-welcome.auth-theme-light .bits-waypoint {
   main.auth-page-welcome .bits-aurora,
   main.auth-page-welcome .bits-orb { display: none !important; }
 }
+
+/* Contrato visual estricto del acceso: en claro ninguna superficie hereda el
+   azul oscuro del tema nocturno, y en oscuro todas las superficies conservan
+   el mismo lenguaje profundo. */
+main.auth-page.auth-theme-light {
+  color-scheme: light;
+  background: #e9f8fb !important;
+}
+main.auth-page.auth-theme-light > .form-panel {
+  background: transparent !important;
+}
+main.auth-page.auth-theme-light .auth-box,
+main.auth-page.auth-theme-light .welcome-box {
+  color: #082c3c !important;
+  background: rgba(250, 254, 255, .88) !important;
+  border-color: rgba(174, 214, 224, .72) !important;
+  box-shadow: 0 30px 78px rgba(32, 103, 124, .16), inset 0 1px rgba(255,255,255,.96) !important;
+}
+main.auth-page.auth-theme-light .auth-box :is(h2, strong, label) { color: #082c3c !important; }
+main.auth-page.auth-theme-light .auth-box > p,
+main.auth-page.auth-theme-light .form-footer { color: #506a75 !important; }
+main.auth-page.auth-theme-light .auth-box :is(input, .role-picker button) {
+  color: #123b4c !important;
+  background: rgba(255,255,255,.92) !important;
+  border-color: #c3e0e7 !important;
+}
+main.auth-page.auth-theme-light .auth-box input::placeholder { color: #7d99a5 !important; opacity: 1; }
+main.auth-page.auth-theme-light .auth-choice-grid .secondary-action {
+  color: #0b3547 !important;
+  background: rgba(248,253,254,.92) !important;
+  border-color: #b8dce4 !important;
+}
+main.auth-page.auth-theme-light .auth-choice-grid .secondary-action :is(strong, small),
+main.auth-page.auth-theme-light .auth-choice-grid .secondary-action > svg { color: #0b3547 !important; }
+main.auth-page.auth-theme-light .auth-choice-grid .secondary-action .action-icon {
+  color: #1186a5 !important;
+  background: #e2f5f8 !important;
+}
+main.auth-page.auth-theme-light .auth-feature-row span {
+  color: #416570 !important;
+  background: rgba(238,250,252,.82) !important;
+}
+main.auth-page.auth-theme-light .auth-assurance {
+  color: #587680 !important;
+  border-top-color: #d8e9ed !important;
+}
+
+main.auth-page.auth-theme-light .bits-road-shadow { stroke: rgba(12, 94, 116, .17) !important; }
+main.auth-page.auth-theme-light .bits-road { stroke: rgba(11, 143, 174, .52) !important; }
+main.auth-page.auth-theme-light .bits-waypoint {
+  color: #117f9e !important;
+  background: rgba(242, 253, 254, .82) !important;
+  border-color: rgba(17, 127, 158, .3) !important;
+}
+
+main.auth-page.auth-theme-dark .auth-box :is(input, .role-picker button) {
+  color: #eef8fb !important;
+  background: rgba(17, 52, 67, .9) !important;
+  border-color: #31515f !important;
+}
+main.auth-page.auth-theme-dark .auth-box input::placeholder { color: #86a2ae !important; opacity: 1; }
