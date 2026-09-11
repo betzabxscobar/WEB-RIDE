@@ -2,10 +2,13 @@ import { Component, lazy, Suspense, useEffect, useState } from 'react'
 import type { ErrorInfo, FormEvent, ReactNode } from 'react'
 import { PanelPreview } from './components/PanelPreview'
 import { ReactBitsEffects } from './components/ReactBitsEffects'
-import { RideJourneyVisual } from './components/RideJourneyVisual'
 import './App.css'
 import logoTipo from './assets/LogoTipo.webp'
-import { AlertTriangle, ArrowRight, CarFront, CheckCircle2, Clock3, LockKeyhole, Mail, MapPin, Navigation, RotateCcw, ShieldCheck } from 'lucide-react'
+import appAuthCity from './assets/app-auth-city.jpeg'
+import appRideCar from './assets/app-ride-car.png'
+import appTravelerMan from './assets/app-traveler-man.png'
+import appTravelerWoman from './assets/app-traveler-woman.png'
+import { AlertTriangle, ArrowRight, CarFront, Clock3, Compass, LockKeyhole, LogIn, Mail, MapPin, Navigation, RotateCcw, Route as RouteIcon, ShieldCheck, Sparkles, UserPlus, WalletCards } from 'lucide-react'
 import { supabase } from './lib/supabase'
 import { useRideBrowserNotifications } from './lib/browser-notifications'
 import {
@@ -17,7 +20,6 @@ import {
   signIn,
   signOut,
   signUp,
-  validatePassword,
   viewsAllowed,
   type Role,
   type User,
@@ -38,6 +40,10 @@ function loadingThemeClass() {
   const saved = localStorage.getItem('ride-theme')
   const dark = saved === 'dark' || (saved !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)
   return dark ? 'loading-theme-dark' : 'loading-theme-light'
+}
+
+function authThemeClass() {
+  return loadingThemeClass() === 'loading-theme-dark' ? 'auth-theme-dark' : 'auth-theme-light'
 }
 
 function DashboardFallback() {
@@ -67,7 +73,7 @@ function LoadingExperience({ title, text, detail }: { title: string; text: strin
       <div className="loading-brand"><img src={logoTipo} alt="" /><b>Ride</b><span>EN RUTA</span></div>
       <div className="loading-journey" aria-hidden>
         <span className="loading-vehicle"><CarFront size={24} /></span>
-        <div className="loading-road"><i /><i /><i /></div>
+        <div className="loading-road" />
         <span className="loading-destination"><MapPin size={22} /></span>
       </div>
       <h1>{title}</h1>
@@ -78,7 +84,7 @@ function LoadingExperience({ title, text, detail }: { title: string; text: strin
         <span><Clock3 size={15} />Llegada</span>
       </div>
       <div className="loading-progress" aria-hidden><span /></div>
-      <small><i />{detail}</small>
+      <small><RouteIcon size={14} aria-hidden />{detail}</small>
     </section>
   </>
 }
@@ -172,10 +178,6 @@ function App() {
     if (values.password !== values.confirmPassword) {
       setMessage('Las contraseñas no coinciden.'); setLoading(false); return
     }
-    // Antes de mandarla: si no cumple, Supabase la rechaza con su propio
-    // mensaje en inglés y con la lista entera de símbolos pegada detrás.
-    const debil = validatePassword(String(values.password))
-    if (debil) { setMessage(debil); setLoading(false); return }
     try {
       await completePasswordReset(String(values.password))
       // La sesión de recuperación ya vale como sesión normal: se entra directo.
@@ -251,10 +253,6 @@ function App() {
     if (values.password !== values.confirmPassword) {
       setMessage('Las contraseñas no coinciden.'); setLoading(false); return
     }
-    // Antes de mandarla: si no cumple, Supabase la rechaza con su propio
-    // mensaje en inglés y con la lista entera de símbolos pegada detrás.
-    const debil = validatePassword(String(values.password))
-    if (debil) { setMessage(debil); setLoading(false); return }
     try {
       setUser(await changeInitialPassword(String(values.password)))
     } catch (error) {
@@ -287,18 +285,19 @@ function App() {
     <section><span className="success-mark">✓</span><p>Sesión iniciada correctamente</p><h1>Hola, {user.name.split(' ')[0]}</h1><p className="home-copy">{activeView !== user.role ? `Así ve la app una cuenta de ${activeView === 'driver' ? 'conductor' : 'pasajero'}.` : `Tu cuenta de ${activeView === 'driver' ? 'conductor' : 'pasajero'} está lista.`}</p><div className="account-card"><div><small>Correo</small><strong>{user.email}</strong></div><div><small>Teléfono</small><strong>{user.phone || 'Sin teléfono'}</strong></div><div><small>Modo</small><strong>{activeView === 'driver' ? 'Conduzco' : 'Viajo'}</strong></div></div></section>
   </main>
 
-  return <main className={`auth-page auth-page-${screen}`}><ReactBitsEffects scene="auth"/>
-    <section className="brand-panel">
-      <div className="brand-copy"><div className="wordmark"><img src={logoTipo} className="wordmark-logo" alt="Ride" /><span>Ride</span></div><span className="brand-kicker">TU CIUDAD, A TU RITMO</span><h1>Muévete con<br/><em>libertad.</em></h1><p>Una forma más segura, transparente y humana de llegar a donde quieres.</p><div className="brand-benefits"><span><CheckCircle2 size={16} aria-hidden /> Viajes confiables</span><span><ShieldCheck size={16} aria-hidden /> Acceso protegido</span></div></div>
-      <RideJourneyVisual />
-      <div className="brand-status"><span className="status-dot" aria-hidden /><div><strong>Ride está listo para ti</strong><small>Solicita, conduce o administra desde un solo lugar.</small></div></div>
-      <div className="city-art"><div className="moon"/><div className="route"><i/><i/><i/></div><div className="car">▰</div><div className="buildings"><i/><i/><i/><i/><i/><i/></div></div>
+  return <main className={`auth-page auth-page-${screen} ${authThemeClass()}`}><ReactBitsEffects scene="auth"/>
+    <section className="brand-panel" aria-hidden="true">
+      <img className="auth-city-scene" src={appAuthCity} alt="" decoding="async" fetchPriority="high" />
+      <img className="auth-app-person auth-app-woman" src={appTravelerWoman} alt="" decoding="async" />
+      <img className="auth-app-person auth-app-man" src={appTravelerMan} alt="" decoding="async" />
+      <img className="auth-app-car" src={appRideCar} alt="" decoding="async" />
+      <div className="auth-scene-caption"><Navigation size={17}/><span><strong>Tu viaje empieza aquí</strong><small>Viaja o conduce con Ride</small></span></div>
     </section>
 
     <section className="form-panel">
       <div className="mobile-brand"><img src={logoTipo} className="wordmark-logo mobile-logo" alt="Ride" /><b>Ride</b></div>
       <div className="auth-stage">
-        {screen === 'welcome' && <div className="auth-box welcome-box"><span className="auth-icon"><ShieldCheck size={20} aria-hidden /></span><span className="eyebrow">BIENVENIDO A RIDE</span><h2>Tu próximo viaje<br/>empieza aquí.</h2><p>Crea una cuenta o inicia sesión para continuar.</p><button className="primary-action" onClick={() => setScreen('register')}>Crear cuenta <ArrowRight size={18} aria-hidden /></button><button className="secondary-action" onClick={() => setScreen('login')}>Ya tengo una cuenta</button><div className="auth-assurance"><ShieldCheck size={15} aria-hidden /> Tus datos viajan protegidos</div></div>}
+        {screen === 'welcome' && <div className="auth-box welcome-box"><div className="welcome-heading"><span className="auth-icon"><Compass size={21} aria-hidden /></span><div><span className="eyebrow">BIENVENIDO A RIDE</span><small><Sparkles size={13} aria-hidden /> Tu viaje comienza aquí</small></div></div><h2>¿Cómo quieres continuar?</h2><p>Gestiona tus viajes, rutas, pagos y seguridad desde un solo lugar.</p><div className="auth-choice-grid"><button type="button" className="primary-action" onClick={() => setScreen('register')}><span className="action-icon"><UserPlus size={19} aria-hidden /></span><span><strong>Crear una cuenta</strong><small>Regístrate para viajar o conducir</small></span><ArrowRight size={18} aria-hidden /></button><button type="button" className="secondary-action" onClick={() => setScreen('login')}><span className="action-icon"><LogIn size={19} aria-hidden /></span><span><strong>Iniciar sesión</strong><small>Continúa con tu cuenta de Ride</small></span><ArrowRight size={18} aria-hidden /></button></div><div className="auth-feature-row"><span><ShieldCheck size={16} aria-hidden /> Sistema seguro</span><span><RouteIcon size={16} aria-hidden /> Rutas visibles</span><span><WalletCards size={16} aria-hidden /> Tarifas claras</span></div></div>}
         {screen === 'login' && <AuthForm title="Qué bueno verte" subtitle="Ingresa tus datos para continuar." submit="Iniciar sesión" loading={loading} message={message} notice={notice} showPassword={showPassword} setShowPassword={setShowPassword} onSubmit={(event) => { event.preventDefault(); handleLogin(event.currentTarget) }} onBack={() => { setScreen('welcome'); setMessage(''); setNotice('') }} footer={<>¿Aún no tienes cuenta? <button onClick={() => { setScreen('register'); setMessage(''); setNotice('') }}>Regístrate</button></>} extra={<button type="button" className="link-button" onClick={() => { setScreen('forgot'); setMessage(''); setNotice('') }}>¿Olvidaste tu contraseña?</button>} />}
         {screen === 'forgot' && <ForgotPasswordForm loading={loading} message={message} onSubmit={(event) => { event.preventDefault(); handleForgotPassword(event.currentTarget) }} onBack={() => { setScreen('login'); setMessage(''); setNotice('') }} />}
         {screen === 'register' && <RegisterForm loading={loading} message={message} notice={notice} showPassword={showPassword} setShowPassword={setShowPassword} onSubmit={(event) => { event.preventDefault(); handleRegister(event.currentTarget) }} onBack={() => { setScreen('welcome'); setMessage(''); setNotice('') }} onLogin={() => { setScreen('login'); setMessage(''); setNotice('') }} />}
@@ -329,7 +328,7 @@ function ForgotPasswordForm({loading,message,onSubmit,onBack}:{loading:boolean;m
 /// Comparte el aspecto de `FirstAccessForm`: misma pantalla completa, mismo
 /// bloque centrado. Cambia el texto porque el motivo es otro.
 function ResetPasswordForm({loading,message,onSubmit,onCancel}:{loading:boolean;message:string;onSubmit:(event:FormEvent<HTMLFormElement>)=>void;onCancel:()=>void}) {
-  return <main className="first-access"><section><div className="mini-brand"><Logo/><b>Ride</b></div><span className="security-icon" aria-hidden="true"/><span className="eyebrow">RESTABLECER CONTRASEÑA</span><h1>Crea tu contraseña nueva</h1><p>Abriste el enlace que te enviamos. Elige una contraseña y entrarás enseguida.</p><form onSubmit={onSubmit}><label>Nueva contraseña<input required name="password" type="password" minLength={10} autoComplete="new-password" placeholder="10+, con mayúscula, minúscula, número y símbolo"/></label><label>Confirmar contraseña<input required name="confirmPassword" type="password" minLength={10} autoComplete="new-password" placeholder="Repite tu contraseña"/></label>{message&&<div className="error">{message}</div>}<button className="primary-action" disabled={loading}>{loading?'Guardando…':'Guardar y entrar'}<span>→</span></button></form><button type="button" className="cancel-access" onClick={onCancel}>Cancelar</button></section></main>
+  return <main className="first-access"><section><div className="mini-brand"><Logo/><b>Ride</b></div><span className="security-icon" aria-hidden="true"/><span className="eyebrow">RESTABLECER CONTRASEÑA</span><h1>Crea tu contraseña nueva</h1><p>Abriste el enlace que te enviamos. Elige una contraseña y entrarás enseguida.</p><form onSubmit={onSubmit}><label>Nueva contraseña<input required name="password" type="password" minLength={8} autoComplete="new-password" placeholder="Mínimo 8 caracteres"/></label><label>Confirmar contraseña<input required name="confirmPassword" type="password" minLength={8} autoComplete="new-password" placeholder="Repite tu contraseña"/></label>{message&&<div className="error">{message}</div>}<button className="primary-action" disabled={loading}>{loading?'Guardando…':'Guardar y entrar'}<span>→</span></button></form><button type="button" className="cancel-access" onClick={onCancel}>Cancelar</button></section></main>
 }
 
 function RegisterForm(props: Omit<AuthProps,'title'|'subtitle'|'submit'|'footer'> & { onLogin:()=>void }) {
@@ -338,7 +337,7 @@ function RegisterForm(props: Omit<AuthProps,'title'|'subtitle'|'submit'|'footer'
 }
 
 function FirstAccessForm({user,loading,message,onSubmit,onLogout}:{user:User;loading:boolean;message:string;onSubmit:(event:FormEvent<HTMLFormElement>)=>void;onLogout:()=>void}) {
-  return <main className="first-access"><section><div className="mini-brand"><Logo/><b>Ride</b></div><span className="security-icon" aria-hidden="true"/><span className="eyebrow">PRIMER ACCESO ADMINISTRATIVO</span><h1>Crea tu contraseña personal</h1><p>Hola, {user.name}. Por seguridad debes reemplazar la contraseña temporal antes de entrar al panel.</p><form onSubmit={onSubmit}><label>Nueva contraseña<input required name="password" type="password" minLength={10} autoComplete="new-password" placeholder="10+, con mayúscula, minúscula, número y símbolo"/></label><label>Confirmar contraseña<input required name="confirmPassword" type="password" minLength={10} autoComplete="new-password" placeholder="Repite tu contraseña"/></label>{message&&<div className="error">{message}</div>}<button className="primary-action" disabled={loading}>{loading?'Guardando…':'Guardar y entrar'}<span>→</span></button></form><button type="button" className="cancel-access" onClick={onLogout}>Cerrar sesión</button></section></main>
+  return <main className="first-access"><section><div className="mini-brand"><Logo/><b>Ride</b></div><span className="security-icon" aria-hidden="true"/><span className="eyebrow">PRIMER ACCESO ADMINISTRATIVO</span><h1>Crea tu contraseña personal</h1><p>Hola, {user.name}. Por seguridad debes reemplazar la contraseña temporal antes de entrar al panel.</p><form onSubmit={onSubmit}><label>Nueva contraseña<input required name="password" type="password" minLength={10} autoComplete="new-password" placeholder="Mínimo 10 caracteres"/></label><label>Confirmar contraseña<input required name="confirmPassword" type="password" minLength={10} autoComplete="new-password" placeholder="Repite tu contraseña"/></label>{message&&<div className="error">{message}</div>}<button className="primary-action" disabled={loading}>{loading?'Guardando…':'Guardar y entrar'}<span>→</span></button></form><button type="button" className="cancel-access" onClick={onLogout}>Cerrar sesión</button></section></main>
 }
 
 export default App
