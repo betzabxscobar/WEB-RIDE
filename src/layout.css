@@ -727,3 +727,53 @@ html[data-ride-theme="dark"] .viewing-as button { background: #143746 !important
 }
 .panel-switcher.sidebar{width:100%!important;margin:0 0 8px!important;padding:10px!important;border-radius:13px!important}
 :where(.passenger-topbar>.hamburger-button,.driver-topbar>.driver-hamburger,.admin-main>header>.hamburger-button) svg{width:20px;height:20px}
+
+/* Header identity: a compact profile chip without rings or colored contours. */
+:where(.passenger-topbar,.driver-topbar,.admin-main>header){
+  align-items:center!important;
+}
+.admin-main>header .admin-profile{
+  min-width:0!important;display:flex!important;align-items:center!important;gap:10px!important;
+  margin-left:4px!important;padding:6px 11px 6px 6px!important;border:0!important;border-radius:999px!important;
+  background:color-mix(in srgb,var(--ride-panel-surface,#fff) 78%,transparent)!important;
+  box-shadow:0 9px 25px rgba(8,50,68,.08)!important;backdrop-filter:blur(12px);
+}
+.admin-main>header .admin-profile>span,.passenger-avatar,.driver-avatar{
+  border:0!important;outline:0!important;
+  background:linear-gradient(145deg,#63d5ec,#35b6dc)!important;color:#073246!important;
+  box-shadow:0 8px 19px rgba(19,145,180,.2)!important;
+}
+.admin-main>header .admin-profile>div{display:grid;gap:2px;min-width:0}
+.admin-main>header .admin-profile strong{max-width:150px;overflow:hidden;color:var(--ride-panel-ink,#0b2a3a)!important;font-size:12px!important;line-height:1.2;text-overflow:ellipsis;white-space:nowrap}
+.admin-main>header .admin-profile small{color:var(--ride-panel-muted,#4d6977)!important;font-size:10px!important;line-height:1.2}
+.admin-main>header .hamburger-button,.passenger-topbar>.hamburger-button,.driver-topbar>.driver-hamburger{
+  border:0!important;outline:0!important;border-radius:14px!important;
+  background:color-mix(in srgb,var(--ride-panel-surface-soft,#eef8fb) 90%,transparent)!important;
+  box-shadow:0 9px 24px rgba(8,50,68,.09)!important;
+}
+.admin-main>header .hamburger-button:hover,.passenger-topbar>.hamburger-button:hover,.driver-topbar>.driver-hamburger:hover{
+  border:0!important;background:var(--ride-brand-100,#d9f4fc)!important;box-shadow:0 12px 26px rgba(8,92,118,.13)!important;
+}
+.theme-dark .admin-main>header .admin-profile{
+  background:rgba(20,54,68,.8)!important;box-shadow:0 10px 28px rgba(0,8,14,.22)!important;
+}
+.theme-dark .admin-main>header .admin-profile strong{color:#f4fbfd!important}
+.theme-dark .admin-main>header .admin-profile small{color:#bad0d9!important}
+
+/* Account/configuration cards use the same contour-free visual language. */
+:where(.passenger-shell,.driver-shell,.admin-shell) :where(.account-settings,.account-details,.account-summary,.driver-account-grid>section,.driver-account-grid>aside){
+  border:0!important;outline:0!important;box-shadow:0 18px 46px rgba(8,69,91,.1)!important;
+}
+:where(.passenger-shell,.driver-shell,.admin-shell) .account-avatar-editor{
+  border-bottom:0!important;padding:14px!important;border-radius:15px!important;background:var(--ride-panel-surface-soft,#f2f9fc)!important;
+}
+:where(.passenger-shell,.driver-shell,.admin-shell) .account-settings-form+form{
+  border-top:0!important;padding-top:8px!important;
+}
+
+@media(max-width:760px){
+  .admin-main>header .admin-profile{margin:0!important;padding:5px!important;background:transparent!important;box-shadow:none!important}
+  .admin-main>header .admin-profile>div{display:none!important}
+  .admin-main>header .admin-profile>span{width:38px!important;height:38px!important}
+  .admin-main>header .hamburger-button,.passenger-topbar>.hamburger-button,.driver-topbar>.driver-hamburger{width:40px!important;height:40px!important;flex-basis:40px!important;margin-left:0!important}
+}
