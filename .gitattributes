@@ -1,0 +1,9 @@
+# Lo que corre en el servidor Linux va SIEMPRE con saltos de linea LF.
+#
+# Estos archivos se escriben en Windows, y con CRLF bash se rompe en la primera
+# linea: `set -euo pipefail` llega como `pipefail\r` y el despliegue muere con
+# «invalid option name» antes de hacer nada. Asi estuvieron desplegar.sh y
+# comprobar.sh hasta el 2026-09-11. Con esto git los guarda y los saca con LF
+# en cualquier equipo, tenga el core.autocrlf que tenga.
+*.sh               text eol=lf
+infra/servidor/**  text eol=lf

@@ -69,6 +69,41 @@ fi
 # ---------------------------------------------------------------------------
 titulo "El despliegue automatico"
 
+# Lo que hace falta para que el despliegue pueda compilar. Son las tres cosas que
+# un servidor recien instalado no trae, y sin ellas el temporizador falla en
+# silencio: la web se queda en la version de antes, o sin ninguna.
+if ! id ride >/dev/null 2>&1; then
+  mal "no existe el usuario 'ride', que es quien despliega"
+  pendiente "sudo adduser --system --group --home /home/ride --shell /usr/sbin/nologin ride"
+fi
+
+NODE_V="$(node -v 2>/dev/null | sed 's/^v//')"
+NODE_MAYOR="${NODE_V%%.*}"
+NODE_MENOR="$(echo "$NODE_V" | cut -d. -f2)"
+if [ -z "$NODE_V" ]; then
+  mal "no esta instalado Node.js"
+  pendiente "Instala Node 22: ver README.md, «Preparar el servidor», paso 1."
+elif [ "$NODE_MAYOR" -lt 20 ] || { [ "$NODE_MAYOR" -eq 20 ] && [ "$NODE_MENOR" -lt 19 ]; } \
+     || { [ "$NODE_MAYOR" -eq 21 ]; } || { [ "$NODE_MAYOR" -eq 22 ] && [ "$NODE_MENOR" -lt 12 ]; }; then
+  mal "Node $NODE_V es viejo: Vite pide 20.19 o 22.12 como minimo"
+  pendiente "Instala Node 22 de NodeSource: ver README.md, «Preparar el servidor», paso 1."
+else
+  ok "Node $NODE_V"
+fi
+
+if [ -d "$REPO/.git" ]; then
+  DUENO="$(stat -c '%U' "$REPO" 2>/dev/null)"
+  if [ "$DUENO" = "ride" ]; then
+    ok "el repositorio es de 'ride'"
+  else
+    mal "el repositorio es de '$DUENO', no de 'ride': el despliegue no podra actualizarlo"
+    pendiente "sudo chown -R ride:ride $REPO"
+  fi
+else
+  mal "no hay repositorio en $REPO"
+  pendiente "sudo git clone https://github.com/betzabxscobar/WEB-RIDE.git $REPO && sudo chown -R ride:ride $REPO"
+fi
+
 if systemctl is-enabled --quiet ride-desplegar.timer 2>/dev/null; then
   ok "temporizador activado"
   systemctl list-timers ride-desplegar --no-pager 2>/dev/null | sed -n '2p' | sed 's/^/        /'
