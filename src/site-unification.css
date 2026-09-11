@@ -229,3 +229,30 @@ main.auth-page.auth-theme-dark .auth-box :is(input, .role-picker button) {
   border-color: #31515f !important;
 }
 main.auth-page.auth-theme-dark .auth-box input::placeholder { color: #86a2ae !important; opacity: 1; }
+
+/* En responsive el panel de marca se oculta, así que el fondo no puede
+   depender de él. Se replica en la pantalla raíz para que la escena y la
+   ruta sigan visibles detrás de la tarjeta. */
+@media (max-width: 1050px) {
+  main.auth-page.auth-theme-light {
+    background:
+      linear-gradient(115deg, rgba(239,252,253,.58), rgba(230,244,251,.25)),
+      url('./assets/PanelFondoClaro.svg') center / cover no-repeat,
+      #e9f8fb !important;
+  }
+  main.auth-page.auth-theme-dark {
+    background:
+      linear-gradient(115deg, rgba(3,20,35,.42), rgba(4,24,43,.2)),
+      url('./assets/PanelFondoOscuro.svg') center / cover no-repeat,
+      #061823 !important;
+  }
+  main.auth-page > .form-panel { background: transparent !important; }
+  main.auth-page .auth-stage { width: min(100%, 570px); }
+}
+
+@media (max-width: 560px) {
+  main.auth-page > .form-panel { padding-inline: 12px !important; }
+  main.auth-page .auth-stage { width: min(100%, 520px); }
+  main.auth-page .auth-box,
+  main.auth-page .welcome-box { width: 100%; }
+}
