@@ -4,7 +4,10 @@ import { PanelPreview } from './components/PanelPreview'
 import { ReactBitsEffects } from './components/ReactBitsEffects'
 import './App.css'
 import logoTipo from './assets/LogoTipo.webp'
-import rideCityJourney from './assets/ride-city-journey-v2.png'
+import appAuthCity from './assets/app-auth-city.jpeg'
+import appRideCar from './assets/app-ride-car.png'
+import appTravelerMan from './assets/app-traveler-man.png'
+import appTravelerWoman from './assets/app-traveler-woman.png'
 import { AlertTriangle, ArrowRight, BadgeCheck, CarFront, Clock3, Compass, LockKeyhole, LogIn, Mail, MapPin, Navigation, RotateCcw, Route as RouteIcon, ShieldCheck, Sparkles, UserPlus, WalletCards } from 'lucide-react'
 import { supabase } from './lib/supabase'
 import { useRideBrowserNotifications } from './lib/browser-notifications'
@@ -279,10 +282,12 @@ function App() {
   </main>
 
   return <main className={`auth-page auth-page-${screen}`}><ReactBitsEffects scene="auth"/>
-    <section className="brand-panel">
-      <img className="auth-city-scene" src={rideCityJourney} alt="Automóvil recorriendo una ciudad costera siguiendo una ruta iluminada" decoding="async" fetchPriority="high" />
-      <div className="brand-copy"><div className="wordmark"><img src={logoTipo} className="wordmark-logo" alt="Ride" /><span>Ride</span></div><div className="brand-message"><span className="brand-kicker">MOVILIDAD HECHA PARA TI</span><h1>Tu ciudad.<br/><em>Tu camino.</em></h1><p>Pide, conduce y sigue cada trayecto desde una experiencia clara, segura y llena de movimiento.</p></div><div className="brand-benefits"><span><RouteIcon size={16} aria-hidden /> Ruta en tiempo real</span><span><ShieldCheck size={16} aria-hidden /> Viajes protegidos</span><span><WalletCards size={16} aria-hidden /> Precio transparente</span></div></div>
-      <div className="city-art"><div className="moon"/><div className="route"><i/><i/><i/></div><div className="car">▰</div><div className="buildings"><i/><i/><i/><i/><i/><i/></div></div>
+    <section className="brand-panel" aria-hidden="true">
+      <img className="auth-city-scene" src={appAuthCity} alt="" decoding="async" fetchPriority="high" />
+      <img className="auth-app-person auth-app-woman" src={appTravelerWoman} alt="" decoding="async" />
+      <img className="auth-app-person auth-app-man" src={appTravelerMan} alt="" decoding="async" />
+      <img className="auth-app-car" src={appRideCar} alt="" decoding="async" />
+      <div className="auth-scene-caption"><Navigation size={17}/><span><strong>Tu viaje empieza aquí</strong><small>Viaja o conduce con Ride</small></span></div>
     </section>
 
     <section className="form-panel">
