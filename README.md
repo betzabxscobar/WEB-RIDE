@@ -1,9 +1,9 @@
 # WEB-RIDE
 
-Aplicación web de Ride desarrollada con React, TypeScript, Vite y Supabase. En
-el estado actual concentra la solicitud de viajes para pasajeros, el acceso
-por roles y las funciones administrativas de consulta, revisión de conductores
-y monitoreo.
+Aplicación web de Ride desarrollada con React, TypeScript, Vite y Supabase.
+Tiene los tres paneles de la app móvil —pasajero, conductor y administración—
+contra la misma base de datos y con las mismas reglas. El acceso muestra al pie
+los términos y condiciones, los mismos que la app.
 
 ## Casos de uso implementados
 
@@ -163,19 +163,21 @@ guardan para APPRIDE, sin inventar una posición cuando el conductor no la enví
 **Resultado:** las direcciones quedan asociadas a la cuenta y están protegidas
 para que cada usuario solo pueda consultar o modificar las suyas.
 
-### CU-W13. Consultar pagos
+### CU-W13. Pagar y consultar pagos
 
-**Actor:** pasajero autenticado.
+**Actor:** pasajero autenticado, y su conductor en el paso 4.
 
-1. El usuario entra en **Pagos**.
-2. Puede registrar efectivo, transferencia o DeUna y elegir su forma de pago principal.
-3. Consulta los cobros y reembolsos registrados en sus propios viajes.
-4. Si terminó un viaje con DeUna como método principal, solicita al servidor el
-   QR y el enlace de pago; la web nunca envía el importe ni conoce la clave de
-   la pasarela.
+1. El usuario entra en **Pagos** y registra efectivo o transferencia como forma
+   de pago principal.
+2. Si paga por transferencia, durante el viaje ve las cuentas del conductor,
+   transfiere desde su banco, adjunta la foto del comprobante y avisa.
+3. Consulta los cobros, multas y reembolsos de sus propios viajes.
+4. El conductor revisa su banco y confirma el cobro; hasta entonces el viaje no
+   se puede cerrar.
 
-**Resultado:** la gestión disponible es real y no expone datos bancarios ni
-presenta una tarjeta simulada.
+**Resultado:** Ride no toca el dinero de los viajes: va de banco a banco, y el
+comprobante queda guardado en un bucket privado. La web nunca pide ni guarda
+números de tarjeta. DeUna se retiró.
 
 ### CU-W14. Completar el perfil del conductor
 
@@ -238,11 +240,27 @@ de la administración.
 **Resultado:** las cotizaciones nuevas usan la configuración guardada, sin tener
 que publicar otra versión de la web.
 
+### CU-W19. Pagar la cuota mensual
+
+**Actor:** conductor.
+
+1. El conductor entra en **Cuota mensual** y ve si está al día, cuántos días le quedan y
+   hasta cuándo.
+2. Pulsa pagar y la web abre PayPal con la suscripción de 15 USD al mes creada a
+   su nombre.
+3. PayPal cobra y avisa al servidor, que activa el mes. Volver de PayPal no
+   activa nada por sí solo.
+
+**Resultado:** el conductor puede ponerse en línea y aceptar viajes. Si tenía el
+mes de cortesía, el mes pagado empieza donde termina la cortesía. Dar de baja la
+suscripción no quita lo ya pagado. Una cuenta administrativa ve esta pantalla
+solo para revisarla: no paga cuota ni recibe viajes.
+
 ## Alcance actual
 
 - El panel de pasajero permite cotizar, solicitar, seguir, cancelar, consultar
   y calificar viajes con datos reales. También administra avisos, direcciones
-  guardadas, efectivo e historial de cobros.
+  guardadas, efectivo, transferencia con comprobante e historial de cobros.
 - El origen y el destino pueden buscarse, elegirse en el mapa, tomarse del GPS
   o recuperarse de las direcciones guardadas y del catálogo activo.
 - El panel de conductor permite gestionar vehículos y documentos, activar la
@@ -251,9 +269,15 @@ que publicar otra versión de la web.
 - El panel administrativo incluye **Resumen**, **Usuarios**, **Conductores**,
   **Viajes**, **Tarifas**, **Soporte**, **Mi cuenta** y **Configuración**, con el
   mismo sistema visual, apariencia y navegación adaptable del panel de pasajero.
-- Los mapas usan OpenStreetMap y las rutas por calles se obtienen con OSRM. El
-  servidor público configurado por defecto es apropiado para desarrollo, no
-  para una puesta en producción.
+- Los mapas usan teselas vectoriales de OpenFreeMap, pintadas con MapLibre sobre
+  Leaflet (`maplibre-gl` y `@maplibre/maplibre-gl-leaflet`) con los mismos
+  estilos claro y oscuro de la app (`public/mapa/`). Las rutas por calles salen
+  de OSRM; el servidor público configurado por defecto sirve para desarrollo, no
+  para producción.
+- Pasajero y conductor no pueden escribir directamente en las tablas del viaje,
+  del cobro ni del chat: todo pasa por funciones de Postgres. Cada uno ve su
+  perfil y el de la otra persona de sus viajes, nada más. Lo comprueba
+  `APPRIDE/infra/sql/pruebas/permisos.sql`.
 - La configuración de Supabase y el orden de sus migraciones están documentados
   en [`docs/CONEXION_SUPABASE.md`](docs/CONEXION_SUPABASE.md).
 
@@ -263,11 +287,11 @@ que publicar otra versión de la web.
   administración y el motor de mapas se cargan únicamente al abrirse.
 - El mapa vive detrás de un componente diferido, por lo que consultar un panel
   sin mapa no descarga MapLibre innecesariamente.
-- Las imágenes visibles utilizan versiones WebP dimensionadas; los PNG
-  originales se conservan como archivos fuente para futuras ediciones.
-- La compilación verificada el **8 de septiembre de 2026** dejó el JavaScript
-  inicial en aproximadamente **429 KB** (122 KB comprimido), frente a los
-  aproximadamente 1,90 MB anteriores. El módulo de mapa, de aproximadamente
+- Las imágenes visibles utilizan versiones WebP dimensionadas. Los PNG
+  originales se retiraron del repositorio el 2026-09-11 (6,7 MB sin uso).
+- La compilación verificada el **11 de septiembre de 2026** deja el JavaScript
+  inicial en **434 KB** y el CSS inicial en **230 KB** (41 KB comprimido), dentro
+  de los presupuestos de `npm run check:quality`. El módulo de mapa, de unos
   1,03 MB, queda separado y se descarga solo cuando se muestra un mapa.
 - `PassengerDashboard` comenzó a dividirse en componentes de presentación bajo
   `src/passenger/`, y el detalle administrativo mantiene su estilo en
@@ -277,12 +301,17 @@ que publicar otra versión de la web.
 
 ## Ejecución local
 
-Requisitos: Node.js 20 o posterior y npm.
+Requisitos: Node.js 22 (el que usa el CI) y npm.
 
 ```sh
 npm install
 npm run dev
 ```
+
+**Después de cada `git pull`, `npm install` otra vez.** Si alguien añadió una
+dependencia y tu `node_modules` es anterior, Vite no la encuentra. Pasó con el
+mapa: `Failed to resolve import "@maplibre/maplibre-gl-leaflet"` quiere decir
+exactamente eso, no que el código esté roto.
 
 La aplicación usa por defecto el proyecto público de Ride. Para apuntar a otro
 proyecto, copia `.env.example` como `.env` y cambia
@@ -305,8 +334,10 @@ npm run quality   # seguridad estática, pruebas, build y presupuestos de carga
 npm run preview   # vista previa de la compilación
 ```
 
-Cada envío o propuesta de cambio hacia `main` ejecuta estas tres comprobaciones
-en GitHub Actions: análisis estático, pruebas y compilación de producción.
+Cada envío o propuesta de cambio hacia `main` ejecuta en GitHub Actions
+(«Calidad web») las cuatro comprobaciones de `npm run quality`: análisis
+estático, pruebas, compilación de producción y seguridad y presupuestos de
+carga.
 
 ## Calidad, seguridad y despliegue
 
@@ -319,18 +350,37 @@ en GitHub Actions: análisis estático, pruebas y compilación de producción.
   permisos restringidos para cámara, micrófono y geolocalización.
 - El JavaScript y CSS iniciales tienen presupuestos de peso verificados después
   de cada compilación. Los mapas continúan cargándose bajo demanda.
-- `.github/workflows/deploy.yml` publica `main` en GitHub Pages solo después de
-  superar todas las comprobaciones. En el repositorio debe elegirse
-  **Settings > Pages > Source: GitHub Actions** y autorizar la URL publicada en
-  los Redirect URLs de Supabase Auth.
+- El destino de producción es el servidor propio: nginx sirve `dist` con las
+  cabeceras de seguridad incluidas en cada `location`, y un temporizador de
+  systemd trae `main` y recompila cada dos minutos. Todo está en
+  [`infra/servidor/`](infra/servidor/README.md). Todavía falta el dominio, el
+  certificado y abrir los puertos.
+- `.github/workflows/deploy.yml` intenta publicar en GitHub Pages, pero Pages no
+  está activado en el repositorio, así que ese workflow sale en rojo en cada
+  push a `main` (el de «Calidad web» sí pasa). Hay que decidir: activar Pages
+  en **Settings > Pages > Source: GitHub Actions** o borrar el workflow.
 
-Estado local comprobado el **9 de septiembre de 2026**: **27 pruebas aprobadas**,
-análisis estático aprobado y compilación de producción aprobada.
+Estado local comprobado el **11 de septiembre de 2026**: **48 pruebas
+aprobadas** en 9 archivos, análisis estático, compilación de producción y
+presupuestos de carga aprobados.
 
 ## Antes de producción
 
-- Aplicar y verificar todas las migraciones en el proyecto correcto de Supabase,
-  y revisar sus asesores de seguridad y rendimiento.
+Revisado en la auditoría del 2026-09-11:
+
+- Probar un viaje completo con una cuenta de conductor de rol `driver`, nunca con
+  un superadministrador: ven todos los perfiles y se saltan zona y cuota, y con
+  ellos todo parece funcionar aunque para un conductor real no funcione.
+- Servidor: IP pública o solución al CGNAT, puertos 80 y 443, DNS de
+  `rideviajes.com.ec`, certificado con certbot y HSTS. Después,
+  `bash infra/servidor/comprobar.sh`.
+- Supabase → Authentication → URL Configuration: Site URL
+  `https://rideviajes.com.ec` y esa misma, con `www`, en las redirecciones.
+- PayPal Live antes del 2026-10-09, cuando vencen las cortesías
+  (`APPRIDE/docs/CUOTA.md`).
+- `npm audit` marca como crítica la versión de `maplibre-gl` (≤ 6.4.0). Hoy no
+  hay forma de explotarla, porque el mapa no muestra HTML en ventanas emergentes,
+  pero conviene subir a 6.x y probar el mapa.
 - Sustituir el servidor público de OSRM por una instancia con capacidad y
   condiciones de servicio apropiadas para producción.
 - Configurar notificaciones web cuando se necesiten avisos con la pestaña cerrada;
@@ -338,8 +388,8 @@ análisis estático aprobado y compilación de producción aprobada.
 - Continuar dividiendo los estilos administrativos y medir el módulo diferido
   de mapas en teléfonos de gama media; la carga inicial y las imágenes visibles
   ya fueron optimizadas.
-- Completar la integración de pagos reales. La interfaz no debe almacenar datos
-  de tarjeta sin una pasarela con tokenización.
+- La interfaz no debe almacenar datos de tarjeta sin una pasarela con
+  tokenización; hoy no pide ninguno.
 
 Los scripts administrativos requieren variables de servidor y nunca deben usar
 una clave `service_role` dentro de variables `VITE_*`. Consulta
