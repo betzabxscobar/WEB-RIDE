@@ -435,6 +435,7 @@
   background:
     radial-gradient(circle at 16% 17%, rgba(75, 204, 229, .26), transparent 24%),
     radial-gradient(circle at 87% 22%, rgba(116, 102, 221, .18), transparent 26%),
+    url('./assets/PanelFondoClaro.svg') center / cover no-repeat,
     linear-gradient(145deg, #e6fbfd, #dff4f9 48%, #e7e7fb) !important;
 }
 .auth-page .auth-city-scene {
@@ -654,3 +655,72 @@
 @keyframes auth-character-float { 50% { translate: 0 -10px; } }
 @keyframes auth-car-arrive { from { opacity: 0; transform: translate(70px, 18px); } to { opacity: .96; transform: none; } }
 @keyframes auth-gradient-drift { 50% { background-position: 100% 50%; } }
+
+/* Ajustes finales compartidos: las dos acciones de acceso usan exactamente la
+   misma retícula y el fondo de los paneles también en la bienvenida. */
+.auth-page-welcome :where(.auth-city-scene, .auth-app-person, .auth-app-car) {
+  display: none !important;
+}
+
+.auth-page-welcome.auth-theme-light .brand-panel {
+  background:
+    radial-gradient(circle at 16% 17%, rgba(75, 204, 229, .18), transparent 24%),
+    radial-gradient(circle at 87% 22%, rgba(116, 102, 221, .12), transparent 26%),
+    url('./assets/PanelFondoClaro.svg') center / cover no-repeat,
+    #e8f8fa !important;
+}
+
+.auth-page-welcome.auth-theme-dark .brand-panel {
+  background:
+    radial-gradient(circle at 18% 22%, rgba(37, 185, 216, .16), transparent 32%),
+    radial-gradient(circle at 84% 78%, rgba(105, 92, 220, .12), transparent 30%),
+    url('./assets/PanelFondoOscuro.svg') center / cover no-repeat,
+    #061823 !important;
+}
+
+.auth-page .auth-choice-grid :is(.primary-action, .secondary-action) {
+  box-sizing: border-box;
+  align-items: center;
+}
+
+.auth-page .auth-choice-grid :is(.primary-action, .secondary-action) > .action-icon {
+  align-self: center;
+  justify-self: center;
+  margin: 0;
+}
+
+.auth-page .auth-choice-grid :is(.primary-action, .secondary-action) > span:nth-child(2) {
+  align-self: center;
+  justify-self: stretch;
+  margin: 0;
+}
+
+.auth-page .auth-choice-grid button :is(strong, small) {
+  display: block;
+  margin: 0;
+  line-height: 1.35;
+}
+
+/* Contraste base uniforme para contenido secundario en pasajero, conductor y
+   administración. Los estados con color propio conservan sus reglas más
+   específicas. */
+:is(.passenger-shell, .driver-shell, .admin-shell):not(.theme-dark)
+  :is(p, small, dt, time) {
+  color: #405f6c !important;
+}
+
+:is(.passenger-shell, .driver-shell, .admin-shell).theme-dark
+  :is(p, small, dt, time) {
+  color: #c0d5dd !important;
+}
+
+:is(.passenger-shell, .driver-shell, .admin-shell)
+  :is(input, select, textarea) {
+  color: var(--ride-panel-ink) !important;
+}
+
+:is(.passenger-shell, .driver-shell, .admin-shell)
+  :is(input, textarea)::placeholder {
+  color: var(--ride-panel-muted) !important;
+  opacity: .9;
+}

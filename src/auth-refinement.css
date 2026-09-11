@@ -64,6 +64,24 @@ main.auth-page .auth-choice-grid button > span:nth-child(2) {
   text-align: left;
 }
 
+main.auth-page .auth-choice-grid :is(.primary-action, .secondary-action) {
+  box-sizing: border-box;
+  grid-template-columns: 44px minmax(0, 1fr) 24px;
+  align-items: center;
+}
+
+main.auth-page .auth-choice-grid :is(.primary-action, .secondary-action) > .action-icon {
+  align-self: center;
+  justify-self: center;
+  margin: 0;
+}
+
+main.auth-page .auth-choice-grid :is(.primary-action, .secondary-action) > span:nth-child(2) {
+  align-self: center;
+  justify-self: stretch;
+  margin: 0;
+}
+
 main.auth-page .auth-choice-grid button small {
   font-size: clamp(10px, .85vw, 12px);
   line-height: 1.35;
