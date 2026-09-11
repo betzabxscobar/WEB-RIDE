@@ -1,9 +1,9 @@
 /**
  * Prepara una foto antes de subirla a Storage, con los mismos números que la app.
  *
- * La app reduce todas las fotos al elegirlas (`image_picker` con `maxWidth` e
- * `imageQuality`); la web las subía tal cual salían del teléfono, hasta 5 MB
- * cada una. Con el bucket gratuito de 1 GB, eso son unas doscientas fotos.
+ * La app hace lo mismo en `lib/core/fotos.dart`, con los mismos números; la
+ * web las subía tal cual salían del teléfono, hasta 5 MB cada una. Con el
+ * bucket gratuito de 1 GB, eso son unas doscientas fotos.
  *
  * Y no es solo el peso. Una foto de cámara lleva en sus metadatos (EXIF) las
  * coordenadas de donde se tomó, y el bucket `avatares` es público: subirla tal
@@ -23,15 +23,16 @@ export interface PhotoLimits {
   minSide?: number
 }
 
-/** `settings_screen.dart`: 800×800, calidad 82. Se ve a 60 px. */
+/** `LimitesFoto.avatar` en la app: 800×800, calidad 82. Se ve a 60 px. */
 export const AVATAR_PHOTO: PhotoLimits = { maxWidth: 800, maxHeight: 800, quality: 0.82 }
 
-/** `driver_profile_screen.dart`, y el suelo de `FleetService._ladoMinimo`. */
+/** `LimitesFoto.documento` en la app, con su suelo de 600. */
 export const DOCUMENT_PHOTO: PhotoLimits = { maxWidth: 1600, quality: 0.8, minSide: 600 }
 
 /**
- * `transfer_sheet.dart`. Solo a lo ancho: un comprobante suele ser una captura
- * de pantalla alta y estrecha, y limitarla a lo alto dejaría el texto ilegible.
+ * `LimitesFoto.comprobante` en la app. Solo a lo ancho: un comprobante suele
+ * ser una captura de pantalla alta y estrecha, y limitarla a lo alto dejaría el
+ * texto ilegible.
  */
 export const RECEIPT_PHOTO: PhotoLimits = { maxWidth: 1600, quality: 0.85 }
 
